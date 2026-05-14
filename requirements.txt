@@ -1,0 +1,3 @@
+# Deprecated — use per-package pyproject.toml under packages/ and apps/.
+# Workspace dev tools: pip install -e ".[dev]" from repo root (after installing packages).
+# See README.md

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kinetic-pipeline-core"
+version = "0.1.0"
+description = "YAML-driven pipeline engine (runner, parser, hooks, context)"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "kinetic-common>=0.1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

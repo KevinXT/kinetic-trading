@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# Workspace-level dev tooling only. Library/app code lives under packages/* and apps/*.
+# This is NOT a distributable package — it provides shared dev tools (pytest, linters)
+# for the monorepo. Install individual packages from packages/ and apps/ separately.
+[project]
+name = "kinetic-trading-workspace"
+version = "0.1.0"
+description = "Dev workspace for kinetic-trading monorepo (not a distributable package)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "black>=24.0",
+  "ruff>=0.4",
+  "mypy>=1.8",
+]
+
+[tool.setuptools]
+packages = []
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

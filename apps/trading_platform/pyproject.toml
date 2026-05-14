@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kinetic-trading-platform"
+version = "0.1.0"
+description = "Trading platform application entrypoints and orchestration"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "kinetic-pipeline-core>=0.1.0",
+  "kinetic-news-data>=0.1.0",
+]
+
+[project.scripts]
+trading-platform = "trading_platform.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
