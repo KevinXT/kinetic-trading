@@ -22,7 +22,7 @@ Implemented today:
 - Filter transform task operating on normalized records
 - Experiment/run folder allocation
 - Run metadata and resolved-config snapshots
-- 26 tests covering config loading, parsing, registry behavior, runner metadata, context artifact writing, and import smoke tests
+- 59 tests covering config loading, parsing, registry behavior, runner metadata, context artifact writing, cache, and import smoke tests
 
 Planned / placeholder boundaries:
 
