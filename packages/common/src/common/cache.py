@@ -35,15 +35,19 @@ def load_json_cache(namespace: str, key: str) -> Optional[JsonDict]:
     """
     Load cached JSON data.
 
-    Returns None if the cache file does not exist.
+    Returns None if the cache file does not exist or contains invalid JSON.
     """
     path = _cache_file_path(namespace, key)
 
     if not path.exists():
         return None
 
-    with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, ValueError):
+        logger.warning("corrupt cache file, ignoring: %s", path)
+        return None
 
 
 def save_json_cache(namespace: str, key: str, data: JsonDict) -> Path:
