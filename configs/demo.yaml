@@ -22,3 +22,5 @@ pipeline:
     - type: filter_articles
       language: "English"
       source_country: "United States"
+    - type: dedupe_articles
+      by: ["url", "title"]

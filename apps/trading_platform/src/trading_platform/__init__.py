@@ -13,10 +13,15 @@ __version__ = "0.1.0"
 def _register_tasks() -> None:
     """Populate the pipeline task registry with provider-specific tasks."""
     from pipeline_core.tasks.registry import TASK_REGISTRY
-    from news_data.task import gdelt_docs_task, filter_articles_task
+    from news_data.task import (
+        dedupe_articles_task,
+        filter_articles_task,
+        gdelt_docs_task,
+    )
 
     TASK_REGISTRY.setdefault("gdelt_docs", gdelt_docs_task)
     TASK_REGISTRY.setdefault("filter_articles", filter_articles_task)
+    TASK_REGISTRY.setdefault("dedupe_articles", dedupe_articles_task)
 
 
 _register_tasks()
