@@ -17,11 +17,13 @@ def _register_tasks() -> None:
         dedupe_articles_task,
         filter_articles_task,
         gdelt_docs_task,
+        store_articles_task,
     )
 
     TASK_REGISTRY.setdefault("gdelt_docs", gdelt_docs_task)
     TASK_REGISTRY.setdefault("filter_articles", filter_articles_task)
     TASK_REGISTRY.setdefault("dedupe_articles", dedupe_articles_task)
+    TASK_REGISTRY.setdefault("store_articles", store_articles_task)
 
 
 _register_tasks()
