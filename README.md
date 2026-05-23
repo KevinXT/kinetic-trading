@@ -2,7 +2,7 @@
 
 A modular, YAML-driven research pipeline for financial/news data ingestion, caching, normalization, transformation, and future strategy experimentation.
 
-This project is an early-stage trading research platform. The current implementation focuses on the execution engine: a reusable pipeline core, config system, task registry, GDELT news ingestion, normalized article records, cache-aware provider calls, deduplication with syndication tracking, batch collection orchestration, and reproducible run artifacts.
+This project is an early-stage trading research platform. The current implementation focuses on the execution engine: a reusable pipeline core, config system, task registry, GDELT news ingestion, normalized article records, cache-aware provider calls, deduplication with syndication tracking, deterministic topic tagging, daily feature aggregation, persistent article and feature stores, batch collection orchestration, and reproducible run artifacts.
 
 The goal is not to be a finished trading bot. The goal is to build the infrastructure layer that future market-data providers, signal-generation tasks, backtests, and strategy modules can plug into cleanly.
 
@@ -22,20 +22,22 @@ Implemented today:
 - Filter transform task operating on normalized records
 - Deduplication transform with configurable strategy (`url`, `title`, `title_domain`)
 - Duplicate/syndication group metadata and artifact generation
+- Deterministic topic tagging with 25-category default rule set
+- Daily topic-level feature aggregation with amplification metrics
 - Persistent article store with cross-run deduplication
+- Persistent feature store with cross-run deduplication
 - 25 GDELT collection configs across macro, sectors, risk, and markets categories
 - Batch collection runner with throttling and fault tolerance
 - Category-specific GDELT timespans (48h macro/sectors, 24h markets, 12h risk)
 - Experiment/run folder allocation
 - Run metadata and resolved-config snapshots
-- 115 tests covering config loading, parsing, registry behavior, runner metadata, context artifact writing, cache, normalization, deduplication, storage, collection runner, and import smoke tests
+- 176 tests covering config loading, parsing, registry behavior, runner metadata, context artifact writing, cache, normalization, deduplication, tagging, feature aggregation, article storage, feature storage, collection runner, and import smoke tests
 
 Planned / placeholder boundaries:
 
 - Market data providers
 - Strategy SDK abstractions
 - Sentiment/entity extraction
-- Feature engineering
 - Backtesting integration
 - UI/dashboard layer
 
@@ -84,6 +86,14 @@ transform task: filter_articles
     ↓
 transform task: dedupe_articles
     ↓
+transform task: tag_articles
+    ↓
+transform task: aggregate_article_features
+    ↓
+transform task: store_features
+    ↓
+data/processed/features/article_features_daily.jsonl
+    ↓
 transform task: store_articles
     ↓
 data/processed/articles/articles.jsonl
@@ -124,6 +134,9 @@ pipeline:
       source_country: "United States"
     - type: dedupe_articles
       by: ["url", "title"]
+    - type: tag_articles
+    - type: aggregate_article_features
+    - type: store_features
     - type: store_articles
       output_path: "data/processed/articles/articles.jsonl"
 ```
@@ -165,7 +178,7 @@ Each config uses exact-phrase GDELT queries wrapped in parentheses, with categor
 | `markets/` | 24h | Fast-moving market data stays tighter |
 | `risk/` | 12h | Risk/geopolitics can explode with noise; shorter windows help |
 
-All collection configs use `maxrecords: 50`, `dedupe_strategy: "title"`, and append to `data/processed/articles/articles.jsonl`.
+All collection configs use `maxrecords: 50`, `dedupe_strategy: "title"`, and run the full enrichment pipeline: filter → dedupe → tag → aggregate → store features → store articles.
 
 ---
 
@@ -184,13 +197,57 @@ experiments/<collection-name>/<run-id>/
     filtered_articles.jsonl
     deduped_articles.jsonl
     duplicate_groups.jsonl
+    tagged_articles.jsonl
+    article_features_daily.jsonl
     gdelt_summary.json
     filter_summary.json
     dedupe_summary.json
+    tag_summary.json
+    article_features_summary.json
+    store_features_summary.json
     store_summary.json
 ```
 
 Runtime artifacts are intentionally gitignored. The repository should contain code, configs, tests, and documentation — not large generated datasets.
+
+---
+
+## Topic tagging
+
+The `tag_articles` task enriches each deduplicated article with deterministic topic labels. It matches article titles, queries, and domains against a configurable keyword rule set covering 25 research categories (one per collection config):
+
+```text
+inflation_rates, labor_jobs, growth_recession, housing_real_estate,
+consumer_spending, government_debt, ai, semiconductors, energy,
+financials, healthcare_biotech, defense_aerospace, autos_ev,
+crypto_fintech, geopolitics, banking_credit, supply_chain,
+regulation_antitrust, cybersecurity, climate_disasters, equities,
+bonds_yields, commodities, china, currencies_dollar
+```
+
+Each article receives three enrichment fields:
+
+- `topics` — list of all matching categories
+- `topic_matches` — dict mapping each matched category to the keywords that triggered it
+- `primary_topic` — the first matched category, or `None` if no match
+
+Matching is case-insensitive and supports multi-word phrases. Articles can be tagged with multiple topics simultaneously — a story about "Federal Reserve policy impacts gold prices and bond yields" matches `inflation_rates`, `commodities`, and `bonds_yields`.
+
+Custom rules can be passed via the YAML config to override the defaults for specialized collection jobs.
+
+---
+
+## Feature aggregation
+
+The `aggregate_article_features` task collapses tagged article records into daily topic-level feature rows — one row per (date, topic) pair. Each feature row captures:
+
+- **Volume**: `article_count` — how many articles matched the topic on that date
+- **Breadth**: `unique_domains`, `unique_source_countries` — how widely the story has spread
+- **Timing**: `earliest_published_at`, `latest_published_at` — the publication window
+- **Amplification** (when duplicate groups exist): `duplicate_groups`, `duplicate_articles_removed`, `max_group_total_seen` — syndication intensity from the dedupe step
+- **Composition**: `primary_topic_count`, `untagged_count`, `queries`, sorted `domains` and `source_countries`
+
+Articles with multiple topics fan out into multiple rows, naturally capturing cross-topic co-occurrence. Output rows are deterministically sorted by (date, topic) for stable consumption by downstream models.
 
 ---
 
@@ -213,12 +270,15 @@ Duplicate group metadata is written as a run artifact (`duplicate_groups.jsonl`)
 ```text
 data/processed/
   articles/
-    articles.jsonl       Canonical unique articles (cross-run deduplicated)
-  features/              Placeholder for future feature engineering outputs
-  metadata/              Placeholder for future dataset metadata
+    articles.jsonl                      Canonical unique articles (cross-run deduplicated)
+  features/
+    article_features_daily.jsonl        Historical daily topic-level feature rows (cross-run deduplicated)
+  metadata/                             Placeholder for future dataset metadata
 ```
 
-The `data/processed/` directory is gitignored. The article store grows incrementally as collection jobs run — `store_articles` appends only records not already present.
+The `data/processed/` directory is gitignored. Both the article store and the feature store grow incrementally as collection jobs run — `store_articles` and `store_features` each append only records not already present, using deterministic dedupe keys to prevent duplicate rows across runs.
+
+The feature store uses a composite key of `date|topic|earliest_published_at|latest_published_at` to distinguish feature rows. Re-running the same config on the same GDELT data window produces zero new rows; genuinely new data windows append cleanly.
 
 ---
 
@@ -293,7 +353,7 @@ configs/
 scripts/
   run_collections.py   Batch collection runner with throttling
 data/
-  processed/           Persistent article store and future feature outputs
+  processed/           Persistent article store and historical feature store
 tests/                 Workspace-level tests
 docs/                  Product notes, technical guides, development TODO
 experiments/           Runtime outputs, gitignored
@@ -369,7 +429,10 @@ Current coverage includes:
 - cache-aside fetch, key generation, and corruption handling
 - GDELT article normalization and date parsing
 - deduplication strategies, duplicate group metadata, and syndication tracking
+- topic tagging with default and custom rules, case-insensitive matching, multi-topic assignment
+- feature aggregation by date/topic, amplification metrics, and deterministic output ordering
 - article storage, cross-run deduplication, and default path handling
+- feature storage, cross-run deduplication, deterministic key generation, and append-only behavior
 - collection runner discovery, sorting, throttling, and failure tolerance
 - package import smoke tests
 
@@ -393,7 +456,7 @@ python3 scripts/run_collections.py --max-configs 3
 python3 scripts/run_collections.py --collections-root configs/collections/macro
 ```
 
-All configs append to the shared `data/processed/articles/articles.jsonl` store. Failed configs are logged and skipped so the remaining jobs continue to run. A summary with success/failure counts and elapsed time is printed at the end.
+All configs run the full enrichment pipeline and append to both `data/processed/articles/articles.jsonl` and `data/processed/features/article_features_daily.jsonl`. Failed configs are logged and skipped so the remaining jobs continue to run. A summary with success/failure counts and elapsed time is printed at the end.
 
 ---
 
@@ -408,7 +471,7 @@ Near-term:
 Medium-term:
 
 - Market data ingestion task
-- Feature generation for market research
+- Feature time-series analysis and trend detection
 - Strategy/backtesting prototype
 - Scheduled ingestion and cron integration
 

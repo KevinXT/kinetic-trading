@@ -25,5 +25,11 @@ pipeline:
     - type: dedupe_articles
       dedupe_strategy: "title"
 
+    - type: tag_articles
+
+    - type: aggregate_article_features
+
+    - type: store_features
+
     - type: store_articles
       output_path: "data/processed/articles/articles.jsonl"

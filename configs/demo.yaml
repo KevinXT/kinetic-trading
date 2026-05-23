@@ -24,5 +24,8 @@ pipeline:
       source_country: "United States"
     - type: dedupe_articles
       by: ["url", "title"]
+    - type: tag_articles
+    - type: aggregate_article_features
+    - type: store_features
     - type: store_articles
       output_path: "data/processed/articles/articles.jsonl"
