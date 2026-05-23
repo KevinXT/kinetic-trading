@@ -4,10 +4,8 @@ import json
 from pathlib import Path
 
 import pytest
-
-from pipeline_core.engine.context import RunContext
 from news_data.task.tag_articles import tag_articles_task
-
+from pipeline_core.engine.context import RunContext
 
 # ── helpers ───────────────────────────────────────────────────────────────
 
@@ -58,10 +56,13 @@ def _read_jsonl(path: Path) -> list[dict]:
 def test_prefers_deduped_over_filtered(tmp_path: Path) -> None:
     deduped = [_article(title="Deduped")]
     filtered = [_article(title="Filtered")]
-    ctx = _ctx(tmp_path, {
-        "deduped_articles": deduped,
-        "filtered_articles": filtered,
-    })
+    ctx = _ctx(
+        tmp_path,
+        {
+            "deduped_articles": deduped,
+            "filtered_articles": filtered,
+        },
+    )
 
     tag_articles_task(ctx, {})
 
@@ -90,7 +91,9 @@ def test_falls_back_to_normalized(tmp_path: Path) -> None:
 def test_raises_when_no_input_state(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)
 
-    with pytest.raises(ValueError, match="deduped_articles.*filtered_articles.*normalized_articles"):
+    with pytest.raises(
+        ValueError, match="deduped_articles.*filtered_articles.*normalized_articles"
+    ):
         tag_articles_task(ctx, {})
 
 
@@ -113,7 +116,9 @@ def test_default_rules_tag_ai_article(tmp_path: Path) -> None:
 
 def test_default_rules_tag_inflation_article(tmp_path: Path) -> None:
     articles = [
-        _article(title="Federal Reserve holds interest rates steady amid inflation concerns"),
+        _article(
+            title="Federal Reserve holds interest rates steady amid inflation concerns"
+        ),
     ]
     ctx = _ctx(tmp_path, {"deduped_articles": articles})
 
@@ -130,12 +135,15 @@ def test_custom_rules_work(tmp_path: Path) -> None:
     articles = [_article(title="Tesla stock surges on EV demand")]
     ctx = _ctx(tmp_path, {"deduped_articles": articles})
 
-    tag_articles_task(ctx, {
-        "rules": {
-            "ev_stocks": ["Tesla", "EV demand"],
-            "crypto": ["Bitcoin", "Ethereum"],
+    tag_articles_task(
+        ctx,
+        {
+            "rules": {
+                "ev_stocks": ["Tesla", "EV demand"],
+                "crypto": ["Bitcoin", "Ethereum"],
+            },
         },
-    })
+    )
 
     tagged = ctx.state["tagged_articles"][0]
     assert tagged["topics"] == ["ev_stocks"]
@@ -150,9 +158,12 @@ def test_case_insensitive_matching(tmp_path: Path) -> None:
     articles = [_article(title="FEDERAL RESERVE raises rates")]
     ctx = _ctx(tmp_path, {"deduped_articles": articles})
 
-    tag_articles_task(ctx, {
-        "rules": {"rates": ["Federal Reserve"]},
-    })
+    tag_articles_task(
+        ctx,
+        {
+            "rules": {"rates": ["Federal Reserve"]},
+        },
+    )
 
     tagged = ctx.state["tagged_articles"][0]
     assert "rates" in tagged["topics"]
@@ -165,12 +176,15 @@ def test_multi_word_phrase_matching(tmp_path: Path) -> None:
     articles = [_article(title="Machine learning drives semiconductor demand")]
     ctx = _ctx(tmp_path, {"deduped_articles": articles})
 
-    tag_articles_task(ctx, {
-        "rules": {
-            "ai": ["machine learning"],
-            "chips": ["semiconductor"],
+    tag_articles_task(
+        ctx,
+        {
+            "rules": {
+                "ai": ["machine learning"],
+                "chips": ["semiconductor"],
+            },
         },
-    })
+    )
 
     tagged = ctx.state["tagged_articles"][0]
     assert sorted(tagged["topics"]) == ["ai", "chips"]
@@ -201,9 +215,12 @@ def test_no_match_produces_empty_topics(tmp_path: Path) -> None:
     articles = [_article(title="Local cat show draws record attendance")]
     ctx = _ctx(tmp_path, {"deduped_articles": articles})
 
-    tag_articles_task(ctx, {
-        "rules": {"finance": ["stock market"]},
-    })
+    tag_articles_task(
+        ctx,
+        {
+            "rules": {"finance": ["stock market"]},
+        },
+    )
 
     tagged = ctx.state["tagged_articles"][0]
     assert tagged["topics"] == []
@@ -220,11 +237,14 @@ def test_topic_matches_records_matched_terms(tmp_path: Path) -> None:
     ]
     ctx = _ctx(tmp_path, {"deduped_articles": articles})
 
-    tag_articles_task(ctx, {
-        "rules": {
-            "semiconductors": ["Nvidia", "GPU", "chip supply"],
+    tag_articles_task(
+        ctx,
+        {
+            "rules": {
+                "semiconductors": ["Nvidia", "GPU", "chip supply"],
+            },
         },
-    })
+    )
 
     tagged = ctx.state["tagged_articles"][0]
     matches = tagged["topic_matches"]["semiconductors"]
@@ -277,12 +297,15 @@ def test_summary_values_correct(tmp_path: Path) -> None:
     ]
     ctx = _ctx(tmp_path, {"deduped_articles": articles})
 
-    tag_articles_task(ctx, {
-        "rules": {
-            "semiconductors": ["Nvidia", "GPU"],
-            "crypto": ["Bitcoin"],
+    tag_articles_task(
+        ctx,
+        {
+            "rules": {
+                "semiconductors": ["Nvidia", "GPU"],
+                "crypto": ["Bitcoin"],
+            },
         },
-    })
+    )
 
     summary = _summary(ctx)
     assert summary["input_articles"] == 3

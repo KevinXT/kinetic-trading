@@ -25,7 +25,10 @@ def filter_articles_task(ctx, params: Dict[str, Any]) -> None:
         if language is not None and article.get("language") != language:
             continue
 
-        if source_country is not None and article.get("source_country") != source_country:
+        if (
+            source_country is not None
+            and article.get("source_country") != source_country
+        ):
             continue
 
         if domain is not None and article.get("domain") != domain:

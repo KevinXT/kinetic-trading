@@ -162,17 +162,19 @@ def _build_duplicate_groups(
                 dup_titles_seen.add(normalized_t)
                 dup_titles.append(t)
 
-        result.append({
-            "canonical_title": str(canonical.get("title", "")),
-            "canonical_url": str(canonical.get("url", "")),
-            "dedupe_strategy": strategy,
-            "dedupe_key": key,
-            "duplicate_count": len(duplicates),
-            "total_seen": len(members),
-            "domains": all_domains,
-            "duplicate_urls": dup_urls,
-            "duplicate_titles": dup_titles,
-        })
+        result.append(
+            {
+                "canonical_title": str(canonical.get("title", "")),
+                "canonical_url": str(canonical.get("url", "")),
+                "dedupe_strategy": strategy,
+                "dedupe_key": key,
+                "duplicate_count": len(duplicates),
+                "total_seen": len(members),
+                "domains": all_domains,
+                "duplicate_urls": dup_urls,
+                "duplicate_titles": dup_titles,
+            }
+        )
 
     return result
 

@@ -4,14 +4,12 @@ import json
 from pathlib import Path
 
 import pytest
-
-from pipeline_core.engine.context import RunContext
 from news_data.task.store_features import (
-    store_features_task,
     _feature_key,
     _load_existing_keys,
+    store_features_task,
 )
-
+from pipeline_core.engine.context import RunContext
 
 # ── helpers ───────────────────────────────────────────────────────────────
 
@@ -99,6 +97,7 @@ def test_default_output_path_used(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path, {"article_features_daily": [_row()]})
 
     import os
+
     original = os.getcwd()
     os.chdir(tmp_path)
     try:
@@ -106,7 +105,9 @@ def test_default_output_path_used(tmp_path: Path) -> None:
     finally:
         os.chdir(original)
 
-    assert (tmp_path / "data" / "processed" / "features" / "article_features_daily.jsonl").is_file()
+    assert (
+        tmp_path / "data" / "processed" / "features" / "article_features_daily.jsonl"
+    ).is_file()
 
 
 # ── directory creation ───────────────────────────────────────────────────
@@ -126,7 +127,12 @@ def test_creates_parent_directories(tmp_path: Path) -> None:
 
 def test_appends_new_rows(tmp_path: Path) -> None:
     out = tmp_path / "features.jsonl"
-    existing = _row(date="2026-05-19", topic="energy", earliest="2026-05-19T06:00:00Z", latest="2026-05-19T18:00:00Z")
+    existing = _row(
+        date="2026-05-19",
+        topic="energy",
+        earliest="2026-05-19T06:00:00Z",
+        latest="2026-05-19T18:00:00Z",
+    )
     out.write_text(json.dumps(existing) + "\n", encoding="utf-8")
 
     new_row = _row(date="2026-05-20", topic="ai")
@@ -142,7 +148,12 @@ def test_appends_new_rows(tmp_path: Path) -> None:
 
 def test_preserves_existing_rows(tmp_path: Path) -> None:
     out = tmp_path / "features.jsonl"
-    existing = _row(date="2026-05-18", topic="bonds_yields", earliest="2026-05-18T10:00:00Z", latest="2026-05-18T22:00:00Z")
+    existing = _row(
+        date="2026-05-18",
+        topic="bonds_yields",
+        earliest="2026-05-18T10:00:00Z",
+        latest="2026-05-18T22:00:00Z",
+    )
     out.write_text(json.dumps(existing) + "\n", encoding="utf-8")
 
     ctx = _ctx(tmp_path, {"article_features_daily": [_row()]})
@@ -232,11 +243,21 @@ def test_load_existing_keys_skips_corrupt_lines(tmp_path: Path) -> None:
 
 def test_summary_values_correct(tmp_path: Path) -> None:
     out = tmp_path / "features.jsonl"
-    existing = _row(date="2026-05-19", topic="energy", earliest="2026-05-19T06:00:00Z", latest="2026-05-19T18:00:00Z")
+    existing = _row(
+        date="2026-05-19",
+        topic="energy",
+        earliest="2026-05-19T06:00:00Z",
+        latest="2026-05-19T18:00:00Z",
+    )
     out.write_text(json.dumps(existing) + "\n", encoding="utf-8")
 
     new_row = _row(date="2026-05-20", topic="ai")
-    dup_row = _row(date="2026-05-19", topic="energy", earliest="2026-05-19T06:00:00Z", latest="2026-05-19T18:00:00Z")
+    dup_row = _row(
+        date="2026-05-19",
+        topic="energy",
+        earliest="2026-05-19T06:00:00Z",
+        latest="2026-05-19T18:00:00Z",
+    )
     ctx = _ctx(tmp_path, {"article_features_daily": [new_row, dup_row]})
 
     store_features_task(ctx, {"output_path": str(out)})

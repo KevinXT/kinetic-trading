@@ -4,10 +4,8 @@ import json
 from pathlib import Path
 
 import pytest
-
-from pipeline_core.engine.context import RunContext
 from news_data.task.dedupe_articles import dedupe_articles_task
-
+from pipeline_core.engine.context import RunContext
 
 # ── helpers ───────────────────────────────────────────────────────────────
 
@@ -56,10 +54,13 @@ def _read_jsonl(path: Path) -> list[dict]:
 def test_prefers_filtered_over_normalized(tmp_path: Path) -> None:
     filtered = [_article(title="Filtered")]
     normalized = [_article(title="Normalized")]
-    ctx = _ctx(tmp_path, {
-        "filtered_articles": filtered,
-        "normalized_articles": normalized,
-    })
+    ctx = _ctx(
+        tmp_path,
+        {
+            "filtered_articles": filtered,
+            "normalized_articles": normalized,
+        },
+    )
 
     dedupe_articles_task(ctx, {})
 

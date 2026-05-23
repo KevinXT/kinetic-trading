@@ -80,7 +80,9 @@ class RunContext:
         path.write_text(text, encoding="utf-8")
         return path
 
-    def write_jsonl(self, name: str, rows: Iterable[dict], *, subdir: str | None = None) -> Path:
+    def write_jsonl(
+        self, name: str, rows: Iterable[dict], *, subdir: str | None = None
+    ) -> Path:
         # Save streaming row-based logs (trades, events) as JSON Lines
         base = self.subdir(subdir) if subdir else self.artifacts_dir
         path = base / name

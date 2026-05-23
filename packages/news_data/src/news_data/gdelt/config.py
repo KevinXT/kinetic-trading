@@ -7,9 +7,7 @@ from .schemas import GdeltDocRequest
 
 def _gdelt_root(cfg: Dict[str, Any]) -> Dict[str, Any]:
     return (
-        cfg.get("providers", {})
-        .get("news", {})
-        .get("gdelt", {})
+        cfg.get("providers", {}).get("news", {}).get("gdelt", {})
         if isinstance(cfg, dict)
         else {}
     )

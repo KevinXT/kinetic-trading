@@ -3,7 +3,6 @@
 import uuid
 
 import pytest
-
 from common.errors import DuplicateTaskError
 from pipeline_core.tasks import registry as reg
 

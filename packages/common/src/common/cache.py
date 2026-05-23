@@ -6,7 +6,6 @@ import logging
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
-
 logger = logging.getLogger(__name__)
 
 JsonDict = Dict[str, Any]

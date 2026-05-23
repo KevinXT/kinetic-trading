@@ -7,7 +7,12 @@ from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
-_INPUT_STATE_KEYS = ("tagged_articles", "deduped_articles", "filtered_articles", "normalized_articles")
+_INPUT_STATE_KEYS = (
+    "tagged_articles",
+    "deduped_articles",
+    "filtered_articles",
+    "normalized_articles",
+)
 
 _DEFAULT_OUTPUT_PATH = "data/processed/articles/articles.jsonl"
 

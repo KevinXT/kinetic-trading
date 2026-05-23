@@ -1,9 +1,10 @@
 import json
 import subprocess
-import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+import yaml
 
 JsonDict = Dict[str, Any]
 

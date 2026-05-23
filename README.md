@@ -1,5 +1,7 @@
 # kinetic-trading
 
+[![CI](https://github.com/KevinXT/kinetic-trading/actions/workflows/ci.yml/badge.svg)](https://github.com/KevinXT/kinetic-trading/actions/workflows/ci.yml)
+
 A modular, YAML-driven research pipeline for financial/news data ingestion, caching, normalization, transformation, and future strategy experimentation.
 
 This project is an early-stage trading research platform. The current implementation focuses on the execution engine: a reusable pipeline core, config system, task registry, GDELT news ingestion, normalized article records, cache-aware provider calls, deduplication with syndication tracking, deterministic topic tagging, daily feature aggregation, persistent article and feature stores, batch collection orchestration, and reproducible run artifacts.

@@ -4,10 +4,8 @@ import json
 from pathlib import Path
 
 import pytest
-
-from pipeline_core.engine.context import RunContext
 from news_data.task.aggregate_article_features import aggregate_article_features_task
-
+from pipeline_core.engine.context import RunContext
 
 # ── helpers ───────────────────────────────────────────────────────────────
 
@@ -116,9 +114,17 @@ def test_raises_when_no_input_state(tmp_path: Path) -> None:
 
 def test_groups_by_date_and_topic(tmp_path: Path) -> None:
     articles = [
-        _article(published_at="2026-05-20T10:00:00Z", topics=["ai"], primary_topic="ai"),
-        _article(published_at="2026-05-20T12:00:00Z", topics=["ai"], primary_topic="ai"),
-        _article(published_at="2026-05-21T08:00:00Z", topics=["energy"], primary_topic="energy"),
+        _article(
+            published_at="2026-05-20T10:00:00Z", topics=["ai"], primary_topic="ai"
+        ),
+        _article(
+            published_at="2026-05-20T12:00:00Z", topics=["ai"], primary_topic="ai"
+        ),
+        _article(
+            published_at="2026-05-21T08:00:00Z",
+            topics=["energy"],
+            primary_topic="energy",
+        ),
     ]
     ctx = _ctx(tmp_path, {"tagged_articles": articles})
 
@@ -258,9 +264,15 @@ def test_source_countries_sorted_deterministically(tmp_path: Path) -> None:
 
 def test_earliest_latest_published_at(tmp_path: Path) -> None:
     articles = [
-        _article(published_at="2026-05-20T14:00:00Z", topics=["ai"], primary_topic="ai"),
-        _article(published_at="2026-05-20T08:00:00Z", topics=["ai"], primary_topic="ai"),
-        _article(published_at="2026-05-20T20:00:00Z", topics=["ai"], primary_topic="ai"),
+        _article(
+            published_at="2026-05-20T14:00:00Z", topics=["ai"], primary_topic="ai"
+        ),
+        _article(
+            published_at="2026-05-20T08:00:00Z", topics=["ai"], primary_topic="ai"
+        ),
+        _article(
+            published_at="2026-05-20T20:00:00Z", topics=["ai"], primary_topic="ai"
+        ),
     ]
     ctx = _ctx(tmp_path, {"tagged_articles": articles})
 
@@ -276,8 +288,14 @@ def test_earliest_latest_published_at(tmp_path: Path) -> None:
 
 def test_summary_values_correct(tmp_path: Path) -> None:
     articles = [
-        _article(published_at="2026-05-20T10:00:00Z", topics=["ai"], primary_topic="ai"),
-        _article(published_at="2026-05-21T10:00:00Z", topics=["energy"], primary_topic="energy"),
+        _article(
+            published_at="2026-05-20T10:00:00Z", topics=["ai"], primary_topic="ai"
+        ),
+        _article(
+            published_at="2026-05-21T10:00:00Z",
+            topics=["energy"],
+            primary_topic="energy",
+        ),
         _article(published_at="2026-05-20T12:00:00Z", topics=[], primary_topic=None),
     ]
     ctx = _ctx(tmp_path, {"tagged_articles": articles})
@@ -312,7 +330,9 @@ def test_jsonl_artifact_written(tmp_path: Path) -> None:
 
 
 def test_summary_artifact_written(tmp_path: Path) -> None:
-    ctx = _ctx(tmp_path, {"tagged_articles": [_article(topics=["ai"], primary_topic="ai")]})
+    ctx = _ctx(
+        tmp_path, {"tagged_articles": [_article(topics=["ai"], primary_topic="ai")]}
+    )
 
     aggregate_article_features_task(ctx, {})
 
@@ -341,7 +361,12 @@ def test_extra_group_by_raises(tmp_path: Path) -> None:
 
 def test_amplification_metrics_present_when_dup_groups_exist(tmp_path: Path) -> None:
     articles = [
-        _article(title="Fed raises rates", url="https://a.com/1", topics=["inflation_rates"], primary_topic="inflation_rates"),
+        _article(
+            title="Fed raises rates",
+            url="https://a.com/1",
+            topics=["inflation_rates"],
+            primary_topic="inflation_rates",
+        ),
     ]
     dup_groups = [
         {
@@ -376,7 +401,9 @@ def test_amplification_metrics_absent_when_no_dup_groups_state(tmp_path: Path) -
 
 def test_amplification_zero_when_no_match(tmp_path: Path) -> None:
     articles = [
-        _article(title="Unrelated", url="https://b.com/99", topics=["ai"], primary_topic="ai"),
+        _article(
+            title="Unrelated", url="https://b.com/99", topics=["ai"], primary_topic="ai"
+        ),
     ]
     dup_groups = [
         {
@@ -401,9 +428,19 @@ def test_amplification_zero_when_no_match(tmp_path: Path) -> None:
 
 def test_output_rows_sorted_deterministically(tmp_path: Path) -> None:
     articles = [
-        _article(published_at="2026-05-21T10:00:00Z", topics=["energy"], primary_topic="energy"),
-        _article(published_at="2026-05-20T10:00:00Z", topics=["ai"], primary_topic="ai"),
-        _article(published_at="2026-05-20T10:00:00Z", topics=["energy"], primary_topic="energy"),
+        _article(
+            published_at="2026-05-21T10:00:00Z",
+            topics=["energy"],
+            primary_topic="energy",
+        ),
+        _article(
+            published_at="2026-05-20T10:00:00Z", topics=["ai"], primary_topic="ai"
+        ),
+        _article(
+            published_at="2026-05-20T10:00:00Z",
+            topics=["energy"],
+            primary_topic="energy",
+        ),
     ]
     ctx = _ctx(tmp_path, {"tagged_articles": articles})
 

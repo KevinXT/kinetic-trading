@@ -95,7 +95,8 @@ def parse_plan(cfg: JsonDict) -> List[Step]:
         transform_block = pipeline["transform"]
         if transform_block is None:
             raise PipelineError(
-                "Invalid pipeline config: 'pipeline.transform' cannot be null when the key is present."
+                "Invalid pipeline config: 'pipeline.transform' cannot be null "
+                "when the key is present."
             )
         steps.extend(_parse_transform_steps(transform_block))
 
@@ -103,7 +104,8 @@ def parse_plan(cfg: JsonDict) -> List[Step]:
         strategy_block = pipeline["strategy"]
         if strategy_block is None:
             raise PipelineError(
-                "Invalid pipeline config: 'pipeline.strategy' cannot be null when the key is present."
+                "Invalid pipeline config: 'pipeline.strategy' cannot be null "
+                "when the key is present."
             )
         if not isinstance(strategy_block, dict):
             raise PipelineError(

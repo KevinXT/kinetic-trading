@@ -12,7 +12,6 @@ __version__ = "0.1.0"
 
 def _register_tasks() -> None:
     """Populate the pipeline task registry with provider-specific tasks."""
-    from pipeline_core.tasks.registry import TASK_REGISTRY
     from news_data.task import (
         aggregate_article_features_task,
         dedupe_articles_task,
@@ -22,12 +21,15 @@ def _register_tasks() -> None:
         store_features_task,
         tag_articles_task,
     )
+    from pipeline_core.tasks.registry import TASK_REGISTRY
 
     TASK_REGISTRY.setdefault("gdelt_docs", gdelt_docs_task)
     TASK_REGISTRY.setdefault("filter_articles", filter_articles_task)
     TASK_REGISTRY.setdefault("dedupe_articles", dedupe_articles_task)
     TASK_REGISTRY.setdefault("tag_articles", tag_articles_task)
-    TASK_REGISTRY.setdefault("aggregate_article_features", aggregate_article_features_task)
+    TASK_REGISTRY.setdefault(
+        "aggregate_article_features", aggregate_article_features_task
+    )
     TASK_REGISTRY.setdefault("store_features", store_features_task)
     TASK_REGISTRY.setdefault("store_articles", store_articles_task)
 

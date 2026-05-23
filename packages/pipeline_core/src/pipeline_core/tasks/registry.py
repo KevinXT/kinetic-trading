@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Dict
 
 from common.errors import DuplicateTaskError
+
 from pipeline_core.tasks.base import TaskFn
 
 TASK_REGISTRY: Dict[str, TaskFn] = {}

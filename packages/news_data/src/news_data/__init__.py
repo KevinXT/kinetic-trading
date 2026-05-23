@@ -10,6 +10,8 @@ Depends on ``common`` for error types. Does not depend on ``pipeline_core``.
 
 from .gdelt import (
     GdeltDocClient as GdeltClient,
+)
+from .gdelt import (
     GdeltDocRequest,
     build_gdelt_query,
     doc_request_from_config,

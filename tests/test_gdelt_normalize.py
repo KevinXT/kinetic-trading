@@ -1,14 +1,11 @@
 """Tests for news_data.gdelt.normalize — GDELT article normalization layer."""
 
-import pytest
-
 from news_data.gdelt.normalize import (
     _clean_string,
     _parse_gdelt_seen_date,
     normalize_article,
     normalize_articles,
 )
-
 
 # ── sample fixtures ───────────────────────────────────────────────────────
 
@@ -155,11 +152,19 @@ def test_domain_lowercased() -> None:
 def test_empty_strings_consistent_across_text_fields() -> None:
     result = normalize_article({})
     text_fields = [
-        "title", "url", "mobile_url", "domain",
-        "language", "source_country", "image_url", "raw_seen_date",
+        "title",
+        "url",
+        "mobile_url",
+        "domain",
+        "language",
+        "source_country",
+        "image_url",
+        "raw_seen_date",
     ]
     for field in text_fields:
-        assert result[field] == "", f"{field} should be empty string, got {result[field]!r}"
+        assert result[field] == "", (
+            f"{field} should be empty string, got {result[field]!r}"
+        )
 
 
 # ── timestamp normalization ───────────────────────────────────────────────

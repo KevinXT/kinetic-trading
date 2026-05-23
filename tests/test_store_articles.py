@@ -4,10 +4,8 @@ import json
 from pathlib import Path
 
 import pytest
-
-from pipeline_core.engine.context import RunContext
 from news_data.task.store_articles import store_articles_task
-
+from pipeline_core.engine.context import RunContext
 
 # ── helpers ───────────────────────────────────────────────────────────────
 
@@ -52,11 +50,14 @@ def test_prefers_deduped_over_filtered_and_normalized(tmp_path: Path) -> None:
     deduped = [_article(title="Deduped")]
     filtered = [_article(title="Filtered")]
     normalized = [_article(title="Normalized")]
-    ctx = _ctx(tmp_path, {
-        "deduped_articles": deduped,
-        "filtered_articles": filtered,
-        "normalized_articles": normalized,
-    })
+    ctx = _ctx(
+        tmp_path,
+        {
+            "deduped_articles": deduped,
+            "filtered_articles": filtered,
+            "normalized_articles": normalized,
+        },
+    )
     out = tmp_path / "out.jsonl"
 
     store_articles_task(ctx, {"output_path": str(out)})
@@ -64,7 +65,9 @@ def test_prefers_deduped_over_filtered_and_normalized(tmp_path: Path) -> None:
     records = _read_jsonl(out)
     assert len(records) == 1
     assert records[0]["title"] == "Deduped"
-    assert ctx.state["stored_articles_summary"]["input_state_used"] == "deduped_articles"
+    assert (
+        ctx.state["stored_articles_summary"]["input_state_used"] == "deduped_articles"
+    )
 
 
 def test_falls_back_to_filtered(tmp_path: Path) -> None:
@@ -75,7 +78,9 @@ def test_falls_back_to_filtered(tmp_path: Path) -> None:
 
     records = _read_jsonl(out)
     assert records[0]["title"] == "Filtered"
-    assert ctx.state["stored_articles_summary"]["input_state_used"] == "filtered_articles"
+    assert (
+        ctx.state["stored_articles_summary"]["input_state_used"] == "filtered_articles"
+    )
 
 
 def test_falls_back_to_normalized(tmp_path: Path) -> None:
@@ -86,13 +91,18 @@ def test_falls_back_to_normalized(tmp_path: Path) -> None:
 
     records = _read_jsonl(out)
     assert records[0]["title"] == "Norm"
-    assert ctx.state["stored_articles_summary"]["input_state_used"] == "normalized_articles"
+    assert (
+        ctx.state["stored_articles_summary"]["input_state_used"]
+        == "normalized_articles"
+    )
 
 
 def test_raises_when_no_input_state(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)
 
-    with pytest.raises(ValueError, match="deduped_articles.*filtered_articles.*normalized_articles"):
+    with pytest.raises(
+        ValueError, match="deduped_articles.*filtered_articles.*normalized_articles"
+    ):
         store_articles_task(ctx, {})
 
 
@@ -118,9 +128,12 @@ def test_appends_new_records(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    ctx = _ctx(tmp_path, {
-        "normalized_articles": [_article(title="New", url="https://new.com")],
-    })
+    ctx = _ctx(
+        tmp_path,
+        {
+            "normalized_articles": [_article(title="New", url="https://new.com")],
+        },
+    )
 
     store_articles_task(ctx, {"output_path": str(out)})
 
@@ -140,12 +153,15 @@ def test_skips_duplicate_url_records(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    ctx = _ctx(tmp_path, {
-        "normalized_articles": [
-            _article(title="Dup", url="https://same.com"),
-            _article(title="Fresh", url="https://fresh.com"),
-        ],
-    })
+    ctx = _ctx(
+        tmp_path,
+        {
+            "normalized_articles": [
+                _article(title="Dup", url="https://same.com"),
+                _article(title="Fresh", url="https://fresh.com"),
+            ],
+        },
+    )
 
     store_articles_task(ctx, {"output_path": str(out)})
 
@@ -165,12 +181,15 @@ def test_title_domain_fallback_duplicate_detection(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    ctx = _ctx(tmp_path, {
-        "normalized_articles": [
-            _article(title="Same Title", url="", domain="a.com"),
-            _article(title="Different", url="", domain="b.com"),
-        ],
-    })
+    ctx = _ctx(
+        tmp_path,
+        {
+            "normalized_articles": [
+                _article(title="Same Title", url="", domain="a.com"),
+                _article(title="Different", url="", domain="b.com"),
+            ],
+        },
+    )
 
     store_articles_task(ctx, {"output_path": str(out)})
 
@@ -187,13 +206,16 @@ def test_title_domain_fallback_duplicate_detection(tmp_path: Path) -> None:
 
 
 def test_unkeyed_records_appended_and_counted(tmp_path: Path) -> None:
-    ctx = _ctx(tmp_path, {
-        "normalized_articles": [
-            _article(title="Normal", url="https://a.com"),
-            {"provider": "gdelt", "title": "", "url": "", "domain": ""},
-            {"provider": "gdelt", "title": "", "url": "", "domain": ""},
-        ],
-    })
+    ctx = _ctx(
+        tmp_path,
+        {
+            "normalized_articles": [
+                _article(title="Normal", url="https://a.com"),
+                {"provider": "gdelt", "title": "", "url": "", "domain": ""},
+                {"provider": "gdelt", "title": "", "url": "", "domain": ""},
+            ],
+        },
+    )
     out = tmp_path / "articles.jsonl"
 
     store_articles_task(ctx, {"output_path": str(out)})
@@ -247,14 +269,17 @@ def test_summary_values_correct(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    ctx = _ctx(tmp_path, {
-        "deduped_articles": [
-            _article(title="New1", url="https://new1.com"),
-            _article(title="Dup", url="https://existing.com"),
-            _article(title="New2", url="https://new2.com"),
-            {"provider": "gdelt", "title": "", "url": "", "domain": ""},
-        ],
-    })
+    ctx = _ctx(
+        tmp_path,
+        {
+            "deduped_articles": [
+                _article(title="New1", url="https://new1.com"),
+                _article(title="Dup", url="https://existing.com"),
+                _article(title="New2", url="https://new2.com"),
+                {"provider": "gdelt", "title": "", "url": "", "domain": ""},
+            ],
+        },
+    )
 
     store_articles_task(ctx, {"output_path": str(out)})
 
@@ -278,6 +303,7 @@ def test_default_output_path_used(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path, {"normalized_articles": [_article()]})
 
     import os
+
     original = os.getcwd()
     os.chdir(tmp_path)
     try:

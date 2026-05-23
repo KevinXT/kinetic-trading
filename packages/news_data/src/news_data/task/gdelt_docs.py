@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Dict
+
 from common.cache import get_or_fetch_json
 
 from news_data.gdelt import GdeltDocClient, doc_request_from_config, extract_articles

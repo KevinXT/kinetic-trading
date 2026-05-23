@@ -6,10 +6,7 @@ import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from scripts.run_collections import discover_configs, run_all, run_config
-
 
 # ── discovery ────────────────────────────────────────────────────────────
 
@@ -69,9 +66,7 @@ def test_max_configs_limits_runs(
         args=[], returncode=0, stdout="ok", stderr=""
     )
 
-    summary = run_all(
-        discover_configs(tmp_path), sleep_seconds=0, max_configs=2
-    )
+    summary = run_all(discover_configs(tmp_path), sleep_seconds=0, max_configs=2)
     assert summary["total"] == 2
     assert summary["succeeded"] == 2
     assert mock_run.call_count == 2
@@ -143,9 +138,7 @@ def test_failure_continues_execution(
         (tmp_path / name).write_text(f"name: {name}\n")
 
     ok = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
-    fail = subprocess.CompletedProcess(
-        args=[], returncode=1, stdout="", stderr="boom"
-    )
+    fail = subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="boom")
     mock_run.side_effect = [ok, fail, ok]
 
     summary = run_all(discover_configs(tmp_path), sleep_seconds=0)

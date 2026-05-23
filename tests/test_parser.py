@@ -1,9 +1,8 @@
 """Tests for pipeline plan parsing validation."""
 
 import pytest
-
 from common.errors import PipelineError
-from pipeline_core.engine.parser import parse_plan, Step
+from pipeline_core.engine.parser import Step, parse_plan
 
 
 def test_parse_minimal_ingest_and_strategy() -> None:

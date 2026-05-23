@@ -5,7 +5,6 @@ import time
 from typing import Any, Dict
 
 import requests
-
 from common.errors import DataSourceError
 
 from ..schemas import GdeltDocRequest
@@ -33,18 +32,18 @@ def fetch(
     if req.timespan:
         params["timespan"] = req.timespan
 
-    last_exc: Exception | None = None
-
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             r = session.get(req.base_url, params=params, timeout=int(timeout_s))
         except (requests.ConnectionError, requests.Timeout) as exc:
-            last_exc = exc
             if attempt < MAX_RETRIES:
                 wait = RETRY_BACKOFF_BASE * attempt
                 logger.warning(
                     "attempt %d/%d failed (%s), retrying in %ds",
-                    attempt, MAX_RETRIES, type(exc).__name__, wait,
+                    attempt,
+                    MAX_RETRIES,
+                    type(exc).__name__,
+                    wait,
                 )
                 time.sleep(wait)
                 continue
@@ -56,7 +55,9 @@ def fetch(
             wait = RETRY_BACKOFF_BASE * attempt
             logger.warning(
                 "attempt %d/%d got 429 rate-limited, retrying in %ds",
-                attempt, MAX_RETRIES, wait,
+                attempt,
+                MAX_RETRIES,
+                wait,
             )
             time.sleep(wait)
             continue
@@ -89,7 +90,5 @@ def fetch(
     except Exception as e:
         snippet = text[:800]
         raise DataSourceError(
-            f"Failed to parse JSON from GDELT\n"
-            f"URL={r.url}\n"
-            f"Body snippet:\n{snippet}"
+            f"Failed to parse JSON from GDELT\nURL={r.url}\nBody snippet:\n{snippet}"
         ) from e

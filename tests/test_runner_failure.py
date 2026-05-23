@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from common.errors import PipelineError
 from pipeline_core.engine.runner import run_plan
 
@@ -54,7 +53,9 @@ def test_run_metadata_success(tmp_path: Path) -> None:
         run_id="r2",
         registry={"ok": ok},
     )
-    meta = json.loads((tmp_path / "ok" / "run_metadata.json").read_text(encoding="utf-8"))
+    meta = json.loads(
+        (tmp_path / "ok" / "run_metadata.json").read_text(encoding="utf-8")
+    )
     assert meta["status"] == "completed"
     assert meta["failed_step"] is None
     assert meta["error"] is None
@@ -71,6 +72,8 @@ def test_unregistered_task_pipeline_error_metadata(tmp_path: Path) -> None:
             run_id="r3",
             registry={},
         )
-    meta = json.loads((tmp_path / "bad" / "run_metadata.json").read_text(encoding="utf-8"))
+    meta = json.loads(
+        (tmp_path / "bad" / "run_metadata.json").read_text(encoding="utf-8")
+    )
     assert meta["status"] == "failed"
     assert meta["failed_step"]["task"] == "missing"

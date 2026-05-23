@@ -15,6 +15,7 @@ from typing import Any, Dict, Mapping, Optional, Sequence
 
 from common.config_builder import load_config
 from common.errors import PipelineError
+
 from pipeline_core.engine.context import RunContext
 from pipeline_core.engine.hooks import (
     CURRENT_STEP_INDEX,
@@ -22,8 +23,8 @@ from pipeline_core.engine.hooks import (
     default_pipeline_hooks,
 )
 from pipeline_core.engine.parser import parse_plan
-from pipeline_core.engine.run_paths import allocate_group_slug, slug_run_name
 from pipeline_core.engine.run_metadata import write_resolved_config
+from pipeline_core.engine.run_paths import allocate_group_slug, slug_run_name
 from pipeline_core.tasks.base import TaskFn
 from pipeline_core.tasks.registry import TASK_REGISTRY
 
@@ -84,9 +85,7 @@ def run_plan(
         for i, step in enumerate(steps):
             handler = reg.get(step.task)
             if handler is None:
-                msg = (
-                    f"No task registered for {step.task!r} (step {i + 1} of {len(steps)})."
-                )
+                msg = f"No task registered for {step.task!r} (step {i + 1} of {len(steps)})."
                 ctx.state[CURRENT_STEP_INDEX] = i + 1
                 err = PipelineError(msg)
                 for hook in hook_list:
