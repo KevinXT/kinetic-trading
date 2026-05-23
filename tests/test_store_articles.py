@@ -285,4 +285,4 @@ def test_default_output_path_used(tmp_path: Path) -> None:
     finally:
         os.chdir(original)
 
-    assert (tmp_path / "data" / "processed" / "articles.jsonl").is_file()
+    assert (tmp_path / "data" / "processed" / "articles" / "articles.jsonl").is_file()

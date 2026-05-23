@@ -65,6 +65,7 @@ def normalize_article(article: Dict[str, Any], *, query: str = "") -> Normalized
         "published_at": _parse_gdelt_seen_date(seen_date),
         "raw_seen_date": seen_date,
         "image_url": image_url,
+        "ingested_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
 

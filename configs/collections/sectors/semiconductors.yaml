@@ -1,4 +1,4 @@
-name: demo
+name: semiconductors
 
 providers:
   news:
@@ -8,21 +8,22 @@ providers:
         base_url: "https://api.gdeltproject.org/api/v2/doc/doc"
         mode: "artlist"
         format: "json"
-        timespan: "24h"
-        maxrecords: 10
+        timespan: "48h"
+        maxrecords: 50
         sort: "datedesc"
 
 pipeline:
   ingest:
     source: gdelt_docs
-    query: "artificial intelligence"
-    max_records: 10
+    query: "(semiconductor OR \"AI chips\" OR GPU OR Nvidia OR TSMC OR ASML OR \"export controls\" OR \"chip supply\")"
+    max_records: 50
 
   transform:
     - type: filter_articles
       language: "English"
-      source_country: "United States"
+
     - type: dedupe_articles
-      by: ["url", "title"]
+      dedupe_strategy: "title"
+
     - type: store_articles
       output_path: "data/processed/articles/articles.jsonl"

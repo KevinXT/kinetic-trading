@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 _INPUT_STATE_KEYS = ("deduped_articles", "filtered_articles", "normalized_articles")
 
-_DEFAULT_OUTPUT_PATH = "data/processed/articles.jsonl"
+_DEFAULT_OUTPUT_PATH = "data/processed/articles/articles.jsonl"
 
 
 def _article_key(article: Dict[str, Any]) -> str | None:
@@ -57,7 +57,7 @@ def store_articles_task(ctx, params: Dict[str, Any]) -> None:
     YAML shape::
 
         - type: store_articles
-          output_path: "data/processed/articles.jsonl"
+          output_path: "data/processed/articles/articles.jsonl"
     """
     articles: List[Dict[str, Any]] | None = None
     input_state_used: str | None = None

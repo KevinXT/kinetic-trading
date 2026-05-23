@@ -2,7 +2,7 @@
 
 A modular, YAML-driven research pipeline for financial/news data ingestion, caching, normalization, transformation, and future strategy experimentation.
 
-This project is an early-stage trading research platform. The current implementation focuses on the execution engine: a reusable pipeline core, config system, task registry, GDELT news ingestion, normalized article records, cache-aware provider calls, and reproducible run artifacts.
+This project is an early-stage trading research platform. The current implementation focuses on the execution engine: a reusable pipeline core, config system, task registry, GDELT news ingestion, normalized article records, cache-aware provider calls, deduplication with syndication tracking, batch collection orchestration, and reproducible run artifacts.
 
 The goal is not to be a finished trading bot. The goal is to build the infrastructure layer that future market-data providers, signal-generation tasks, backtests, and strategy modules can plug into cleanly.
 
@@ -20,9 +20,15 @@ Implemented today:
 - Cache-aside API response caching
 - Article normalization layer
 - Filter transform task operating on normalized records
+- Deduplication transform with configurable strategy (`url`, `title`, `title_domain`)
+- Duplicate/syndication group metadata and artifact generation
+- Persistent article store with cross-run deduplication
+- 25 GDELT collection configs across macro, sectors, risk, and markets categories
+- Batch collection runner with throttling and fault tolerance
+- Category-specific GDELT timespans (48h macro/sectors, 24h markets, 12h risk)
 - Experiment/run folder allocation
 - Run metadata and resolved-config snapshots
-- 59 tests covering config loading, parsing, registry behavior, runner metadata, context artifact writing, cache, and import smoke tests
+- 115 tests covering config loading, parsing, registry behavior, runner metadata, context artifact writing, cache, normalization, deduplication, storage, collection runner, and import smoke tests
 
 Planned / placeholder boundaries:
 
@@ -76,6 +82,12 @@ normalization layer
     ↓
 transform task: filter_articles
     ↓
+transform task: dedupe_articles
+    ↓
+transform task: store_articles
+    ↓
+data/processed/articles/articles.jsonl
+    ↓
 JSON / JSONL artifacts + run metadata
 ```
 
@@ -110,6 +122,10 @@ pipeline:
     - type: filter_articles
       language: "English"
       source_country: "United States"
+    - type: dedupe_articles
+      by: ["url", "title"]
+    - type: store_articles
+      output_path: "data/processed/articles/articles.jsonl"
 ```
 
 Run it with:
@@ -128,12 +144,37 @@ outputs: experiments/demo/<generated-run-id>
 
 ---
 
+## Collection configs
+
+25 GDELT collection configs are organized under `configs/collections/` across four categories:
+
+```text
+configs/collections/
+  macro/               inflation, labor, GDP, housing, spending, debt
+  sectors/             AI, semiconductors, energy, financials, healthcare, defense, EVs, crypto
+  risk/                geopolitics, banking, supply chain, regulation, cyber, climate
+  markets/             equities, bonds, commodities, China, currencies
+```
+
+Each config uses exact-phrase GDELT queries wrapped in parentheses, with category-specific timespans:
+
+| Category | Timespan | Rationale |
+|----------|----------|-----------|
+| `macro/` | 48h | Slower-moving macro trends benefit from broader windows |
+| `sectors/` | 48h | Sector-level coverage evolves over days, not hours |
+| `markets/` | 24h | Fast-moving market data stays tighter |
+| `risk/` | 12h | Risk/geopolitics can explode with noise; shorter windows help |
+
+All collection configs use `maxrecords: 50`, `dedupe_strategy: "title"`, and append to `data/processed/articles/articles.jsonl`.
+
+---
+
 ## Example artifacts
 
 Each run writes a reproducible output folder:
 
 ```text
-experiments/demo/<run-id>/
+experiments/<collection-name>/<run-id>/
   config_resolved.yaml
   run_metadata.json
   artifacts/
@@ -141,11 +182,43 @@ experiments/demo/<run-id>/
     gdelt_articles.jsonl
     normalized_articles.jsonl
     filtered_articles.jsonl
+    deduped_articles.jsonl
+    duplicate_groups.jsonl
     gdelt_summary.json
     filter_summary.json
+    dedupe_summary.json
+    store_summary.json
 ```
 
 Runtime artifacts are intentionally gitignored. The repository should contain code, configs, tests, and documentation — not large generated datasets.
+
+---
+
+## Deduplication and syndication tracking
+
+The `dedupe_articles` task supports three strategies:
+
+- `url` — dedupe by normalized URL only
+- `title` — dedupe by normalized title (default; collapses syndicated copies across domains)
+- `title_domain` — dedupe by title + domain pair
+
+Collection configs use the `title` strategy because news wire services (Reuters, AP, AFP) distribute identical articles to hundreds of outlets. GDELT indexes each outlet's copy with a unique URL, but the title is the same. Title-based deduplication collapses these syndicated copies into a single canonical record.
+
+Duplicate group metadata is written as a run artifact (`duplicate_groups.jsonl`) recording which domains carried each story, how many copies were removed, and the canonical article chosen. This preserves media-amplification data for future signal generation without polluting the primary article store.
+
+---
+
+## Processed data layout
+
+```text
+data/processed/
+  articles/
+    articles.jsonl       Canonical unique articles (cross-run deduplicated)
+  features/              Placeholder for future feature engineering outputs
+  metadata/              Placeholder for future dataset metadata
+```
+
+The `data/processed/` directory is gitignored. The article store grows incrementally as collection jobs run — `store_articles` appends only records not already present.
 
 ---
 
@@ -214,7 +287,13 @@ packages/
   strategy_sdk/        Trading-domain abstraction placeholder
 apps/
   trading_platform/    CLI entrypoint and app-level task registration
-configs/               YAML plans and presets
+configs/
+  demo.yaml            Single-query demo pipeline
+  collections/         25 GDELT collection configs (macro, sectors, risk, markets)
+scripts/
+  run_collections.py   Batch collection runner with throttling
+data/
+  processed/           Persistent article store and future feature outputs
 tests/                 Workspace-level tests
 docs/                  Product notes, technical guides, development TODO
 experiments/           Runtime outputs, gitignored
@@ -287,7 +366,34 @@ Current coverage includes:
 - task registry duplicate handling
 - runner success/failure metadata
 - `RunContext` JSON/JSONL artifact writing
+- cache-aside fetch, key generation, and corruption handling
+- GDELT article normalization and date parsing
+- deduplication strategies, duplicate group metadata, and syndication tracking
+- article storage, cross-run deduplication, and default path handling
+- collection runner discovery, sorting, throttling, and failure tolerance
 - package import smoke tests
+
+---
+
+## Running collection jobs
+
+The `scripts/run_collections.py` utility discovers every YAML config under `configs/collections/` and runs them sequentially through the existing pipeline, with configurable throttling between calls.
+
+```bash
+# run all collections with default 6s delay
+python3 scripts/run_collections.py
+
+# custom delay between runs
+python3 scripts/run_collections.py --sleep-seconds 10
+
+# run only the first 3 configs (useful for smoke-testing)
+python3 scripts/run_collections.py --max-configs 3
+
+# point at a different config root
+python3 scripts/run_collections.py --collections-root configs/collections/macro
+```
+
+All configs append to the shared `data/processed/articles/articles.jsonl` store. Failed configs are logged and skipped so the remaining jobs continue to run. A summary with success/failure counts and elapsed time is printed at the end.
 
 ---
 
@@ -296,25 +402,22 @@ Current coverage includes:
 Near-term:
 
 - Add sample fixtures for offline demos
-- Add tests for `common.cache`
-- Add tests for GDELT normalization
-- Add deduplication transform by URL/domain/title
-- Add local processed article store under `data/processed/`
+- Entity/ticker extraction from article titles
+- Sentiment/risk scoring transform
 
 Medium-term:
 
 - Market data ingestion task
-- Entity/ticker extraction from article titles
-- Sentiment/risk scoring transform
 - Feature generation for market research
 - Strategy/backtesting prototype
+- Scheduled ingestion and cron integration
 
 Long-term:
 
 - Dashboard/UI layer
-- Scheduled ingestion
 - Larger historical dataset management
 - Multiple provider support
+- SQLite or structured storage for articles and features
 
 ---
 

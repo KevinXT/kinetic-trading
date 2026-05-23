@@ -1,4 +1,4 @@
-name: demo
+name: commodities
 
 providers:
   news:
@@ -9,20 +9,21 @@ providers:
         mode: "artlist"
         format: "json"
         timespan: "24h"
-        maxrecords: 10
+        maxrecords: 50
         sort: "datedesc"
 
 pipeline:
   ingest:
     source: gdelt_docs
-    query: "artificial intelligence"
-    max_records: 10
+    query: "(\"gold prices\" OR \"copper prices\" OR \"commodities market\" OR \"rare earth metals\" OR \"commodity trading\" OR \"industrial metals\")"
+    max_records: 50
 
   transform:
     - type: filter_articles
       language: "English"
-      source_country: "United States"
+
     - type: dedupe_articles
-      by: ["url", "title"]
+      dedupe_strategy: "title"
+
     - type: store_articles
       output_path: "data/processed/articles/articles.jsonl"
