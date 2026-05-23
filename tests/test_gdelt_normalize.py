@@ -179,6 +179,37 @@ def test_invalid_seendate_produces_none_published_at() -> None:
     assert result["raw_seen_date"] == "garbage-value"
 
 
+# ── ingested_at preservation ─────────────────────────────────────────────
+
+
+def test_fresh_article_without_ingested_at_generates_timestamp() -> None:
+    result = normalize_article({"title": "Fresh"})
+    assert result["ingested_at"]
+    assert result["ingested_at"].endswith("Z")
+
+
+def test_existing_ingested_at_preserved_exactly() -> None:
+    original_ts = "2026-01-15T09:00:00Z"
+    article = {"title": "Cached", "ingested_at": original_ts}
+    result = normalize_article(article)
+    assert result["ingested_at"] == original_ts
+
+
+def test_empty_string_ingested_at_generates_new_timestamp() -> None:
+    article = {"title": "Empty IA", "ingested_at": ""}
+    result = normalize_article(article)
+    assert result["ingested_at"]
+    assert result["ingested_at"] != ""
+    assert result["ingested_at"].endswith("Z")
+
+
+def test_none_ingested_at_generates_new_timestamp() -> None:
+    article = {"title": "None IA", "ingested_at": None}
+    result = normalize_article(article)
+    assert result["ingested_at"]
+    assert result["ingested_at"].endswith("Z")
+
+
 # ── normalize_articles: batch behavior ────────────────────────────────────
 
 

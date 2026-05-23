@@ -18,7 +18,7 @@ Implemented today:
 - `RunContext` for shared runtime state and artifact writing
 - GDELT DOC API client and pipeline ingestion task
 - Cache-aside API response caching
-- Article normalization layer
+- Article normalization layer with idempotent `ingested_at` preservation
 - Filter transform task operating on normalized records
 - Deduplication transform with configurable strategy (`url`, `title`, `title_domain`)
 - Duplicate/syndication group metadata and artifact generation
@@ -31,7 +31,7 @@ Implemented today:
 - Category-specific GDELT timespans (48h macro/sectors, 24h markets, 12h risk)
 - Experiment/run folder allocation
 - Run metadata and resolved-config snapshots
-- 176 tests covering config loading, parsing, registry behavior, runner metadata, context artifact writing, cache, normalization, deduplication, tagging, feature aggregation, article storage, feature storage, collection runner, and import smoke tests
+- 180 tests covering config loading, parsing, registry behavior, runner metadata, context artifact writing, cache, normalization, ingestion metadata preservation, deduplication, tagging, feature aggregation, article storage, feature storage, collection runner, and import smoke tests
 
 Planned / placeholder boundaries:
 
@@ -328,9 +328,12 @@ The normalization layer converts those records into a stable internal schema:
   "source_country": "United States",
   "published_at": "2026-05-08T00:00:00Z",
   "raw_seen_date": "20260508T000000Z",
-  "image_url": "https://example.com/image.jpg"
+  "image_url": "https://example.com/image.jpg",
+  "ingested_at": "2026-05-08T14:30:00Z"
 }
 ```
+
+The `ingested_at` field records when the article was first ingested by the system. Normalization preserves an existing `ingested_at` value if one is already present (e.g., from a cached or previously stored record) and only generates a fresh UTC timestamp when the field is missing or empty. This ensures that re-normalizing cached articles never overwrites the original ingestion timestamp, which matters for reproducible historical datasets, append-only ingestion pipelines, and historical lineage tracking.
 
 Downstream transforms consume normalized records, not raw provider responses. That keeps provider-specific quirks from leaking into the rest of the pipeline.
 
@@ -427,7 +430,7 @@ Current coverage includes:
 - runner success/failure metadata
 - `RunContext` JSON/JSONL artifact writing
 - cache-aside fetch, key generation, and corruption handling
-- GDELT article normalization and date parsing
+- GDELT article normalization, date parsing, and `ingested_at` preservation
 - deduplication strategies, duplicate group metadata, and syndication tracking
 - topic tagging with default and custom rules, case-insensitive matching, multi-topic assignment
 - feature aggregation by date/topic, amplification metrics, and deterministic output ordering
