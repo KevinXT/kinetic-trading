@@ -1,0 +1,42 @@
+name: inflation_rates_bigquery_30d_partition_execute
+
+# Real BigQuery execution. Keep maximum_bytes_billed conservative.
+# Execution still dry-runs first and is capped by maximum_bytes_billed.
+#
+# Uses _PARTITIONTIME partition pruning so only the requested days are scanned.
+# Even with execute_query: "ENABLE", the SafeBigQueryClient ALWAYS dry-runs first
+# and enforces maximum_bytes_billed + the cost policy before any billable query.
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
+    table: "gdelt-bq.gdeltv2.gkg_partitioned"
+
+pipeline:
+  ingest:
+    source: bigquery_gdelt_counts
+    query_name: inflation_rates_bigquery_30d_partition
+    topic: inflation_rates
+
+    search_columns:
+      - V2Themes
+
+    query_terms:
+      - ECON_INFLATION
+
+    partition_filter:
+      enabled: true
+      column: "_PARTITIONTIME"
+      type: "timestamp"
+
+    window:
+      preset: last_30_days
+      bucket: 1d
+
+    cost_controls:
+      dry_run: false
+      maximum_bytes_billed: 12000000000
+      execute_query: "ENABLE"
+      cost_policy_path: "configs/cost_policy.yaml"
+      ledger_path: "data/cost/cost_ledger.jsonl"
+      use_cache: true

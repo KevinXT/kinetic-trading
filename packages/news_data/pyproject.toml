@@ -11,6 +11,9 @@ license = { text = "MIT" }
 dependencies = [
   "kinetic-common>=0.1.0",
   "requests>=2.31",
+  # Historical GDELT counts via BigQuery (cost-aware provider path). Imported
+  # lazily so the rest of news_data works without it installed.
+  "google-cloud-bigquery>=3.0",
 ]
 
 [tool.setuptools.packages.find]

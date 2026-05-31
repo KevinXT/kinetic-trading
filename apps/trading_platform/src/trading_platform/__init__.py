@@ -14,6 +14,8 @@ def _register_tasks() -> None:
     """Populate the pipeline task registry with provider-specific tasks."""
     from news_data.task import (
         aggregate_article_features_task,
+        bigquery_gdelt_counts_task,
+        bigquery_gdelt_theme_discovery_task,
         dedupe_articles_task,
         filter_articles_task,
         gdelt_docs_task,
@@ -24,6 +26,10 @@ def _register_tasks() -> None:
     from pipeline_core.tasks.registry import TASK_REGISTRY
 
     TASK_REGISTRY.setdefault("gdelt_docs", gdelt_docs_task)
+    TASK_REGISTRY.setdefault("bigquery_gdelt_counts", bigquery_gdelt_counts_task)
+    TASK_REGISTRY.setdefault(
+        "bigquery_gdelt_theme_discovery", bigquery_gdelt_theme_discovery_task
+    )
     TASK_REGISTRY.setdefault("filter_articles", filter_articles_task)
     TASK_REGISTRY.setdefault("dedupe_articles", dedupe_articles_task)
     TASK_REGISTRY.setdefault("tag_articles", tag_articles_task)

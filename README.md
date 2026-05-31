@@ -4,7 +4,7 @@
 
 A modular, YAML-driven research pipeline for financial/news data ingestion, caching, normalization, transformation, and future strategy experimentation.
 
-This project is an early-stage trading research platform. The current implementation focuses on the execution engine: a reusable pipeline core, config system, task registry, GDELT news ingestion, normalized article records, cache-aware provider calls, deduplication with syndication tracking, deterministic topic tagging, daily feature aggregation, persistent article and feature stores, batch collection orchestration, and reproducible run artifacts.
+This project is an early-stage trading research platform. The current implementation focuses on the execution engine: a reusable pipeline core, config system, and task registry; two complementary GDELT paths (DOC API for recent articles, BigQuery for historical measurement); normalized article records with enrichment transforms; cache-aware provider calls; cost-aware cloud query guardrails; and reproducible run artifacts.
 
 The goal is not to be a finished trading bot. The goal is to build the infrastructure layer that future market-data providers, signal-generation tasks, backtests, and strategy modules can plug into cleanly.
 
@@ -13,35 +13,48 @@ The goal is not to be a finished trading bot. The goal is to build the infrastru
 
 Implemented today:
 
-- YAML-driven pipeline execution
-- Recursive config loading and deep merge support
-- Linear pipeline runner with lifecycle hooks
-- Task registry for pluggable pipeline steps
+**Pipeline engine**
+
+- YAML-driven pipeline execution with recursive `include:` loading and deep merge
+- Git-ignored local overrides via `configs/local.yaml` (deep-merged at runtime over any selected config)
+- Linear pipeline runner with lifecycle hooks, failure metadata, and timing
+- Task registry for pluggable pipeline steps (10 registered tasks)
 - `RunContext` for shared runtime state and artifact writing
-- GDELT DOC API client and pipeline ingestion task
-- Cache-aside API response caching
-- Article normalization layer with idempotent `ingested_at` preservation
-- Filter transform task operating on normalized records
-- Deduplication transform with configurable strategy (`url`, `title`, `title_domain`)
-- Duplicate/syndication group metadata and artifact generation
-- Deterministic topic tagging with 25-category default rule set
+- Experiment/run folder allocation, resolved-config snapshots, and run metadata
+
+**GDELT DOC / artlist path** (recent headlines, article evidence)
+
+- GDELT DOC API client and `gdelt_docs` ingestion task
+- Cache-aside API response caching (`.cache/<namespace>/`)
+- Article normalization with idempotent `ingested_at` preservation
+- Filter, dedupe (`url` / `title` / `title_domain`), tag, aggregate, and store transforms
+- Duplicate/syndication group metadata and deterministic 25-category topic tagging
 - Daily topic-level feature aggregation with amplification metrics
-- Persistent article store with cross-run deduplication
-- Persistent feature store with cross-run deduplication
-- 25 GDELT collection configs across macro, sectors, risk, and markets categories
-- Batch collection runner with throttling and fault tolerance
-- Category-specific GDELT timespans (48h macro/sectors, 24h markets, 12h risk)
-- Experiment/run folder allocation
-- Run metadata and resolved-config snapshots
-- 180 tests covering config loading, parsing, registry behavior, runner metadata, context artifact writing, cache, normalization, ingestion metadata preservation, deduplication, tagging, feature aggregation, article storage, feature storage, collection runner, and import smoke tests
+- Persistent article and feature stores with cross-run deduplication
+- 25 collection configs (macro, sectors, risk, markets) and batch collection runner
+
+**BigQuery GDELT history path** (broad historical measurement)
+
+- Cost-aware BigQuery provider: `SafeBigQueryClient`, SQL guardrails, dry-run-first execution
+- Cost policy (`configs/cost_policy.yaml`), append-only cost ledger, and `cost-report` CLI
+- Local BigQuery result cache (`data/cache/bigquery_gdelt_counts/`) with builder-version invalidation
+- Daily-count task (`bigquery_gdelt_counts`) with configurable `search_columns`, `query_terms`, or `theme_bundle`
+- Theme discovery / debug task (`bigquery_gdelt_theme_discovery`) — lists actual GDELT theme codes in a window
+- Theme bundles (`configs/gdelt_theme_bundles.yaml`) mapping research topics to sets of GDELT theme codes
+- Partition pruning via `_PARTITIONTIME`, 14-digit GKG `DATE` bounds (`YYYYMMDDHHMMSS`), normalized `V2Themes` matching
+- Partitioned research configs under `configs/research/` (dry-run and execute variants; legacy unpartitioned configs quarantined)
+
+**Quality**
+
+- **395 tests** across config loading, pipeline engine, GDELT DOC transforms, BigQuery SQL/cost/cache/guardrails, theme discovery/bundles, local overrides, and collection runner
 
 Planned / placeholder boundaries:
 
-- Market data providers
-- Strategy SDK abstractions
-- Sentiment/entity extraction
+- Market data providers (`market_data` package stub)
+- Strategy SDK abstractions (`strategy_sdk` package stub)
+- Sentiment / entity extraction transforms
 - Backtesting integration
-- UI/dashboard layer
+- UI / dashboard layer
 
 ---
 
@@ -51,57 +64,69 @@ The pipeline engine is intentionally provider-agnostic.
 
 `pipeline_core` does not know what GDELT is, how articles are normalized, or how market data will be fetched later. It only knows how to:
 
-1. load a config,
+1. load a config (with optional local overrides),
 2. parse pipeline steps,
 3. look up task functions,
 4. execute them in order,
 5. write metadata and artifacts.
 
-Provider-specific logic lives in provider packages like `news_data`. Downstream transforms operate on normalized internal records instead of raw provider schemas. This makes it possible to add new tasks, data providers, or processing stages without rewriting the runner.
+Provider-specific logic lives in provider packages like `news_data` — both the GDELT DOC client and the BigQuery historical path. Downstream transforms operate on normalized internal records instead of raw provider schemas. Shared cost primitives (`common.cost`) keep cloud query spend under control without coupling the engine to any one provider.
 
 ---
 
 ## Pipeline flow
 
+Every run follows the same engine path; the **ingest source** determines which data provider executes:
+
 ```text
-YAML config
+YAML config (+ optional configs/local.yaml merge)
     ↓
-config loader
+load_runtime_config → plan parser → pipeline runner → task registry
     ↓
-plan parser
-    ↓
-pipeline runner
-    ↓
-task registry
-    ↓
-provider task: gdelt_docs
-    ↓
-cache-aside fetch layer
-    ↓
-GDELT raw response
-    ↓
-article extraction
-    ↓
-normalization layer
-    ↓
-transform task: filter_articles
-    ↓
-transform task: dedupe_articles
-    ↓
-transform task: tag_articles
-    ↓
-transform task: aggregate_article_features
-    ↓
-transform task: store_features
-    ↓
-data/processed/features/article_features_daily.jsonl
-    ↓
-transform task: store_articles
-    ↓
-data/processed/articles/articles.jsonl
-    ↓
-JSON / JSONL artifacts + run metadata
+ingest task (one of three)
 ```
+
+### Path A — GDELT DOC / artlist (recent articles)
+
+```text
+gdelt_docs
+    ↓
+cache-aside fetch → raw response → normalize
+    ↓
+filter_articles → dedupe_articles → tag_articles
+    ↓
+aggregate_article_features → store_features → store_articles
+    ↓
+data/processed/{articles,features}/*.jsonl + run artifacts
+```
+
+Used by `configs/demo.yaml` and all 25 `configs/collections/*` configs.
+
+### Path B — BigQuery daily counts (historical measurement)
+
+```text
+bigquery_gdelt_counts
+    ↓
+build SQL (partition prune + 14-digit DATE + theme match)
+    ↓
+SafeBigQueryClient: guardrails → cache check → dry-run → cost caps → execute?
+    ↓
+bigquery_daily_counts.{jsonl,csv} → ctx.state["topic_daily_features"]
+```
+
+Used by `configs/research/inflation_rates_bigquery_*` configs. Supports direct `query_terms` or a named `theme_bundle`.
+
+### Path C — BigQuery theme discovery (debug / research)
+
+```text
+bigquery_gdelt_theme_discovery
+    ↓
+same SafeBigQueryClient cost path as Path B
+    ↓
+theme_discovery.{csv,jsonl}  (which theme codes actually appear?)
+```
+
+Used by `configs/research/debug_gdelt_themes_inflation_30d_partition_*`. Discovery configs default to `use_cache: false` so stale cached results cannot mask current SQL behavior.
 
 ---
 
@@ -270,12 +295,19 @@ Duplicate group metadata is written as a run artifact (`duplicate_groups.jsonl`)
 ## Processed data layout
 
 ```text
-data/processed/
-  articles/
-    articles.jsonl                      Canonical unique articles (cross-run deduplicated)
-  features/
-    article_features_daily.jsonl        Historical daily topic-level feature rows (cross-run deduplicated)
-  metadata/                             Placeholder for future dataset metadata
+data/
+  processed/
+    articles/
+      articles.jsonl                      Canonical unique articles (cross-run deduplicated)
+    features/
+      article_features_daily.jsonl        Historical daily topic-level feature rows
+    metadata/                             Placeholder for future dataset metadata
+  cost/
+    cost_ledger.jsonl                     Append-only BigQuery cost decisions (gitignored)
+  cache/
+    bigquery_gdelt_counts/                Local BigQuery result cache (gitignored)
+.cache/                                   GDELT DOC API response cache (gitignored)
+experiments/                              Per-run artifacts (gitignored)
 ```
 
 The `data/processed/` directory is gitignored. Both the article store and the feature store grow incrementally as collection jobs run — `store_articles` and `store_features` each append only records not already present, using deterministic dedupe keys to prevent duplicate rows across runs.
@@ -302,6 +334,210 @@ cache miss: call provider API, save response, continue
 This allows repeated local experimentation on normalization and transform logic without repeatedly hitting the external API or triggering rate limits.
 
 The cache layer is generic and can later be reused for market data, sentiment results, LLM summaries, or other expensive provider calls.
+
+---
+
+## Cost-aware BigQuery GDELT history
+
+Kinetic Trading uses two complementary GDELT paths:
+
+- **BigQuery** is for *broad historical measurement* — daily topic counts, 30-day / 1-year baselines, spike detection, and historical feature rows.
+- **GDELT DOC API / artlist** (the existing `gdelt_docs` flow) is for *zooming in* — sampling headlines and article evidence on specific spike days.
+- The **local feature store** is the research memory (`topic_daily_features`, and later trends / research packets).
+
+Because BigQuery bills by bytes scanned, this path is cost-aware by construction:
+
+- **Dry-run is the default.** A run estimates scanned bytes/cost and logs a decision; it fetches no data.
+- **Real execution requires typed confirmation** — `execute_query: "ENABLE"` in the config's `cost_controls`.
+- **`maximum_bytes_billed` is always enforced** on every query (even real execution dry-runs first).
+- **Cache before cloud** — a cached result skips both the dry-run and the billable query. Dry-run-only runs never write a result cache.
+- **Every decision is written to `data/cost/cost_ledger.jsonl`** (dry-run, blocked, cache hit, or executed), with caps defined in `configs/cost_policy.yaml` and enforced in code.
+- **Scan only the columns you need.** BigQuery bills by bytes scanned, and the columns matched against `query_terms` are configurable via `search_columns`. This defaults to `["V2Themes"]` — the compact GDELT theme-code column. Broad free-text columns such as `AllNames` are much larger and can dramatically increase bytes scanned (and cost). Start with `V2Themes` / theme codes (e.g. `ECON_INFLATION`) and only add wider columns once a dry-run estimate shows the extra scan is affordable.
+
+Keeping the scan narrow is what makes a wide time window affordable. For example, a 30-day window scanning multiple broad text columns can estimate well over 2 TiB (and be blocked by `BLOCK_OVER_MAX_BYTES`), whereas matching a theme code against `V2Themes` alone scans a small fraction of that:
+
+```yaml
+pipeline:
+  ingest:
+    search_columns:
+      - V2Themes
+    query_terms:
+      - ECON_INFLATION
+```
+
+**Theme-code matching uses GDELT's normalized `UNNEST`.** `V2Themes` (and `Themes`) are not scalar fields — each row holds a semicolon-delimited list of `CODE,charOffset` entries (e.g. `ECON_INFLATION,1234;TAX_FNCACT_PRESIDENT,5678`). An exact-equality or overly strict match returns zero rows even when the theme is present, and a raw `REGEXP_CONTAINS` boundary match can still be brittle. For these columns the builder normalizes the field the way GDELT recommends — strip the numeric offsets, drop the trailing delimiter, and split on `;` — then matches whole theme codes with `theme IN (...)`:
+
+```sql
+EXISTS (
+  SELECT 1
+  FROM UNNEST(SPLIT(RTRIM(REGEXP_REPLACE(V2Themes, r',\d+;', ';'), ';'), ';')) AS theme
+  WHERE theme IN ('ECON_INFLATION', 'ECON_INTEREST_RATES')
+)
+```
+
+Other (free-text) columns like `AllNames` still use a case-insensitive substring `LIKE`. Theme codes are SQL-escaped (quotes doubled, backslashes dropped) so they can't inject into the query. The SQL builder is currently at **v4** (14-digit GKG `DATE` bounds + normalized-`UNNEST` theme matching); bumping the builder version invalidates stale cache entries.
+
+### Partition pruning is required (`_PARTITIONTIME`)
+
+**Every normal BigQuery GDELT config must enable `_PARTITIONTIME` partition pruning.** On `gdelt-bq.gdeltv2.gkg_partitioned` the `DATE` column is an ordinary integer field, so a `DATE BETWEEN` filter alone does **not** prune partitions — BigQuery still scans the *entire* table. The table is partitioned by `_PARTITIONTIME`, so constraining that pseudo-column is what actually limits bytes scanned to just the requested days. `DATE BETWEEN` is retained for logical correctness, but `_PARTITIONTIME` is what delivers the cost reduction.
+
+**GKG `DATE` is a 14-digit datetime integer (`YYYYMMDDHHMMSS`), not 8-digit `YYYYMMDD`.** Real GKG `DATE` values look like `20260501000000`, `20260530123456`, `20260530235959`. Filtering with 8-digit bounds (`DATE BETWEEN 20260501 AND 20260530`) matches **zero rows** because every real value is larger than `20260530`. The builders therefore emit start-of-day / end-of-day 14-digit bounds — `20260501000000` … `20260530235959` — covering the whole requested range. The correct shape is:
+
+```sql
+WHERE _PARTITIONTIME >= TIMESTAMP("2026-05-01")
+  AND _PARTITIONTIME < TIMESTAMP("2026-05-31")
+  AND DATE BETWEEN 20260501000000 AND 20260530235959
+```
+
+The difference is dramatic for the same 7-day query:
+
+| Query | Filter | Estimated scan |
+| --- | --- | --- |
+| Unpartitioned (legacy) | `DATE BETWEEN` only | ~1.73 TiB |
+| Partitioned (normal) | `_PARTITIONTIME` + `DATE BETWEEN` | ~2.05 GiB |
+
+Enable it with `partition_filter` (the logical `DATE BETWEEN` filter is kept too):
+
+```yaml
+pipeline:
+  ingest:
+    partition_filter:
+      enabled: true
+      column: "_PARTITIONTIME"   # use _PARTITIONDATE with type: date if applicable
+      type: "timestamp"
+```
+
+This generates an exclusive upper bound (`end + 1 day`) so the final day is fully included:
+
+```sql
+WHERE _PARTITIONTIME >= TIMESTAMP("2026-05-24")
+  AND _PARTITIONTIME < TIMESTAMP("2026-05-31")
+  AND DATE BETWEEN 20260524000000 AND 20260530235959
+```
+
+Recommended (active) configs — all use `_PARTITIONTIME` pruning:
+
+| Config | Purpose |
+| --- | --- |
+| `configs/research/inflation_rates_bigquery_1d_partition_dryrun.yaml` | Tiny 1-day debug (cap 2 GB) |
+| `configs/research/inflation_rates_bigquery_7d_partition_dryrun.yaml` | 7-day dry-run (cap 5 GB) |
+| `configs/research/inflation_rates_bigquery_30d_partition_dryrun.yaml` | 30-day dry-run (cap 12 GB) |
+| `configs/research/inflation_rates_bigquery_30d_partition_execute.yaml` | 30-day real execution (cap 12 GB) |
+| `configs/research/inflation_rates_bigquery_1y_partition_dryrun.yaml` | 1-year dry-run (cap 50 GB; no execute config yet) |
+| `configs/research/debug_gdelt_themes_inflation_30d_partition_dryrun.yaml` | Theme discovery dry-run (`use_cache: false`) |
+| `configs/research/debug_gdelt_themes_inflation_30d_partition_execute.yaml` | Theme discovery execute (`use_cache: false`) |
+
+The older `DATE BETWEEN`-only configs have been moved to `configs/research/legacy/` (renamed with `_unpartitioned`). They are kept for reference only and may scan huge amounts of data — do not use them in the normal workflow.
+
+> Prerequisites: install the BigQuery client (`pip install "google-cloud-bigquery>=3.0"`), set `providers.bigquery.project_id` to a real GCP project, and have application-default credentials configured. Without these the path fails fast with a clear message rather than guessing.
+
+### Local config overrides (`configs/local.yaml`)
+
+Public configs use a **placeholder** project id (`project_id: "YOUR_PROJECT_ID"`) so no personal identifier is committed. To run locally without editing the public configs, create a git-ignored `configs/local.yaml` that is **deep-merged over whichever config you pass to the CLI** at runtime:
+
+```bash
+cp configs/local.example.yaml configs/local.yaml
+```
+
+Then edit `configs/local.yaml` with your real project id:
+
+```yaml
+providers:
+  bigquery:
+    project_id: "kinetic-trading-497922"
+```
+
+The merge is recursive and field-by-field: this overrides only `providers.bigquery.project_id` while `providers.bigquery.table` (and everything else) is preserved from the base config. If `configs/local.yaml` is absent, behavior is unchanged.
+
+`configs/local.yaml` (and `configs/*.local.yaml`) are git-ignored. **Never commit credentials, service-account JSON, OAuth tokens, or application-default-credentials (ADC) files** — `configs/local.yaml` is for config values (like a project id) only; real secrets belong in your credential store / ADC, not in the repo.
+
+Commands:
+
+```bash
+# Estimate cost only — no data fetched, no billable query.
+python3 -m trading_platform configs/research/inflation_rates_bigquery_30d_partition_dryrun.yaml
+
+# Real execution — requires execute_query: "ENABLE" in the config.
+python3 -m trading_platform configs/research/inflation_rates_bigquery_30d_partition_execute.yaml
+
+# Inspect estimated spend for the current billing cycle.
+python3 -m trading_platform cost-report
+```
+
+Example dry-run estimate (from `bigquery_dry_run_estimate.json` / `bigquery_summary.json`):
+
+```text
+Estimated bytes: 8.4 GB
+Estimated cost: $0.05
+Decision: DRY_RUN_ONLY
+```
+
+Each BigQuery run writes `bigquery_sql.sql`, `bigquery_dry_run_estimate.json`, `bigquery_cost_decision.json`, and `bigquery_summary.json`. When a query is actually executed (or served from cache), normalized rows are also written to `bigquery_daily_counts.jsonl` / `.csv` and placed in `ctx.state["topic_daily_features"]` for downstream tasks.
+
+### Theme discovery (debug) and theme bundles
+
+**A single theme code is often too narrow.** Picking one code like `ECON_INFLATION` is a guess — it can return zero rows if the code is wrong for the window, and it misses closely related coverage (interest rates, cost of living, central banks). Two complementary features make topic selection transparent and testable:
+
+**1. Theme discovery** answers *"which GDELT theme codes actually appear in this window?"* It uses the same partition pruning, cost policy, ledger, cache, `SafeBigQueryClient`, and SQL guardrails as the daily-count path, but instead of counting articles for a known code it lists the real theme codes seen in the window (with per-theme counts), filtered to codes whose text matches configurable patterns (default: `inflation`, `econ`, `interest`, `cost`, `central_bank`, `prices`). It uses GDELT's recommended normalization:
+
+```sql
+WITH nested AS (
+  SELECT SPLIT(RTRIM(REGEXP_REPLACE(V2Themes, r',\d+;', ';'), ';'), ';') AS themes
+  FROM `gdelt-bq.gdeltv2.gkg_partitioned`
+  WHERE _PARTITIONTIME >= TIMESTAMP("2026-05-01")
+    AND _PARTITIONTIME < TIMESTAMP("2026-05-31")
+    AND DATE BETWEEN 20260501000000 AND 20260530235959
+    AND LENGTH(V2Themes) > 1
+)
+SELECT theme, COUNT(*) AS cnt
+FROM nested, UNNEST(themes) AS theme
+WHERE LOWER(theme) LIKE '%inflation%' OR LOWER(theme) LIKE '%econ%' OR ...
+GROUP BY theme ORDER BY cnt DESC LIMIT 100
+```
+
+Run the dry-run first (no data fetched, no billable query), then the execute config once the estimate looks safe:
+
+```bash
+# Estimate cost only — discover which econ/inflation theme codes exist.
+python3 -m trading_platform configs/research/debug_gdelt_themes_inflation_30d_partition_dryrun.yaml
+
+# Real execution — writes theme_discovery.csv / theme_discovery.jsonl.
+python3 -m trading_platform configs/research/debug_gdelt_themes_inflation_30d_partition_execute.yaml
+```
+
+On execution it writes `theme_discovery.csv` / `theme_discovery.jsonl` (alongside the usual `bigquery_sql.sql`, `bigquery_dry_run_estimate.json`, `bigquery_cost_decision.json`, `bigquery_summary.json`). The summary records `theme_search_patterns` so the discovery run is reproducible. Discovery configs default to **`use_cache: false`** — stale cached results (including earlier 0-row entries) would defeat the purpose of a debug path.
+
+**2. Theme bundles** turn a broad research topic into a transparent set of GDELT theme codes. They live in `configs/gdelt_theme_bundles.yaml`:
+
+```yaml
+theme_bundles:
+  inflation_rates:
+    description: "Inflation, interest-rate, cost-of-living, and central-bank related GDELT themes."
+    themes:
+      - ECON_INFLATION
+      - ECON_INTEREST_RATES
+      - ECON_COST_OF_LIVING
+      - TAX_FNCACT_CENTRAL_BANK
+```
+
+A daily-count config can reference a bundle by name instead of listing `query_terms`:
+
+```yaml
+pipeline:
+  ingest:
+    source: bigquery_gdelt_counts
+    theme_bundle: inflation_rates
+```
+
+Resolution rules:
+
+- `query_terms` only → existing behavior (unchanged).
+- `theme_bundle` only → the bundle's themes become the query terms.
+- both → **merged, de-duplicated, order-preserving** (explicit `query_terms` first, then bundle themes not already present). Nothing is silently dropped; this lets you pin extra codes on top of a bundle.
+
+The bundle still flows through the same normalized-`UNNEST` matching and the same guardrails — no inflation-specific logic is baked into the SQL builder.
+
+**`inflation_rates` is a *candidate* bundle, not a final answer.** It should be validated and refined with theme discovery (run discovery, see which `ECON_*` / `*CENTRAL_BANK*` codes actually appear and how often, then adjust the bundle). Theme bundles are for **topic-level research**, not final trading signals.
 
 ---
 
@@ -345,35 +581,55 @@ Downstream transforms consume normalized records, not raw provider responses. Th
 
 ```text
 packages/
-  common/              Shared config loading, cache utilities, errors
+  common/              Shared config loading, cache, date windows, errors, cost policy/ledger
   pipeline_core/       Pipeline engine: runner, parser, hooks, context, registry
-  news_data/           News data providers and news-specific tasks
+  news_data/           News providers — GDELT DOC client + BigQuery GDELT path
+    gdelt/             DOC/artlist client, normalization, query builder
+    bigquery/          SafeBigQueryClient, SQL builders, guardrails, cache, theme bundles
+    task/              Pipeline tasks (gdelt_docs, bigquery_*, transforms, stores)
   market_data/         Market data provider boundary placeholder
   strategy_sdk/        Trading-domain abstraction placeholder
 apps/
-  trading_platform/    CLI entrypoint and app-level task registration
+  trading_platform/    CLI (`python3 -m trading_platform`) and task registration
 configs/
-  demo.yaml            Single-query demo pipeline
+  demo.yaml            Single-query GDELT DOC demo
   collections/         25 GDELT collection configs (macro, sectors, risk, markets)
+  research/            BigQuery research configs (partitioned + theme discovery)
+  research/legacy/     Unpartitioned BigQuery configs (reference only — unsafe)
+  cost_policy.yaml     Monthly/daily/per-query cost caps and execute confirmation
+  gdelt_theme_bundles.yaml   Candidate topic → GDELT theme code mappings
+  local.example.yaml   Template for git-ignored configs/local.yaml overrides
 scripts/
   run_collections.py   Batch collection runner with throttling
-data/
-  processed/           Persistent article store and historical feature store
-tests/                 Workspace-level tests
+tests/                 395 workspace-level tests (30 test modules)
 docs/                  Product notes, technical guides, development TODO
-experiments/           Runtime outputs, gitignored
+experiments/           Runtime outputs (gitignored)
 ```
 
 Each package uses a `pyproject.toml` and `src/<import_name>/` layout.
+
+### Registered pipeline tasks
+
+| Task name | Package | Purpose |
+| --- | --- | --- |
+| `gdelt_docs` | `news_data` | Ingest recent articles via GDELT DOC API |
+| `bigquery_gdelt_counts` | `news_data` | Historical daily topic counts via BigQuery |
+| `bigquery_gdelt_theme_discovery` | `news_data` | Debug: list GDELT theme codes in a date window |
+| `filter_articles` | `news_data` | Filter normalized articles by language/country/etc. |
+| `dedupe_articles` | `news_data` | Deduplicate with syndication group tracking |
+| `tag_articles` | `news_data` | Deterministic keyword-based topic tagging |
+| `aggregate_article_features` | `news_data` | Collapse tagged articles into daily topic features |
+| `store_features` | `news_data` | Append feature rows to persistent store |
+| `store_articles` | `news_data` | Append articles to persistent store |
 
 ---
 
 ## Dependency direction
 
 ```text
-common           ← lowest layer, no internal deps
+common           ← lowest layer: config, cache, errors, cost policy/ledger
 pipeline_core    ← depends on common
-news_data        ← depends on common
+news_data        ← depends on common (GDELT DOC + BigQuery providers)
 market_data      ← placeholder boundary
 strategy_sdk     ← placeholder boundary
 trading_platform ← app layer, depends on pipeline_core + news_data
@@ -385,7 +641,7 @@ Packages never depend upward on `apps/`. Lower layers do not depend on higher-le
 
 ## Quick start
 
-> Tests require editable-installing the internal packages first.
+> Tests and the CLI require editable-installing the internal packages first.
 
 ```bash
 git clone <repo-url>
@@ -403,7 +659,20 @@ python3 -m pip install -e ./packages/common \
   -e ".[dev]"
 ```
 
-Run the demo pipeline:
+**Optional — BigQuery research configs:** install the BigQuery client (already declared in `news_data`; imported lazily so DOC-only runs work without it):
+
+```bash
+pip install "google-cloud-bigquery>=3.0"
+```
+
+**Optional — local project id override** (keeps public configs free of personal identifiers):
+
+```bash
+cp configs/local.example.yaml configs/local.yaml
+# edit configs/local.yaml with your real providers.bigquery.project_id
+```
+
+Run the GDELT DOC demo pipeline:
 
 ```bash
 python3 -m trading_platform configs/demo.yaml
@@ -413,6 +682,7 @@ Run tests:
 
 ```bash
 pytest
+ruff check .
 ```
 
 ---
@@ -420,26 +690,22 @@ pytest
 ## Tests
 
 ```bash
-pytest
+pytest          # 395 tests
+ruff check .    # lint
 ```
 
-Current coverage includes:
+Coverage by area:
 
-- config loading and recursive includes
-- deep merge behavior
-- pipeline plan parsing
-- task registry duplicate handling
-- runner success/failure metadata
-- `RunContext` JSON/JSONL artifact writing
-- cache-aside fetch, key generation, and corruption handling
-- GDELT article normalization, date parsing, and `ingested_at` preservation
-- deduplication strategies, duplicate group metadata, and syndication tracking
-- topic tagging with default and custom rules, case-insensitive matching, multi-topic assignment
-- feature aggregation by date/topic, amplification metrics, and deterministic output ordering
-- article storage, cross-run deduplication, and default path handling
-- feature storage, cross-run deduplication, deterministic key generation, and append-only behavior
-- collection runner discovery, sorting, throttling, and failure tolerance
-- package import smoke tests
+| Area | Test modules |
+| --- | --- |
+| Config loading | `test_config_loader`, `test_local_config_overrides` |
+| Pipeline engine | `test_parser`, `test_registry`, `test_runner_failure`, `test_context`, `test_imports` |
+| GDELT DOC path | `test_cache`, `test_gdelt_normalize`, `test_dedupe_articles`, `test_tag_articles`, `test_aggregate_article_features`, `test_store_articles`, `test_store_features`, `test_run_collections` |
+| BigQuery path | `test_bigquery_gdelt_queries`, `test_bigquery_gdelt_counts_task`, `test_bigquery_theme_discovery_queries`, `test_bigquery_theme_discovery_task`, `test_bigquery_sql_guardrails`, `test_bigquery_normalize_counts`, `test_bigquery_cache`, `test_safe_bigquery_client` |
+| Cost controls | `test_cost_policy`, `test_cost_estimate`, `test_cost_ledger`, `test_cost_report` |
+| Theme bundles | `test_gdelt_theme_bundles` |
+| Date windows | `test_date_windows` |
+| Config guards | `test_research_configs_partitioned` (partition pruning, no leaked project ids, discovery cache policy) |
 
 ---
 
@@ -469,22 +735,23 @@ All configs run the full enrichment pipeline and append to both `data/processed/
 
 Near-term:
 
-- Add sample fixtures for offline demos
+- Validate and refine theme bundles using theme discovery output
+- Wire BigQuery daily counts into trend/spike detection over `topic_daily_features`
 - Entity/ticker extraction from article titles
 - Sentiment/risk scoring transform
 
 Medium-term:
 
-- Market data ingestion task
-- Feature time-series analysis and trend detection
-- Strategy/backtesting prototype
+- Market data ingestion task (`market_data` package)
+- Feature time-series analysis and research packets
+- Strategy/backtesting prototype (`strategy_sdk` package)
 - Scheduled ingestion and cron integration
 
 Long-term:
 
 - Dashboard/UI layer
 - Larger historical dataset management
-- Multiple provider support
+- Multiple provider support beyond GDELT
 - SQLite or structured storage for articles and features
 
 ---

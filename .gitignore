@@ -66,6 +66,10 @@ experiments/
 data/raw/
 data/processed/
 
+# Cost-aware BigQuery path: cost ledger + local query result cache
+data/cost/
+data/cache/
+
 # Large generated datasets
 *.jsonl
 
@@ -75,7 +79,10 @@ data/processed/
 *.log
 
 # =========================================================
-# Optional local config overrides
+# Optional local config overrides (deep-merged over the selected config at
+# runtime; keep real project IDs / secrets here, never in public configs)
 # =========================================================
+configs/local.yaml
+configs/*.local.yaml
 config.local.yaml
 config.local.yml

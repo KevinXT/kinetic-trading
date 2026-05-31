@@ -21,6 +21,11 @@ from common.errors import ConfigError
 
 JsonDict = Dict[str, Any]
 
+# Optional, git-ignored local override file deep-merged over the selected config
+# at runtime (e.g. to supply a real providers.bigquery.project_id without putting
+# it in public configs). Absent file => no change.
+DEFAULT_LOCAL_CONFIG_PATH = "configs/local.yaml"
+
 
 def load_yaml(path: str | Path) -> JsonDict:
     """
@@ -43,24 +48,29 @@ def load_yaml(path: str | Path) -> JsonDict:
     return data
 
 
-def deep_merge(base: JsonDict, override: JsonDict) -> JsonDict:
+def deep_merge_dicts(base: JsonDict, override: JsonDict) -> JsonDict:
     """
     Recursively merge two dictionaries without mutating inputs.
 
     Merge behavior:
     - dict + dict -> merge recursively
     - otherwise   -> override replaces base
-    - override always wins
+    - override wins only where keys are present; keys absent from ``override``
+      keep their ``base`` values (missing keys never delete base keys).
     """
     out: JsonDict = dict(base)
 
     for k, v in override.items():
         if k in out and isinstance(out[k], dict) and isinstance(v, dict):
-            out[k] = deep_merge(out[k], v)
+            out[k] = deep_merge_dicts(out[k], v)
         else:
             out[k] = v
 
     return out
+
+
+# Backwards-compatible alias (original public name).
+deep_merge = deep_merge_dicts
 
 
 def _format_include_chain(stack: Tuple[Path, ...], current: Path) -> str:
@@ -131,6 +141,38 @@ def _load_config_impl(p: Path, stack: Tuple[Path, ...]) -> JsonDict:
         merged = deep_merge(merged, _load_config_impl(inc_path, next_stack))
 
     return deep_merge(merged, data)
+
+
+def apply_local_overrides(
+    cfg: JsonDict, *, local_path: str | Path = DEFAULT_LOCAL_CONFIG_PATH
+) -> JsonDict:
+    """
+    Deep-merge a git-ignored local override file over ``cfg`` if it exists.
+
+    Returns ``cfg`` unchanged when ``local_path`` is absent. When present, its
+    values win field-by-field (e.g. ``providers.bigquery.project_id`` overrides
+    only that field while ``providers.bigquery.table`` from the base is kept).
+    Inputs are not mutated.
+    """
+    p = Path(local_path)
+    if not p.is_file():
+        return cfg
+    local = load_yaml(p)
+    return deep_merge_dicts(cfg, local)
+
+
+def load_runtime_config(
+    path: str | Path, *, local_path: str | Path = DEFAULT_LOCAL_CONFIG_PATH
+) -> JsonDict:
+    """
+    Load ``path`` (with recursive includes) and apply optional local overrides.
+
+    This is the runtime entry point used by the pipeline runner so every config
+    passed to the CLI picks up ``configs/local.yaml`` (when present) *before*
+    validation/execution. Absent local file => identical to :func:`load_config`.
+    """
+    cfg = load_config(path)
+    return apply_local_overrides(cfg, local_path=local_path)
 
 
 def build_runtime_config(

@@ -1,0 +1,29 @@
+# GDELT theme bundles: map a research topic to a transparent set of GDELT theme
+# codes (V2Themes/Themes). A single code is often too narrow, so a bundle groups
+# several related codes under one name.
+#
+# IMPORTANT: bundles are STARTING CANDIDATES, not final trading signals. The
+# codes below should be validated/refined with the theme-discovery debug path
+# (configs/research/debug_gdelt_themes_inflation_30d_partition_dryrun.yaml),
+# which shows which theme codes GDELT actually contains in a given window.
+#
+# Use a bundle from a BigQuery daily-count config with:
+#   pipeline:
+#     ingest:
+#       source: bigquery_gdelt_counts
+#       theme_bundle: inflation_rates
+#
+# If both `query_terms` and `theme_bundle` are set, they are merged
+# (de-duplicated, query_terms first).
+
+theme_bundles:
+  inflation_rates:
+    description: >-
+      Candidate bundle for inflation/rates research: inflation, interest-rate,
+      cost-of-living, and central-bank related GDELT themes. Validate and refine
+      with theme discovery before treating it as final.
+    themes:
+      - ECON_INFLATION
+      - ECON_INTEREST_RATES
+      - ECON_COST_OF_LIVING
+      - TAX_FNCACT_CENTRAL_BANK

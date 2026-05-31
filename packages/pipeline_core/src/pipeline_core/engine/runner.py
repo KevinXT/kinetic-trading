@@ -13,7 +13,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Sequence
 
-from common.config_builder import load_config
+from common.config_builder import load_runtime_config
 from common.errors import PipelineError
 
 from pipeline_core.engine.context import RunContext
@@ -125,14 +125,15 @@ def run_plan_from_file(
     hooks: Optional[Sequence[Hook]] = None,
 ) -> RunContext:
     """
-    Load a YAML plan with load_config, then run under runs_root / <slug(name)> / <run_id>.
+    Load a YAML plan (with optional configs/local.yaml overrides), then run under
+    runs_root / <slug(name)> / <run_id>.
 
     run_id defaults to a short uuid hex string.
     The group folder is ``slug(name)`` unless that path already exists, then
     ``slug_2``, ``slug_3``, ... (same slug from different names or reruns).
     """
     path = Path(config_path).resolve()
-    cfg = load_config(path)
+    cfg = load_runtime_config(path)
     name_raw = cfg.get("name", "unnamed")
     run_name = str(name_raw).strip() if name_raw is not None else "unnamed"
     if not run_name:

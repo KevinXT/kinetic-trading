@@ -1,0 +1,19 @@
+# Local config override template.
+#
+# Copy this to configs/local.yaml (which is git-ignored) and put your real
+# values there. At runtime, configs/local.yaml is deep-merged OVER whichever
+# config you pass to the CLI, so you can keep public configs free of personal
+# identifiers and secrets:
+#
+#   cp configs/local.example.yaml configs/local.yaml
+#   # then edit configs/local.yaml with your real project id
+#
+# Only the fields you set here override the base config; everything else
+# (e.g. providers.bigquery.table) is preserved.
+#
+# Do NOT commit credentials, service-account JSON, OAuth tokens, or
+# application-default-credentials (ADC) files. This file holds config only.
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
