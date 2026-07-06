@@ -44,9 +44,15 @@ Implemented today:
 - Partition pruning via `_PARTITIONTIME`, 14-digit GKG `DATE` bounds (`YYYYMMDDHHMMSS`), normalized `V2Themes` matching
 - Partitioned research configs under `configs/research/` (dry-run and execute variants; legacy unpartitioned configs quarantined)
 
+**BI / reporting layer** (Looker Studio dashboard)
+
+- Dashboard-ready BigQuery reporting views over the GDELT GKG data: daily event volume, top sources, top themes/entities, and a data-quality summary
+- `build_views` CLI runner: dry-run validation + cost estimate by default, gated `--create` to create/replace views (reuses `SafeBigQueryClient`, guardrails, cost policy/ledger)
+- Rolling `_PARTITIONTIME` window keeps every dashboard query cheap; see [`docs/looker_studio_dashboard.md`](docs/looker_studio_dashboard.md)
+
 **Quality**
 
-- **395 tests** across config loading, pipeline engine, GDELT DOC transforms, BigQuery SQL/cost/cache/guardrails, theme discovery/bundles, local overrides, and collection runner
+- **421 tests** across config loading, pipeline engine, GDELT DOC transforms, BigQuery SQL/cost/cache/guardrails, theme discovery/bundles, local overrides, collection runner, and the reporting layer
 
 Planned / placeholder boundaries:
 
@@ -541,6 +547,41 @@ The bundle still flows through the same normalized-`UNNEST` matching and the sam
 
 ---
 
+## BI / Data Warehouse Reporting Layer
+
+A lightweight analytics/reporting layer (`news_data.reporting`) turns the GDELT GKG data into a small set of **dashboard-ready BigQuery views** for a [Looker Studio](https://lookerstudio.google.com/) dashboard. Full setup — dataset creation, connecting to Looker Studio, and recommended charts — is in [`docs/looker_studio_dashboard.md`](docs/looker_studio_dashboard.md).
+
+Reporting views (each bounded by a rolling `_PARTITIONTIME` window so dashboard queries stay cheap):
+
+| View | Purpose | Output columns |
+| --- | --- | --- |
+| `daily_event_volume` | Records per calendar day (volume trend) | `event_date`, `record_count` |
+| `top_sources` | Most active source domains | `source_domain`, `record_count` |
+| `top_themes_or_entities` | Most frequent normalized GDELT theme codes | `entity_or_theme`, `record_count` |
+| `data_quality_summary` | Single-row data-quality scorecard | `check_date`, `total_rows`, `missing_required_field_count`, `duplicate_count`, `latest_record_timestamp` |
+
+The `build_views` runner reuses the existing cost-aware path (`SafeBigQueryClient`, SQL guardrails, cost policy, cost ledger) and defaults to dry-run:
+
+```bash
+# Local validation only (render + SQL guardrails, no BigQuery call)
+python -m news_data.reporting.build_views --no-estimate
+
+# Dry-run validation + BigQuery cost estimate per view (no data, no billable query)
+python -m news_data.reporting.build_views --dry-run
+
+# Create / replace the views in BigQuery (requires typed confirmation or --yes)
+python -m news_data.reporting.build_views --create --yes
+```
+
+**Resume summary:**
+
+- Built BigQuery reporting views for dashboard-ready GDELT/news intelligence analytics, including daily event volume, top source coverage, entity/theme frequency, and data-quality summaries.
+- Added dry-run validation and query-safety guardrails (bounded partition scans, no `SELECT *`, read-only DDL/DML checks, `maximum_bytes_billed`) before creating reporting views in BigQuery.
+- Created pytest coverage for reporting SQL discovery, required output columns, template rendering, guardrail compliance, and mocked dashboard build/validation logic.
+- Documented Looker Studio dashboard setup with recommended charts, filters, and data-quality validation metrics.
+
+---
+
 ## Normalized article schema
 
 Raw GDELT records use provider-specific field names such as:
@@ -586,6 +627,7 @@ packages/
   news_data/           News providers — GDELT DOC client + BigQuery GDELT path
     gdelt/             DOC/artlist client, normalization, query builder
     bigquery/          SafeBigQueryClient, SQL builders, guardrails, cache, theme bundles
+    reporting/         BI layer: dashboard-ready BigQuery views + build_views runner
     task/              Pipeline tasks (gdelt_docs, bigquery_*, transforms, stores)
   market_data/         Market data provider boundary placeholder
   strategy_sdk/        Trading-domain abstraction placeholder
@@ -597,11 +639,12 @@ configs/
   research/            BigQuery research configs (partitioned + theme discovery)
   research/legacy/     Unpartitioned BigQuery configs (reference only — unsafe)
   cost_policy.yaml     Monthly/daily/per-query cost caps and execute confirmation
+  reporting.yaml       BI reporting layer: dataset, rolling window, cost controls
   gdelt_theme_bundles.yaml   Candidate topic → GDELT theme code mappings
   local.example.yaml   Template for git-ignored configs/local.yaml overrides
 scripts/
   run_collections.py   Batch collection runner with throttling
-tests/                 395 workspace-level tests (30 test modules)
+tests/                 421 workspace-level tests (31 test modules)
 docs/                  Product notes, technical guides, development TODO
 experiments/           Runtime outputs (gitignored)
 ```
@@ -690,7 +733,7 @@ ruff check .
 ## Tests
 
 ```bash
-pytest          # 395 tests
+pytest          # 421 tests
 ruff check .    # lint
 ```
 
@@ -702,6 +745,7 @@ Coverage by area:
 | Pipeline engine | `test_parser`, `test_registry`, `test_runner_failure`, `test_context`, `test_imports` |
 | GDELT DOC path | `test_cache`, `test_gdelt_normalize`, `test_dedupe_articles`, `test_tag_articles`, `test_aggregate_article_features`, `test_store_articles`, `test_store_features`, `test_run_collections` |
 | BigQuery path | `test_bigquery_gdelt_queries`, `test_bigquery_gdelt_counts_task`, `test_bigquery_theme_discovery_queries`, `test_bigquery_theme_discovery_task`, `test_bigquery_sql_guardrails`, `test_bigquery_normalize_counts`, `test_bigquery_cache`, `test_safe_bigquery_client` |
+| Reporting / BI layer | `test_reporting_views` |
 | Cost controls | `test_cost_policy`, `test_cost_estimate`, `test_cost_ledger`, `test_cost_report` |
 | Theme bundles | `test_gdelt_theme_bundles` |
 | Date windows | `test_date_windows` |
