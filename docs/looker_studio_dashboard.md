@@ -1,8 +1,14 @@
-# Looker Studio dashboard (BI / reporting layer)
+# Looker Studio setup (BI / reporting layer)
+
+This document describes how to create a Looker Studio dashboard from the
+reporting views. The repo currently includes a local dashboard preview under
+`apps/reporting_dashboard/`; a managed Looker Studio report can be added
+separately from the steps below.
 
 This project ships a lightweight analytics/reporting layer that turns the
-GDELT GKG data into a small set of **dashboard-ready BigQuery views** for a
-[Looker Studio](https://lookerstudio.google.com/) dashboard.
+GDELT GKG data into a small set of **Looker Studio-ready BigQuery views**. The
+views can be connected to [Looker Studio](https://lookerstudio.google.com/) —
+this guide covers that optional setup.
 
 The layer lives in `packages/news_data/src/news_data/reporting/`:
 
@@ -32,26 +38,28 @@ All four views read from `providers.bigquery.table`
 every dashboard query cheap — Looker Studio only ever scans the recent window,
 never the whole multi-TiB GKG table.
 
-| View | Purpose | Output columns |
-| --- | --- | --- |
-| `daily_event_volume` | Records per calendar day (volume trend). | `event_date`, `record_count` |
-| `top_sources` | Most active source domains. | `source_domain`, `record_count` |
-| `top_themes_or_entities` | Most frequent normalized GDELT theme codes. | `entity_or_theme`, `record_count` |
-| `data_quality_summary` | Single-row data-quality scorecard metrics. | `check_date`, `total_rows`, `missing_required_field_count`, `duplicate_count`, `latest_record_timestamp` |
+
+| View                     | Purpose                                     | Output columns                                                                                           |
+| ------------------------ | ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `daily_event_volume`     | Records per calendar day (volume trend).    | `event_date`, `record_count`                                                                             |
+| `top_sources`            | Most active source domains.                 | `source_domain`, `record_count`                                                                          |
+| `top_themes_or_entities` | Most frequent normalized GDELT theme codes. | `entity_or_theme`, `record_count`                                                                        |
+| `data_quality_summary`   | Single-row data-quality scorecard metrics.  | `check_date`, `total_rows`, `missing_required_field_count`, `duplicate_count`, `latest_record_timestamp` |
+
 
 Assumptions / notes:
 
 - `event_date` is derived from GKG `DATE` (a 14-digit `YYYYMMDDHHMMSS` integer)
-  via `DIV(DATE, 1000000)` → `YYYYMMDD`.
+via `DIV(DATE, 1000000)` → `YYYYMMDD`.
 - `source_domain` uses `SourceCommonName` (the GKG source/domain field). Blank
-  and `NULL` domains are excluded.
+and `NULL` domains are excluded.
 - `entity_or_theme` normalizes `V2Themes` the way GDELT recommends (strip the
-  numeric offsets, trim the trailing delimiter, split on the delimiter) so whole
-  theme codes are counted. Swapping the theme column for `V2Organizations`,
-  `V2Persons`, or `V2Locations` would produce entity views with the same shape.
+numeric offsets, trim the trailing delimiter, split on the delimiter) so whole
+theme codes are counted. Swapping the theme column for `V2Organizations`,
+`V2Persons`, or `V2Locations` would produce entity views with the same shape.
 - `data_quality_summary` treats `SourceCommonName` as the required field,
-  measures duplicates via `COUNT(*) - COUNT(DISTINCT GKGRECORDID)`, and reports
-  the latest record timestamp parsed from `DATE`.
+measures duplicates via `COUNT(*) - COUNT(DISTINCT GKGRECORDID)`, and reports
+the latest record timestamp parsed from `DATE`.
 
 ---
 
@@ -80,10 +88,10 @@ For every view, the runner:
 
 1. renders the SQL template and rejects unknown placeholders,
 2. runs it through `validate_bigquery_sql` — enforces no `SELECT *`, a bounded
-   `WHERE` with a `_PARTITIONTIME` date filter, single-statement, no DDL/DML,
+  `WHERE` with a `_PARTITIONTIME` date filter, single-statement, no DDL/DML,
    and that it references the allowed source table (so the view is queryable),
 3. takes a BigQuery dry-run estimate (bytes scanned / cost) and logs a
-   `DRY_RUN_ONLY` decision to the cost ledger,
+  `DRY_RUN_ONLY` decision to the cost ledger,
 4. only on `--create`, issues `CREATE OR REPLACE VIEW`.
 
 The `data_quality_summary` view itself covers the data-quality checks the task
@@ -102,27 +110,16 @@ pip install "google-cloud-bigquery>=3.0"     # if not already installed
 ```
 
 1. Put your real project id in `configs/local.yaml` (git-ignored, deep-merged
-   at runtime) or pass `--project`:
-
-   ```yaml
-   providers:
-     bigquery:
-       project_id: "your-gcp-project"
-   ```
-
+  at runtime) or pass `--project`:
 2. Create the destination dataset once:
-
-   ```bash
+  ```bash
    bq mk --location=US your-gcp-project:kinetic_reporting
-   ```
-
+  ```
 3. Estimate first, then create:
-
-   ```bash
+  ```bash
    python -m news_data.reporting.build_views --dry-run
    python -m news_data.reporting.build_views --create --yes
-   ```
-
+  ```
    Instead of `--yes`, you can set `reporting.cost_controls.execute_query: "ENABLE"`
    in `configs/reporting.yaml` (mirrors the pipeline's typed-confirmation pattern).
 
@@ -133,40 +130,29 @@ The views are created as `your-gcp-project.kinetic_reporting.<view_name>`.
 ## Connecting to Looker Studio
 
 1. Go to [Looker Studio](https://lookerstudio.google.com/) → **Create** →
-   **Data source** → **BigQuery**.
+  **Data source** → **BigQuery**.
 2. Select your project → `kinetic_reporting` dataset → pick a reporting view
-   (e.g. `daily_event_volume`). Add one data source per view.
+  (e.g. `daily_event_volume`). Add one data source per view.
 3. **Create report** and add charts (below). Because each view is a small,
-   pre-aggregated result set, dashboard refreshes stay fast and cheap.
+  pre-aggregated result set, dashboard refreshes stay fast and cheap.
 4. Optional: add a report-level **date range control** and a **source** filter
-   control so viewers can slice the data.
+  control so viewers can slice the data.
 
 ### Suggested dashboard charts
 
-| Chart | Data source | Config |
-| --- | --- | --- |
-| Daily article/event volume trend | `daily_event_volume` | Time series — dimension `event_date`, metric `record_count` |
-| Top sources / domains | `top_sources` | Bar chart — dimension `source_domain`, metric `record_count` |
-| Top themes / entities | `top_themes_or_entities` | Bar chart or table — dimension `entity_or_theme`, metric `record_count` |
-| Data quality summary card | `data_quality_summary` | Scorecards — `total_rows`, `missing_required_field_count`, `duplicate_count` |
-| Latest refresh timestamp | `data_quality_summary` | Scorecard — `latest_record_timestamp` |
-| Missing-field count | `data_quality_summary` | Scorecard — `missing_required_field_count` (add a threshold color) |
+
+| Chart                            | Data source              | Config                                                                       |
+| -------------------------------- | ------------------------ | ---------------------------------------------------------------------------- |
+| Daily article/event volume trend | `daily_event_volume`     | Time series — dimension `event_date`, metric `record_count`                  |
+| Top sources / domains            | `top_sources`            | Bar chart — dimension `source_domain`, metric `record_count`                 |
+| Top themes / entities            | `top_themes_or_entities` | Bar chart or table — dimension `entity_or_theme`, metric `record_count`      |
+| Data quality summary card        | `data_quality_summary`   | Scorecards — `total_rows`, `missing_required_field_count`, `duplicate_count` |
+| Latest refresh timestamp         | `data_quality_summary`   | Scorecard — `latest_record_timestamp`                                        |
+| Missing-field count              | `data_quality_summary`   | Scorecard — `missing_required_field_count` (add a threshold color)           |
+
 
 Recommended filters/controls: date-range control, a `source_domain` filter, and
 a `top_n` you can tune by re-running the runner with `--top-n`.
 
 ---
 
-## BI / Data Warehouse Reporting Layer (resume summary)
-
-- Built BigQuery reporting views for dashboard-ready GDELT/news intelligence
-  analytics, including daily event volume, top source coverage, entity/theme
-  frequency, and data-quality summaries.
-- Added dry-run validation and query-safety guardrails (bounded partition
-  scans, no `SELECT *`, read-only DDL/DML checks, `maximum_bytes_billed`) before
-  creating reporting views in BigQuery.
-- Created pytest coverage for reporting SQL discovery, required output columns,
-  template rendering, guardrail compliance, and mocked dashboard build/validation
-  logic (no live BigQuery required).
-- Documented Looker Studio dashboard setup with recommended charts, filters, and
-  data-quality validation metrics.
