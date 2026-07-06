@@ -57,3 +57,15 @@ class DuplicateTaskError(TradingSystemError):
     """Raised when registering a pipeline task name that is already registered."""
 
     pass
+
+
+class CostGuardrailError(TradingSystemError):
+    """
+    Raised when a cloud query is blocked by a cost guardrail.
+
+    Examples: estimated bytes exceed ``maximum_bytes_billed``, estimated cost
+    exceeds a cap, or real execution was requested without the required typed
+    confirmation value.
+    """
+
+    pass

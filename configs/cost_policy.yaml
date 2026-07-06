@@ -1,0 +1,25 @@
+# Cost policy for cloud query providers (BigQuery, etc.).
+#
+# These guardrails are intentionally conservative. They are enforced in code by
+# common.cost.policy + the SafeBigQueryClient, NOT just documented here.
+#
+# Real BigQuery execution is always dry-run-estimated first, capped by
+# maximum_bytes_billed, and gated by a typed confirmation value.
+cost_policy:
+  billing_cycle_start_day: 1
+
+  monthly_cap_usd: 10.00
+  emergency_stop_usd: 8.00
+  daily_cap_usd: 0.50
+  single_query_cap_usd: 0.10
+
+  default_max_query_gb: 12
+
+  require_dry_run: true
+  require_cache_check: true
+  require_execute_confirmation: true
+  execute_confirmation_value: "ENABLE"
+
+  pricing:
+    bigquery_usd_per_tib: 6.25
+    free_query_tib_per_month: 1.0

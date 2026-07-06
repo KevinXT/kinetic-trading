@@ -1,0 +1,54 @@
+name: debug_gdelt_themes_inflation_30d_partition_execute
+
+# Theme DISCOVERY / debug — real BigQuery execution.
+#
+# Run this only after the dry-run estimate looks safe. Even with
+# execute_query: "ENABLE", the SafeBigQueryClient ALWAYS dry-runs first and
+# enforces maximum_bytes_billed + the cost policy before any billable query.
+#
+# Writes theme_discovery.csv / theme_discovery.jsonl with the actual GDELT theme
+# codes (and counts) seen in the window, so the inflation_rates bundle can be
+# validated/refined against real data.
+#
+# Uses _PARTITIONTIME partition pruning so only the requested days are scanned.
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
+    table: "gdelt-bq.gdeltv2.gkg_partitioned"
+
+pipeline:
+  ingest:
+    source: bigquery_gdelt_theme_discovery
+    query_name: debug_gdelt_themes_inflation_30d_partition
+    topic: inflation_rates
+
+    theme_search_patterns:
+      - inflation
+      - econ
+      - interest
+      - cost
+      - central_bank
+      - prices
+
+    partition_filter:
+      enabled: true
+      column: "_PARTITIONTIME"
+      type: "timestamp"
+
+    window:
+      preset: last_30_days
+      bucket: 1d
+
+    limit: 100
+
+    cost_controls:
+      dry_run: false
+      maximum_bytes_billed: 12000000000
+      execute_query: "ENABLE"
+      cost_policy_path: "configs/cost_policy.yaml"
+      ledger_path: "data/cost/cost_ledger.jsonl"
+      # Discovery is a DEBUG path: its purpose is to inspect the CURRENT SQL and
+      # the themes actually present in the window. A stale cache (e.g. an earlier
+      # 0-row result) would defeat that, so caching is disabled here by default.
+      use_cache: false

@@ -1,0 +1,53 @@
+name: debug_gdelt_themes_inflation_30d_partition_dryrun
+
+# Theme DISCOVERY / debug — DRY-RUN (default, safe).
+#
+# Lists which actual GDELT theme codes appear in the last 30 days whose text
+# matches inflation/econ-related patterns, with per-theme counts. Use this to
+# learn what GDELT actually contains, then validate/refine the inflation_rates
+# theme bundle (configs/gdelt_theme_bundles.yaml).
+#
+# Uses _PARTITIONTIME partition pruning so only the requested days are scanned.
+# It estimates scanned bytes/cost and logs a ledger decision; it does NOT run a
+# billable query and fetches no data.
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
+    table: "gdelt-bq.gdeltv2.gkg_partitioned"
+
+pipeline:
+  ingest:
+    source: bigquery_gdelt_theme_discovery
+    query_name: debug_gdelt_themes_inflation_30d_partition
+    topic: inflation_rates
+
+    theme_search_patterns:
+      - inflation
+      - econ
+      - interest
+      - cost
+      - central_bank
+      - prices
+
+    partition_filter:
+      enabled: true
+      column: "_PARTITIONTIME"
+      type: "timestamp"
+
+    window:
+      preset: last_30_days
+      bucket: 1d
+
+    limit: 100
+
+    cost_controls:
+      dry_run: true
+      maximum_bytes_billed: 12000000000
+      execute_query: ""
+      cost_policy_path: "configs/cost_policy.yaml"
+      ledger_path: "data/cost/cost_ledger.jsonl"
+      # Discovery is a DEBUG path: its purpose is to inspect the CURRENT SQL and
+      # dry-run estimate. A stale cache hit would skip the fresh estimate, so
+      # caching is disabled here by default.
+      use_cache: false

@@ -1,0 +1,40 @@
+# LEGACY / UNSAFE FOR NORMAL USE:
+# This config does not use _PARTITIONTIME partition pruning and may scan huge amounts of data.
+# Prefer the *_partition_* configs for BigQuery GDELT historical counts.
+
+name: inflation_rates_bigquery_30d_dryrun
+
+# Cost-aware BigQuery historical GDELT counts — DRY-RUN (default, safe).
+# This estimates scanned bytes/cost and logs a ledger decision; it does NOT run
+# a billable query and fetches no data. Set project_id to your real GCP project.
+#
+# Ingest-only on purpose: the local feature-store transform (store_features)
+# expects article-level rows, while this task produces topic_daily_features.
+# A dedicated topic store can be wired in later without changing this task.
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
+    table: "gdelt-bq.gdeltv2.gkg_partitioned"
+
+pipeline:
+  ingest:
+    source: bigquery_gdelt_counts
+    query_name: inflation_rates_bigquery_30d
+    topic: inflation_rates
+    query_terms:
+      - "Federal Reserve"
+      - "inflation"
+      - "interest rates"
+
+    window:
+      preset: last_30_days
+      bucket: 1d
+
+    cost_controls:
+      dry_run: true
+      maximum_bytes_billed: 1000000000
+      execute_query: ""
+      cost_policy_path: "configs/cost_policy.yaml"
+      ledger_path: "data/cost/cost_ledger.jsonl"
+      use_cache: true

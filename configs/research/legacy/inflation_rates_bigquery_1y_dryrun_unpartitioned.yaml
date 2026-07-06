@@ -1,0 +1,36 @@
+# LEGACY / UNSAFE FOR NORMAL USE:
+# This config does not use _PARTITIONTIME partition pruning and may scan huge amounts of data.
+# Prefer the *_partition_* configs for BigQuery GDELT historical counts.
+
+name: inflation_rates_bigquery_1y_dryrun
+
+# 1-year historical dry-run. A wider window scans more data, so keep this in
+# dry-run while you read the estimate, then raise maximum_bytes_billed only if
+# the cost policy allows it. Real execution still requires execute_query: "ENABLE".
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
+    table: "gdelt-bq.gdeltv2.gkg_partitioned"
+
+pipeline:
+  ingest:
+    source: bigquery_gdelt_counts
+    query_name: inflation_rates_bigquery_1y
+    topic: inflation_rates
+    query_terms:
+      - "Federal Reserve"
+      - "inflation"
+      - "interest rates"
+
+    window:
+      preset: last_1_year
+      bucket: 1d
+
+    cost_controls:
+      dry_run: true
+      maximum_bytes_billed: 1000000000
+      execute_query: ""
+      cost_policy_path: "configs/cost_policy.yaml"
+      ledger_path: "data/cost/cost_ledger.jsonl"
+      use_cache: true

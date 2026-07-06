@@ -1,10 +1,17 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
+from common.cost.ledger import CostLedger
+from common.cost.policy import load_cost_policy
+from common.cost.report import format_cost_report
 from common.errors import TradingSystemError
 from pipeline_core.engine.runner import run_plan_from_file
+
+_DEFAULT_LEDGER_PATH = "data/cost/cost_ledger.jsonl"
+_DEFAULT_POLICY_PATH = "configs/cost_policy.yaml"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -31,9 +38,47 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_cost_report_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="trading-platform cost-report",
+        description="Summarize estimated cloud query spend from the cost ledger.",
+    )
+    parser.add_argument(
+        "--ledger-path",
+        default=_DEFAULT_LEDGER_PATH,
+        help=f"Path to the cost ledger JSONL. Defaults to {_DEFAULT_LEDGER_PATH}.",
+    )
+    parser.add_argument(
+        "--policy-path",
+        default=_DEFAULT_POLICY_PATH,
+        help=f"Path to the cost policy YAML. Defaults to {_DEFAULT_POLICY_PATH}.",
+    )
+    return parser
+
+
+def run_cost_report(argv: list[str]) -> None:
+    parser = build_cost_report_parser()
+    args = parser.parse_args(argv)
+    try:
+        policy = load_cost_policy(args.policy_path)
+    except TradingSystemError as e:
+        parser.exit(status=1, message=f"error: {e}\n")
+    ledger = CostLedger(args.ledger_path)
+    summary = ledger.summarize(policy)
+    print(format_cost_report(summary))
+
+
 def main() -> None:
+    argv = sys.argv[1:]
+
+    # Subcommand: cost-report. Kept separate so the existing positional config
+    # form (`trading-platform configs/demo.yaml`) is unchanged.
+    if argv and argv[0] == "cost-report":
+        run_cost_report(argv[1:])
+        return
+
     parser = build_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     try:
         ctx = run_plan_from_file(

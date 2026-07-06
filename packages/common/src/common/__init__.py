@@ -11,13 +11,17 @@ Current contents:
 """
 
 from .config_builder import (
+    apply_local_overrides,
     build_runtime_config,
     deep_merge,
+    deep_merge_dicts,
     load_config,
+    load_runtime_config,
     load_yaml,
 )
 from .errors import (
     ConfigError,
+    CostGuardrailError,
     DataSourceError,
     DuplicateTaskError,
     ExecutionError,
@@ -28,12 +32,16 @@ from .errors import (
 __all__ = [
     "load_yaml",
     "load_config",
+    "load_runtime_config",
+    "apply_local_overrides",
     "build_runtime_config",
     "deep_merge",
+    "deep_merge_dicts",
     "TradingSystemError",
     "ConfigError",
     "PipelineError",
     "DataSourceError",
     "ExecutionError",
     "DuplicateTaskError",
+    "CostGuardrailError",
 ]
