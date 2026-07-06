@@ -1,12 +1,35 @@
-# kinetic-trading
+# Kinetic Trading
 
 [![CI](https://github.com/KevinXT/kinetic-trading/actions/workflows/ci.yml/badge.svg)](https://github.com/KevinXT/kinetic-trading/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![BigQuery](https://img.shields.io/badge/Google-BigQuery-4285F4?logo=googlecloud&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-436%20passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-A modular, YAML-driven research pipeline for financial/news data ingestion, caching, normalization, transformation, and future strategy experimentation.
+**A modular, cost-aware data platform for news/financial intelligence — YAML-driven ingestion pipelines, a governed BigQuery/GDELT data-warehouse layer, and dashboard-ready reporting views with a live BI dashboard preview.**
 
-This project is an early-stage trading research platform. The current implementation focuses on the execution engine: a reusable pipeline core, config system, and task registry; two complementary GDELT paths (DOC API for recent articles, BigQuery for historical measurement); normalized article records with enrichment transforms; cache-aware provider calls; cost-aware cloud query guardrails; and reproducible run artifacts.
+Kinetic Trading ingests GDELT news data through a reusable pipeline engine, models it into a cost-controlled BigQuery warehouse layer, and exposes analytics through reporting views and a credential-free BI dashboard. It is built infrastructure-first: clean package boundaries, strict cost governance on every cloud query, reproducible run artifacts, and 436 automated tests running in CI.
 
-The goal is not to be a finished trading bot. The goal is to build the infrastructure layer that future market-data providers, signal-generation tasks, backtests, and strategy modules can plug into cleanly.
+The goal is not a finished trading bot; it is a well-engineered data and analytics foundation that future market-data providers, signal-generation tasks, and strategy modules can plug into cleanly.
+
+![Kinetic Trading local BI dashboard preview](docs/images/reporting_dashboard_preview.png)
+
+<p align="center"><em>Local BI dashboard preview (<a href="apps/reporting_dashboard/"><code>apps/reporting_dashboard/</code></a>) — runs credential-free on committed sample JSON that matches the BigQuery reporting-view schemas. See <a href="#local-bi-dashboard-preview">Local BI Dashboard Preview</a>.</em></p>
+
+---
+
+## What this project demonstrates
+
+A map of the engineering skills this repository exercises end to end:
+
+- **Data warehousing & SQL** — BigQuery Standard SQL, ingestion-time partition pruning (`_PARTITIONTIME`), reporting views, data modeling, and query design that keeps scanned bytes (and cost) bounded.
+- **Cost governance / FinOps** — dry-run byte estimation, always-enforced `maximum_bytes_billed`, per-query / daily / monthly caps, an append-only cost ledger, and typed confirmation required before any billable query.
+- **Data engineering (ELT)** — a config-driven pipeline engine with pluggable tasks, cache-aside provider calls, schema normalization, deduplication with syndication tracking, and incremental append-only stores.
+- **Analytics & BI** — dashboard-ready reporting views (event volume, source coverage, theme/entity frequency, data-quality metrics), a dependency-free local dashboard, and Looker Studio-ready views.
+- **Testing & CI** — 436 `pytest` tests with cloud calls mocked and SQL guardrails asserted, GitHub Actions CI, and `ruff` + `black` linting/formatting.
+- **Software architecture** — a Python monorepo with enforced dependency direction, a provider-agnostic engine, and a typed error hierarchy.
+
+**Tech:** Python 3.11+ · Google BigQuery · GDELT · SQL · YAML · pytest · GitHub Actions · ruff / black · HTML / CSS / JS (SVG charts).
 
 ---
 ## Current status
@@ -44,11 +67,12 @@ Implemented today:
 - Partition pruning via `_PARTITIONTIME`, 14-digit GKG `DATE` bounds (`YYYYMMDDHHMMSS`), normalized `V2Themes` matching
 - Partitioned research configs under `configs/research/` (dry-run and execute variants; legacy unpartitioned configs quarantined)
 
-**BI / reporting layer** (Looker Studio dashboard)
+**BI / reporting layer** (local dashboard preview + Looker Studio-ready views)
 
-- Dashboard-ready BigQuery reporting views over the GDELT GKG data: daily event volume, top sources, top themes/entities, and a data-quality summary
+- Looker Studio-ready BigQuery reporting views over the GDELT GKG data: daily event volume, top sources, top themes/entities, and a data-quality summary
+- Local BI dashboard preview (`apps/reporting_dashboard/`) that runs without BigQuery credentials on committed sample JSON matching the reporting-view schemas
 - `build_views` CLI runner: dry-run validation + cost estimate by default, gated `--create` to create/replace views (reuses `SafeBigQueryClient`, guardrails, cost policy/ledger)
-- Rolling `_PARTITIONTIME` window keeps every dashboard query cheap; see [`docs/looker_studio_dashboard.md`](docs/looker_studio_dashboard.md)
+- Rolling `_PARTITIONTIME` window keeps every dashboard query cheap; Looker Studio setup guidance in [`docs/looker_studio_dashboard.md`](docs/looker_studio_dashboard.md)
 
 **Quality**
 
@@ -60,7 +84,7 @@ Planned / placeholder boundaries:
 - Strategy SDK abstractions (`strategy_sdk` package stub)
 - Sentiment / entity extraction transforms
 - Backtesting integration
-- UI / dashboard layer
+- Hosted / interactive application UI (a local BI dashboard preview already ships under `apps/reporting_dashboard/`)
 
 ---
 
@@ -549,7 +573,7 @@ The bundle still flows through the same normalized-`UNNEST` matching and the sam
 
 ## BI / Data Warehouse Reporting Layer
 
-A lightweight analytics/reporting layer (`news_data.reporting`) turns the GDELT GKG data into a small set of **dashboard-ready BigQuery views** for a [Looker Studio](https://lookerstudio.google.com/) dashboard. Full setup — dataset creation, connecting to Looker Studio, and recommended charts — is in [`docs/looker_studio_dashboard.md`](docs/looker_studio_dashboard.md).
+A lightweight analytics/reporting layer (`news_data.reporting`) turns the GDELT GKG data into a small set of **Looker Studio-ready BigQuery views**. These views can be connected to [Looker Studio](https://lookerstudio.google.com/); optional Looker Studio setup guidance — dataset creation, connecting the views, and recommended Looker Studio charts — is in [`docs/looker_studio_dashboard.md`](docs/looker_studio_dashboard.md). A [local BI dashboard preview](#local-bi-dashboard-preview) renders these same view schemas without any credentials.
 
 Reporting views (each bounded by a rolling `_PARTITIONTIME` window so dashboard queries stay cheap):
 
@@ -575,16 +599,28 @@ python -m news_data.reporting.build_views --create --yes
 
 **Resume summary:**
 
-- Built BigQuery reporting views for dashboard-ready GDELT/news intelligence analytics, including daily event volume, top source coverage, entity/theme frequency, and data-quality summaries.
+- Built Looker Studio-ready BigQuery reporting views for GDELT/news intelligence analytics, including daily event volume, top source coverage, entity/theme frequency, and data-quality summaries.
+- Built a local BI dashboard preview over these reporting-view schemas, visualizing daily event volume, source domains, theme/entity trends, and data-quality metrics without requiring BigQuery credentials.
 - Added dry-run validation and query-safety guardrails (bounded partition scans, no `SELECT *`, read-only DDL/DML checks, `maximum_bytes_billed`) before creating reporting views in BigQuery.
 - Created pytest coverage for reporting SQL discovery, required output columns, template rendering, guardrail compliance, and mocked dashboard build/validation logic.
-- Documented Looker Studio dashboard setup with recommended charts, filters, and data-quality validation metrics.
+- Documented how to connect the validated BigQuery reporting views to Looker Studio, with recommended charts, filters, and data-quality validation metrics.
 
 ---
 
-## BI Dashboard Preview
+<a id="local-bi-dashboard-preview"></a>
 
-A lightweight, dependency-free visual dashboard lives in [`apps/reporting_dashboard/`](apps/reporting_dashboard/). It renders KPI cards, a daily-volume chart, top-source and top-theme bars, and a data-quality panel from committed sample JSON that mirrors the reporting-view output schema — so recruiters can see the reporting layer's output immediately, with no BigQuery credentials required.
+## Local BI Dashboard Preview
+
+A local HTML/CSS/JS dashboard — a credential-free dashboard preview — lives in [`apps/reporting_dashboard/`](apps/reporting_dashboard/). It renders KPI cards, a daily-volume chart, top-source and top-theme bars, and a data-quality panel from committed sample JSON that matches the reporting-view output schemas — so the reporting layer's output is visible immediately, with no BigQuery credentials required.
+
+This is an intentional, credential-free preview of the reporting layer. Looker Studio is a separate, optional deployment path for the same BigQuery reporting views (see the [Looker Studio setup guide](docs/looker_studio_dashboard.md)).
+
+| Dashboard type | Status | Location |
+| --- | --- | --- |
+| Local BI dashboard preview | Implemented | `apps/reporting_dashboard/` |
+| BigQuery reporting views | Implemented | `packages/news_data/src/news_data/reporting/` |
+| Looker Studio setup guide | Documented | `docs/looker_studio_dashboard.md` |
+| Actual Looker Studio report | Optional deployment path | See `docs/looker_studio_dashboard.md` |
 
 Run it locally (plain HTML/CSS/JS, no build step):
 
@@ -600,16 +636,7 @@ The sample JSON under `apps/reporting_dashboard/public/sample_data/` maps 1:1 to
 python -m news_data.reporting.export_dashboard_data --execute --yes
 ```
 
-Screenshots (optional — add your own after running locally; the docs do not depend on these files existing):
-
-<!-- Local dashboard preview (apps/reporting_dashboard) -->
-![Local reporting dashboard preview](docs/images/reporting_dashboard_preview.png)
-
-<!-- Terminal dry-run of the reporting views -->
-![Reporting views dry-run](docs/images/reporting_dry_run.png)
-
-<!-- Managed Looker Studio dashboard, if you build one -->
-![Looker Studio dashboard](docs/images/looker_studio_dashboard.png)
+![Local BI dashboard preview](docs/images/reporting_dashboard_preview.png)
 
 ---
 
@@ -825,7 +852,7 @@ Medium-term:
 
 Long-term:
 
-- Dashboard/UI layer
+- Hosted/interactive dashboard and application UI (building on the local BI dashboard preview)
 - Larger historical dataset management
 - Multiple provider support beyond GDELT
 - SQLite or structured storage for articles and features
