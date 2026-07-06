@@ -52,7 +52,7 @@ Implemented today:
 
 **Quality**
 
-- **421 tests** across config loading, pipeline engine, GDELT DOC transforms, BigQuery SQL/cost/cache/guardrails, theme discovery/bundles, local overrides, collection runner, and the reporting layer
+- **436 tests** across config loading, pipeline engine, GDELT DOC transforms, BigQuery SQL/cost/cache/guardrails, theme discovery/bundles, local overrides, collection runner, and the reporting/BI layer
 
 Planned / placeholder boundaries:
 
@@ -582,6 +582,37 @@ python -m news_data.reporting.build_views --create --yes
 
 ---
 
+## BI Dashboard Preview
+
+A lightweight, dependency-free visual dashboard lives in [`apps/reporting_dashboard/`](apps/reporting_dashboard/). It renders KPI cards, a daily-volume chart, top-source and top-theme bars, and a data-quality panel from committed sample JSON that mirrors the reporting-view output schema — so recruiters can see the reporting layer's output immediately, with no BigQuery credentials required.
+
+Run it locally (plain HTML/CSS/JS, no build step):
+
+```bash
+cd apps/reporting_dashboard
+python3 -m http.server 8000
+# open http://localhost:8000
+```
+
+The sample JSON under `apps/reporting_dashboard/public/sample_data/` maps 1:1 to the BigQuery reporting views (`daily_event_volume`, `top_sources`, `top_themes_or_entities`, `data_quality_summary`). To replace it with real exported data, use the optional exporter (dry-run by default):
+
+```bash
+python -m news_data.reporting.export_dashboard_data --execute --yes
+```
+
+Screenshots (optional — add your own after running locally; the docs do not depend on these files existing):
+
+<!-- Local dashboard preview (apps/reporting_dashboard) -->
+![Local reporting dashboard preview](docs/images/reporting_dashboard_preview.png)
+
+<!-- Terminal dry-run of the reporting views -->
+![Reporting views dry-run](docs/images/reporting_dry_run.png)
+
+<!-- Managed Looker Studio dashboard, if you build one -->
+![Looker Studio dashboard](docs/images/looker_studio_dashboard.png)
+
+---
+
 ## Normalized article schema
 
 Raw GDELT records use provider-specific field names such as:
@@ -633,6 +664,7 @@ packages/
   strategy_sdk/        Trading-domain abstraction placeholder
 apps/
   trading_platform/    CLI (`python3 -m trading_platform`) and task registration
+  reporting_dashboard/ Dependency-free HTML/CSS/JS BI dashboard over the reporting views
 configs/
   demo.yaml            Single-query GDELT DOC demo
   collections/         25 GDELT collection configs (macro, sectors, risk, markets)
@@ -644,7 +676,7 @@ configs/
   local.example.yaml   Template for git-ignored configs/local.yaml overrides
 scripts/
   run_collections.py   Batch collection runner with throttling
-tests/                 421 workspace-level tests (31 test modules)
+tests/                 436 workspace-level tests (32 test modules)
 docs/                  Product notes, technical guides, development TODO
 experiments/           Runtime outputs (gitignored)
 ```
@@ -733,7 +765,7 @@ ruff check .
 ## Tests
 
 ```bash
-pytest          # 421 tests
+pytest          # 436 tests
 ruff check .    # lint
 ```
 
@@ -745,7 +777,7 @@ Coverage by area:
 | Pipeline engine | `test_parser`, `test_registry`, `test_runner_failure`, `test_context`, `test_imports` |
 | GDELT DOC path | `test_cache`, `test_gdelt_normalize`, `test_dedupe_articles`, `test_tag_articles`, `test_aggregate_article_features`, `test_store_articles`, `test_store_features`, `test_run_collections` |
 | BigQuery path | `test_bigquery_gdelt_queries`, `test_bigquery_gdelt_counts_task`, `test_bigquery_theme_discovery_queries`, `test_bigquery_theme_discovery_task`, `test_bigquery_sql_guardrails`, `test_bigquery_normalize_counts`, `test_bigquery_cache`, `test_safe_bigquery_client` |
-| Reporting / BI layer | `test_reporting_views` |
+| Reporting / BI layer | `test_reporting_views`, `test_reporting_dashboard_data` |
 | Cost controls | `test_cost_policy`, `test_cost_estimate`, `test_cost_ledger`, `test_cost_report` |
 | Theme bundles | `test_gdelt_theme_bundles` |
 | Date windows | `test_date_windows` |
