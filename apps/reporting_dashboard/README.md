@@ -6,9 +6,9 @@ cards, a daily-volume chart, top-source and top-theme bars, and a data-quality
 panel from committed **sample JSON** that matches the output schemas of the
 BigQuery reporting views.
 
-> Subtitle: *Sample dashboard using schemas that match the Looker Studio-ready
-> BigQuery reporting views: source coverage, event volume, entity/theme trends,
-> and data quality checks.*
+> *A sample dashboard using schemas that match the Looker Studio-ready BigQuery
+> reporting views: source coverage, event volume, entity/theme trends, and
+> data-quality checks.*
 
 This is a **local HTML/CSS/JS dashboard** — no build step, no `npm install`, no
 external libraries. Charts are drawn with inline SVG/CSS so it works fully
@@ -62,8 +62,8 @@ python -m news_data.reporting.export_dashboard_data --dry-run
 python -m news_data.reporting.export_dashboard_data --execute --yes
 ```
 
-Requires a real `providers.bigquery.project_id` (via `configs/local.yaml` or  
-`--project`) and BigQuery credentials. See  
-`[docs/looker_studio_dashboard.md](../../docs/looker_studio_dashboard.md)` for  
+Requires a real `providers.bigquery.project_id` (via `configs/local.yaml` or
+`--project`) and BigQuery credentials. See
+[`docs/looker_studio_dashboard.md`](../../docs/looker_studio_dashboard.md) for
 the reporting views and optional Looker Studio setup guidance.
 
