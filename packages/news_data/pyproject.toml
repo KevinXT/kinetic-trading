@@ -18,3 +18,8 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# Ship the reporting SQL templates as package data so the reporting layer works
+# in non-editable installs too (editable installs read them straight from src/).
+[tool.setuptools.package-data]
+"news_data.reporting" = ["sql/*.sql"]
