@@ -16,14 +16,18 @@ provider client
 Providers fetch data. Normalizers translate it. Stores persist it. Feature pipelines
 combine it. Strategies and dashboards consume normalized records.
 
-Phase 1 defines the contracts and local persistence foundation. Phase 2 implements
-the first complete provider path: Alpaca historical US stock bars.
+The domain contracts, local JSONL store, provider registry, and the first complete
+provider path (Alpaca historical US stock bars) are implemented. SEC EDGAR, FRED,
+and event-reaction infrastructure remain separate follow-on work on the same
+contracts.
 
 ## Domain contracts
 
 The public records are frozen dataclasses in `market_data.domain`:
 
-- `PriceBar`: OHLCV data with feed and adjustment identity.
+- `PriceBar`: OHLCV data with feed, adjustment, and currency identity. OHLC values
+  must be finite and non-negative, `high >= low`, and open/close must lie within
+  `[low, high]`. Volume and trade count are non-negative integers.
 - `FilingEvent`: SEC filing metadata keyed by accession number.
 - `FinancialFact`: one reported fact, preserving taxonomy, concept, unit, period,
   form, filing date, and accession.
@@ -72,6 +76,13 @@ feed, adjustment, limit, sort, optional `asof`, and optional currency. A task ma
 also resolve `lookback_days` once at startup. Committed examples use explicit dates
 so cache keys and artifacts remain reproducible.
 
+Optional `currency` is an ISO-4217 code forwarded to Alpaca as the requested price
+denomination for the stock bars endpoint (Alpaca documents default `USD`). When
+omitted, normalized bars store `USD`. Kinetic treats currency as request and
+identity metadata; it does not model exchange rates or claim a particular
+conversion method for non-USD responses. Currency is part of `PriceBar` identity
+and storage keys so distinct denominations cannot collide.
+
 Feed and adjustment are required. The example uses `feed: iex`, which is suitable
 for many free-tier accounts but is not the complete consolidated SIP market feed.
 The client never silently falls back between feeds. SIP entitlement or recency
@@ -83,9 +94,13 @@ page count fail explicitly. Retryable transport failures, HTTP 429, and selected
 5xx responses use bounded retries; ordinary 4xx failures are not retried.
 
 Raw pages are cached as one complete logical result, preserving page boundaries.
-Cache keys include every response-affecting request field and the schema version,
-but never credentials. Cache summaries distinguish hit, miss, expired, and forced
-refresh and report whether a cache file was written.
+Cache keys include the normalized non-secret `api_origin`, every response-affecting
+request field (including currency, defaulting omitted requests to USD), and schema
+version `alpaca-bars-v2`. They never contain credentials. Equivalent base URL
+spellings (trailing slash, host/scheme case, default ports) collapse to one origin.
+Query strings and URL credentials are rejected. Older `alpaca-bars-v1` cache files
+are left orphaned intentionally. Cache summaries distinguish hit, miss, expired, and
+forced refresh and report whether a cache file was written.
 
 Run:
 
@@ -141,7 +156,11 @@ Upserts return inserted, updated, skipped, and total counts. Identical reruns ar
 idempotent. Identical duplicates within one incoming batch are collapsed and counted
 as skipped. Conflicting payloads with the same batch key raise
 `ConflictingBatchRecordsError`; input ordering never decides the winner. A changed
-incoming payload updates an existing stored key.
+incoming market payload updates an existing stored key. `retrieved_at` is first-seen
+provenance: it is retained on skip and excluded from semantic equality, so
+force-refreshing unchanged OHLCV data does not count as a correction. Legacy bar rows
+without `currency` are keyed as `USD` without rewriting the file on read; a real
+payload update rewrites the row in the current schema (including `currency`).
 
 Files are sorted and serialized deterministically, written to a temporary file in the
 target directory, flushed, and atomically replaced. A malformed existing dataset
@@ -152,14 +171,15 @@ migrations are explicit.
 
 Logical identities are:
 
-- bars: symbol, timestamp, timeframe, provider, feed, adjustment
+- bars: symbol, timestamp, timeframe, provider, feed, adjustment, currency
+  (legacy rows missing `currency` default to `USD` for key compatibility)
 - filings: accession number
 - facts: CIK, taxonomy, concept, unit, period, form, filed date, accession
 - macro observations: series, observation date, real-time range, vintage, provider
 - instruments: internal instrument ID
 
-`MarketEvent` is a contract only in Phase 1. Event conversion, persistence, and
-event-reaction infrastructure remain deferred to Phase 6.
+`MarketEvent` is a domain contract only. Event conversion, persistence, and
+event-reaction infrastructure remain deferred.
 
 ### Concurrency and scale
 
@@ -189,9 +209,10 @@ cache call signatures, return behavior, and file format. `get_or_fetch_json_resu
 is the opt-in API for hit/miss status metadata; existing callers can continue using
 `get_or_fetch_json` unchanged. Cache writes are atomic.
 
-Provider cache-key payloads must contain the provider, endpoint, normalized request,
-schema version, and relevant feed/adjustment or vintage/real-time options. They must
-never contain credentials or authorization headers.
+Provider cache-key payloads must contain the provider, endpoint, normalized API
+origin when applicable, normalized request, schema version, and relevant
+feed/adjustment or vintage/real-time options. They must never contain credentials
+or authorization headers.
 
 Expected policy choices in later phases:
 
