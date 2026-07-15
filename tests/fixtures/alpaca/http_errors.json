@@ -1,0 +1,7 @@
+{
+  "400": {"code": 40010001, "message": "invalid request"},
+  "401": {"code": 40110000, "message": "not authenticated"},
+  "403": {"code": 40310000, "message": "subscription does not permit querying recent SIP data"},
+  "429": {"code": 42910000, "message": "rate limit exceeded"},
+  "500": {"code": 50010000, "message": "temporary provider failure"}
+}

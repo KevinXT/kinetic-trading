@@ -3,8 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
+import tempfile
+import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Literal, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +16,31 @@ JsonDict = Dict[str, Any]
 
 
 CACHE_ROOT = Path(".cache")
+
+
+@dataclass(frozen=True)
+class CachePolicy:
+    """Controls freshness and schema invalidation for a cached request."""
+
+    ttl_seconds: int | None = None
+    force_refresh: bool = False
+    schema_version: str = "1"
+
+    def __post_init__(self) -> None:
+        if self.ttl_seconds is not None and self.ttl_seconds < 0:
+            raise ValueError("ttl_seconds must be non-negative or None")
+        if not self.schema_version.strip():
+            raise ValueError("schema_version must not be empty")
+
+
+@dataclass(frozen=True)
+class CacheResult:
+    """Cached payload plus safe observability metadata."""
+
+    data: JsonDict
+    status: Literal["hit", "miss", "expired", "force_refresh"]
+    key: str
+    written: bool = False
 
 
 def make_cache_key(payload: JsonDict) -> str:
@@ -30,7 +59,9 @@ def _cache_file_path(namespace: str, key: str) -> Path:
     return CACHE_ROOT / namespace / f"{key}.json"
 
 
-def load_json_cache(namespace: str, key: str) -> Optional[JsonDict]:
+def _load_json_cache(
+    namespace: str, key: str, *, ttl_seconds: int | None = None
+) -> Optional[JsonDict]:
     """
     Load cached JSON data.
 
@@ -41,6 +72,9 @@ def load_json_cache(namespace: str, key: str) -> Optional[JsonDict]:
     if not path.exists():
         return None
 
+    if ttl_seconds is not None and time.time() - path.stat().st_mtime > ttl_seconds:
+        return None
+
     try:
         with path.open("r", encoding="utf-8") as f:
             return json.load(f)
@@ -49,16 +83,76 @@ def load_json_cache(namespace: str, key: str) -> Optional[JsonDict]:
         return None
 
 
+def load_json_cache(namespace: str, key: str) -> Optional[JsonDict]:
+    """Load cached JSON while preserving the original public API."""
+    return _load_json_cache(namespace, key)
+
+
 def save_json_cache(namespace: str, key: str, data: JsonDict) -> Path:
-    """Save JSON data into the cache directory."""
+    """Atomically save JSON data into the cache directory."""
     path = _cache_file_path(namespace, key)
 
     path.parent.mkdir(parents=True, exist_ok=True)
-
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
+    )
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False, sort_keys=True)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temporary_path, path)
+    except BaseException:
+        temporary_path.unlink(missing_ok=True)
+        raise
 
     return path
+
+
+def _policy_payload(payload: JsonDict, policy: CachePolicy | None) -> JsonDict:
+    if policy is None:
+        return payload
+    return {"schema_version": policy.schema_version, "request": payload}
+
+
+def _lookup_json_cache(
+    namespace: str, key: str, *, ttl_seconds: int | None
+) -> tuple[Optional[JsonDict], Literal["hit", "miss", "expired"]]:
+    path = _cache_file_path(namespace, key)
+    if not path.exists():
+        return None, "miss"
+    if ttl_seconds is not None and time.time() - path.stat().st_mtime > ttl_seconds:
+        return None, "expired"
+    data = _load_json_cache(namespace, key)
+    return (data, "hit") if data is not None else (None, "miss")
+
+
+def get_or_fetch_json_result(
+    *,
+    namespace: str,
+    payload: JsonDict,
+    fetch_fn: Callable[[], JsonDict],
+    force_refresh: bool = False,
+    policy: CachePolicy | None = None,
+) -> CacheResult:
+    """Cache-aside lookup that also returns hit/miss metadata."""
+    key = make_cache_key(_policy_payload(payload, policy))
+    refresh = force_refresh or (policy.force_refresh if policy is not None else False)
+    ttl_seconds = policy.ttl_seconds if policy is not None else None
+
+    cache_status: Literal["miss", "expired", "force_refresh"] = "force_refresh"
+    if not refresh:
+        cached, lookup_status = _lookup_json_cache(namespace, key, ttl_seconds=ttl_seconds)
+        if cached is not None:
+            logger.info("cache HIT namespace=%s key=%s", namespace, key[:12])
+            return CacheResult(data=cached, status="hit", key=key)
+        cache_status = lookup_status
+
+    logger.info("cache MISS namespace=%s key=%s", namespace, key[:12])
+    fresh_data = fetch_fn()
+    save_json_cache(namespace, key, fresh_data)
+    return CacheResult(data=fresh_data, status=cache_status, key=key, written=True)
 
 
 def get_or_fetch_json(
@@ -96,18 +190,9 @@ def get_or_fetch_json(
     force_refresh:
         If True, bypass cache and fetch fresh data.
     """
-    key = make_cache_key(payload)
-
-    if not force_refresh:
-        cached = load_json_cache(namespace, key)
-        if cached is not None:
-            logger.info("cache HIT namespace=%s key=%s", namespace, key[:12])
-            return cached
-
-    logger.info("cache MISS namespace=%s key=%s", namespace, key[:12])
-
-    fresh_data = fetch_fn()
-
-    save_json_cache(namespace, key, fresh_data)
-
-    return fresh_data
+    return get_or_fetch_json_result(
+        namespace=namespace,
+        payload=payload,
+        fetch_fn=fetch_fn,
+        force_refresh=force_refresh,
+    ).data
