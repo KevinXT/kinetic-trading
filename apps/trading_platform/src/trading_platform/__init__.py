@@ -28,6 +28,7 @@ def _register_tasks() -> None:
         tag_articles_task,
     )
     from pipeline_core.tasks.registry import TASK_REGISTRY
+    from research_data.task import build_news_market_dataset_task
 
     def registered_alpaca_historical_bars_task(ctx, params):
         return alpaca_historical_bars_task(
@@ -46,6 +47,7 @@ def _register_tasks() -> None:
     TASK_REGISTRY.setdefault("aggregate_article_features", aggregate_article_features_task)
     TASK_REGISTRY.setdefault("store_features", store_features_task)
     TASK_REGISTRY.setdefault("store_articles", store_articles_task)
+    TASK_REGISTRY.setdefault("build_news_market_dataset", build_news_market_dataset_task)
 
 
 _register_tasks()

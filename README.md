@@ -63,6 +63,101 @@ Alpaca and GDELT are separate paths that share the same runner and artifact conv
 
 **Currency caveat:** optional Alpaca `currency` is forwarded as the requested ISO-4217 price denomination (Alpaca documents default `USD`). Kinetic stores that value on `PriceBar` for identity. It does not model exchange rates or assert how Alpaca derives non-USD prices.
 
+## News × market research-data layer
+
+A normalized, leakage-aware research layer (`packages/research_data`) joins GDELT news
+features to Alpaca market-session features. It is a **derived product**: it never
+replaces either normalized source dataset, and it is not a trading signal.
+
+```text
+GDELT articles / historical topic counts
+                ↓
+normalized topic features (NewsTopicDailyFeature)
+                ↓
+market-calendar + availability alignment (SessionNewsFeature)
+                ↓
+Alpaca market-session features (MarketSessionFeature)
+                ↓
+versioned news×market research observations (NewsMarketObservation)
+                ↓
+offline event-study report + dataset manifest
+```
+
+- **Row grain:** one `topic × instrument × aligned market session × information cutoff × dataset version`.
+- **Alignment policy:** `session_information_window_v2` — timestamped DOC news is
+  aggregated over `[previous session close → feature_cutoff]`, where the default
+  cutoff is five minutes before the target open. Equality at the cutoff is allowed.
+  The buffer is operational conservatism, not a provider-latency model.
+- **DOC vs BigQuery:** DOC/artlist supports article-level breadth, source concentration,
+  syndication, and publication-timing features. BigQuery GKG counts support only volume;
+  unsupported richer fields are emitted as `null` (never a fabricated `0`), tagged by
+  per-row `feature_capabilities`. BigQuery rejects exact timestamp-window alignment
+  unless an explicit downgrade to `daily_approximation` is enabled and recorded.
+- **Feature groups:** every field belongs to exactly one category — identity, lineage,
+  availability, **input** (lag-only), **contemporaneous** (same-session, not a predictor),
+  **forward target**, quality, or diagnostic. Definitions live in
+  `configs/research/news_market_feature_catalog.yaml` and are emitted as `feature_catalog.json`.
+- **Targets:** target-session return / absolute return / Parkinson variance /
+  benchmark-adjusted return, plus target-through-plus-4 cumulative and
+  benchmark-adjusted returns, with explicit completeness flags.
+- **Event study:** attention events are defined by a lag-only `attention_zscore_30 ≥ threshold`
+  rule (config-driven, not chosen after seeing returns). H1/H2 are confirmatory;
+  H3–H5 and subgroup analyses are exploratory. Eligible H1 inference uses a
+  session-date moving-block bootstrap and BH correction only within the H1 endpoint
+  family; undersized groups have null CIs/p-values.
+
+Deterministic offline demo (no Alpaca / BigQuery / GDELT / internet):
+
+```bash
+python3 -m trading_platform configs/research/news_market_dataset_demo.yaml
+```
+
+Artifacts (per run, not committed): `news_topic_daily_features.jsonl`,
+`session_news_features.jsonl`, `market_session_features.jsonl`,
+`news_market_observations.{jsonl,csv}`, `feature_catalog.json`, `dataset_manifest.json`,
+`join_summary.json`, `event_study_events.jsonl`, `event_study_summary.{json,csv}`, and
+`research_limitations.md`. Design rationale: [research dataset design](docs/research/news_market_dataset_design.md).
+
+Representative joined observation (trimmed; input / contemporaneous / target are kept separate):
+
+```json
+{
+  "topic": "semiconductors", "symbol": "AMD", "session_date": "2026-05-04",
+  "alignment_policy": "session_information_window_v2",
+  "feature_available_at": "2026-05-04T13:25:00Z",
+  "feature_cutoff": "2026-05-04T13:25:00Z",
+  "target_session_open": "2026-05-04T13:30:00Z",
+  "cutoff_buffer_seconds": 300,
+  "availability_assumption": "publication_timestamp_proxy_v1",
+  "alignment_precision": "article_timestamp",
+  "inputs": {
+    "news_title_deduplicated_article_count": 2, "news_log1p_attention_count": 1.0986,
+    "news_unique_domains": 2, "news_observed_copy_domain_hhi": 0.5,
+    "news_duplicate_ratio": 0.0,
+    "news_attention_zscore_30": null, "mkt_prior_simple_return": null
+  },
+  "contemporaneous": { "mkt_volume": 21168255, "mkt_true_range": 4.461, "mkt_close_location": 0.567 },
+  "targets": {
+    "target_session_return": 0.005708,
+    "target_session_benchmark_adjusted_return": 2.08e-07,
+    "target_through_plus_4_cumulative_return": 0.018931
+  },
+  "quality": { "target_through_plus_4_complete": true },
+  "lineage": { "mapping_version": "news-market-mapping-v1", "news_measurement_method": "gdelt_doc_artlist" }
+}
+```
+
+**Principal limitations:** GDELT coverage is a media-attention proxy, not measured
+investor attention; DOC record caps can censor counts; topic tags and topic→instrument
+mappings are researcher-defined (with survivorship/selection bias); daily bars cannot
+reproduce intraday price discovery; benchmark-adjusted return is not factor-model alpha;
+Amihud is a daily liquidity proxy, not order-book depth; correlation is not causation;
+and multiple testing can manufacture false discoveries. No profitability, execution, or
+transaction-cost modeling is included. Reported publication time is only a historical
+availability proxy; indexing, timestamp revision, delivery, and live-pipeline latency are
+not modeled. The curated 2018–2035 calendar is not an authoritative exchange schedule
+and omits unscheduled closures. See the generated `research_limitations.md`.
+
 ## Demonstrated skills
 
 | Skill | Where it shows up |
@@ -89,6 +184,7 @@ python3 -m pip install -e ./packages/common \
   -e ./packages/pipeline_core \
   -e ./packages/news_data \
   -e ./packages/market_data \
+  -e ./packages/research_data \
   -e ./packages/strategy_sdk \
   -e ./apps/trading_platform \
   -e ".[dev]"
@@ -183,6 +279,7 @@ packages/
   pipeline_core/     Runner, parser, hooks, RunContext, task registry
   news_data/         GDELT DOC + BigQuery path, transforms, reporting views
   market_data/       Domain models, Alpaca adapter, JSONL financial store
+  research_data/     News×market research layer: calendar, alignment, features, join, event study
   strategy_sdk/      Reserved boundary (intentionally empty)
 apps/
   trading_platform/  CLI and task registration
@@ -197,11 +294,11 @@ docs/                Architecture and developer guides
 CI (GitHub Actions) on Python 3.11 and 3.12. **Black** is the project formatter; **Ruff** is used for lint only (Ruff format is not enforced because it conflicts with Black on assert wrapping).
 
 ```bash
-black --check packages/market_data packages/common/src/common/cache.py \
+black --check packages/market_data packages/research_data packages/common/src/common/cache.py \
   tests/test_alpaca_*.py tests/test_financial_jsonl_store.py \
-  tests/test_market_data_models.py tests/test_imports.py
+  tests/test_market_data_models.py tests/test_imports.py tests/test_research_*.py
 ruff check .
-mypy packages/common/src packages/market_data/src packages/pipeline_core/src
+mypy packages/common/src packages/market_data/src packages/pipeline_core/src packages/research_data/src
 # wheel build + isolated venv import smoke (see CI)
 pytest -q
 ```
@@ -212,11 +309,11 @@ Run locally:
 
 ```bash
 pytest -q
-black --check packages/market_data packages/common/src/common/cache.py \
+black --check packages/market_data packages/research_data packages/common/src/common/cache.py \
   tests/test_alpaca_*.py tests/test_financial_jsonl_store.py \
-  tests/test_market_data_models.py tests/test_imports.py
+  tests/test_market_data_models.py tests/test_imports.py tests/test_research_*.py
 ruff check .
-mypy packages/common/src packages/market_data/src packages/pipeline_core/src
+mypy packages/common/src packages/market_data/src packages/pipeline_core/src packages/research_data/src
 ```
 
 ## Current status and roadmap
@@ -229,13 +326,14 @@ mypy packages/common/src packages/market_data/src packages/pipeline_core/src
 - Dashboard-ready reporting views and local sample-data dashboard
 - Market-data domain contracts and JSONL persistence
 - Alpaca historical US stock bars end-to-end (client → cache → normalize → store → artifacts)
+- Normalized, leakage-aware news×market research-data layer with market-calendar alignment, feature catalog, offline event study, and dataset manifest
 
 ### Next
 
-- Research-grade backtesting and feature generation
-- Time-aligned joins between news features and market bars
+- Research-grade backtesting on top of the research-data layer
 - SEC EDGAR and FRED provider adapters on the existing contracts
 - Richer analytics over stored bars and topic features
+- Rolling market-model (beta) expected returns and additional alignment policies
 
 ### Explicitly not implemented
 
@@ -260,6 +358,7 @@ python3 -m http.server 8000
 | Doc | Purpose |
 | --- | --- |
 | [Financial data architecture](docs/architecture/financial-data.md) | Domain identity, Alpaca path, cache, storage |
+| [News×market dataset design](docs/research/news_market_dataset_design.md) | Research question, alignment, hypotheses, feature/leakage design |
 | [Config builder](docs/guides/config-builder.md) | YAML `include:` / merge behavior |
 | [Looker Studio setup](docs/looker_studio_dashboard.md) | Reporting views → Looker Studio |
 | [Dependencies](docs/reference/dependencies.md) | Per-package dependency declarations |

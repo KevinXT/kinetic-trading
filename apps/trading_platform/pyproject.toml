@@ -12,6 +12,7 @@ dependencies = [
   "kinetic-pipeline-core>=0.1.0",
   "kinetic-news-data>=0.1.0",
   "kinetic-market-data>=0.1.0",
+  "kinetic-research-data>=0.1.0",
 ]
 
 [project.scripts]
