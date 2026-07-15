@@ -1,0 +1,917 @@
+[
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-01",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-02",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-03",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-04",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-05",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-06",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-07",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-08",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-09",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-10",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-11",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-12",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-13",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-14",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-15",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-16",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-17",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-18",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-19",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-20",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-21",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-22",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-23",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-24",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-25",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-26",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-27",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-28",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-29",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-30",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-05-31",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-01",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-02",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-03",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-04",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-05",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-06",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-07",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-08",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-09",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-10",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-11",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-12",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-13",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-14",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-15",
+    "article_count": 60,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-16",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-17",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-18",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-19",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-20",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-21",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-22",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-23",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-24",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-25",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-26",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-27",
+    "article_count": 4,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-28",
+    "article_count": 5,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-29",
+    "article_count": 6,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  },
+  {
+    "provider": "bigquery_gdelt",
+    "mode": "daily_counts",
+    "topic": "semiconductors",
+    "date": "2026-06-30",
+    "article_count": 3,
+    "source_count": null,
+    "avg_sentiment": null,
+    "coverage_share": null,
+    "query_terms": [
+      "ECON_SEMICONDUCTOR",
+      "semiconductor"
+    ],
+    "ingested_at": "2026-07-01T00:00:00Z"
+  }
+]

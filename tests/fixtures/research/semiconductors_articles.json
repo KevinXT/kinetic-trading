@@ -1,0 +1,2973 @@
+[
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-01 0",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-05-01-0",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-01T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-01T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-04 0",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-05-04-0",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-05-04T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-04T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-04 1",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-05-04-1",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-05-04T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-04T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-05 0",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-05-05-0",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-05-05T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-05T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-05 1",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-05-05-1",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-05-05T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-05T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-05 2",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-05-05-2",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-05-05T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-05T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-06 0",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-05-06-0",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-05-06T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-06T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-07 0",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-05-07-0",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-05-07T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-07T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-07 1",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-05-07-1",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-07T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-07T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-08 0",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-05-08-0",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-08T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-08T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-08 1",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-05-08-1",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-05-08T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-08T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-08 2",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-05-08-2",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-05-08T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-08T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-11 0",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-05-11-0",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-05-11T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-11T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-12 0",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-05-12-0",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-05-12T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-12T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-12 1",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-05-12-1",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-05-12T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-12T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-13 0",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-05-13-0",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-05-13T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-13T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-13 1",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-05-13-1",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-05-13T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-13T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-13 2",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-05-13-2",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-13T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-13T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-14 0",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-05-14-0",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-05-14T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-14T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-15 0",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-05-15-0",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-15T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-15T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-15 1",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-05-15-1",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-05-15T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-15T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-18 0",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-05-18-0",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-05-18T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-18T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-18 1",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-05-18-1",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-05-18T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-18T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-18 2",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-05-18-2",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-05-18T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-18T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-19 0",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-05-19-0",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-05-19T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-19T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-20 0",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-05-20-0",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-05-20T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-20T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-20 1",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-05-20-1",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-05-20T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-20T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-21 0",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-05-21-0",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-05-21T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-21T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-21 1",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-05-21-1",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-21T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-21T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-21 2",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-05-21-2",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-05-21T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-21T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-22 0",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-05-22-0",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-22T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-22T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-26 0",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-05-26-0",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-05-26T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-26T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-26 1",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-05-26-1",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-05-26T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-26T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-27 0",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-05-27-0",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-05-27T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-27T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-27 1",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-05-27-1",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-05-27T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-27T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-27 2",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-05-27-2",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-05-27T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-27T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-28 0",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-05-28-0",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-05-28T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-28T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-29 0",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-05-29-0",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-05-29T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-29T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-05-29 1",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-05-29-1",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-29T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-29T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-01 0",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-06-01-0",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-01T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-01T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-01 1",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-06-01-1",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-01T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-01T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-01 2",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-06-01-2",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-01T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-01T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-02 0",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-06-02-0",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-02T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-02T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-03 0",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-06-03-0",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-03T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-03T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-03 1",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-06-03-1",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-03T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-03T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-04 0",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-06-04-0",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-04T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-04T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-04 1",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-06-04-1",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-04T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-04T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-04 2",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-06-04-2",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-04T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-04T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-05 0",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-06-05-0",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-05T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-05T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-08 0",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-06-08-0",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-08T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-08T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-08 1",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-06-08-1",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-08T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-08T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-09 0",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-06-09-0",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-09T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-09T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-09 1",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-06-09-1",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-09T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-09T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-09 2",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-06-09-2",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-09T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-09T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-10 0",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-06-10-0",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-10T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-10T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-11 0",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-06-11-0",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-11T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-11T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-11 1",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-06-11-1",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-11T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-11T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-12 0",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-06-12-0",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-12T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-12T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-12 1",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-06-12-1",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-12T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-12T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-12 2",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-06-12-2",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-12T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-12T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-15 0",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-06-15-0",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-15T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-16 0",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-06-16-0",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-16T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-16 1",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-06-16-1",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-16T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-17 0",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-06-17-0",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-17T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-17T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-17 1",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-06-17-1",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-17T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-17T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-17 2",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-06-17-2",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-17T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-17T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-18 0",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-06-18-0",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-18T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-18T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-22 0",
+    "url": "https://www.wsj.com/2026/chip-sector-update-2026-06-22-0",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-22T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-22T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-22 1",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-06-22-1",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-22T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-22T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-23 0",
+    "url": "https://www.cnbc.com/2026/chip-sector-update-2026-06-23-0",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-23T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-23T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-23 1",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-06-23-1",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-23T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-23T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-23 2",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-06-23-2",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-23T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-23T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-24 0",
+    "url": "https://www.ft.com/2026/chip-sector-update-2026-06-24-0",
+    "mobile_url": "",
+    "domain": "ft.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-24T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-24T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-25 0",
+    "url": "https://www.barrons.com/2026/chip-sector-update-2026-06-25-0",
+    "mobile_url": "",
+    "domain": "barrons.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-25T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-25T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-25 1",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-06-25-1",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-25T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-25T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-26 0",
+    "url": "https://www.marketwatch.com/2026/chip-sector-update-2026-06-26-0",
+    "mobile_url": "",
+    "domain": "marketwatch.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-26T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-26T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-26 1",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-06-26-1",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-26T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-26T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-26 2",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-06-26-2",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-26T12:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-26T12:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-29 0",
+    "url": "https://www.seekingalpha.com/2026/chip-sector-update-2026-06-29-0",
+    "mobile_url": "",
+    "domain": "seekingalpha.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-29T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-29T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-30 0",
+    "url": "https://www.reuters.com/2026/chip-sector-update-2026-06-30-0",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-30T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-30T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chip sector update 2026-06-30 1",
+    "url": "https://www.bloomberg.com/2026/chip-sector-update-2026-06-30-1",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-30T12:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-30T12:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Weekend chip briefing 2026-06-13",
+    "url": "https://www.reuters.com/2026/weekend-chip-briefing-2026-06-13",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-13T16:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-13T16:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Weekend chip briefing 2026-06-14",
+    "url": "https://www.reuters.com/2026/weekend-chip-briefing-2026-06-14",
+    "mobile_url": "",
+    "domain": "reuters.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-14T19:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-14T19:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Holiday-week chip note 2026-05-23",
+    "url": "https://www.bloomberg.com/2026/holiday-week-chip-note-2026-05-23",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-23T14:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-23T14:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Holiday-week chip note 2026-05-24",
+    "url": "https://www.bloomberg.com/2026/holiday-week-chip-note-2026-05-24",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-24T15:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-24T15:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Holiday-week chip note 2026-05-25",
+    "url": "https://www.bloomberg.com/2026/holiday-week-chip-note-2026-05-25",
+    "mobile_url": "",
+    "domain": "bloomberg.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-05-25T13:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-05-25T13:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 0",
+    "url": "https://www.outlet00.com/2026/semiconductor-demand-surges-report-0",
+    "mobile_url": "",
+    "domain": "outlet00.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-15T11:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 1",
+    "url": "https://www.outlet01.com/2026/semiconductor-demand-surges-report-1",
+    "mobile_url": "",
+    "domain": "outlet01.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-15T11:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 2",
+    "url": "https://www.outlet02.com/2026/semiconductor-demand-surges-report-2",
+    "mobile_url": "",
+    "domain": "outlet02.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-15T11:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 3",
+    "url": "https://www.outlet03.com/2026/semiconductor-demand-surges-report-3",
+    "mobile_url": "",
+    "domain": "outlet03.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-15T11:03:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:03:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 4",
+    "url": "https://www.outlet04.com/2026/semiconductor-demand-surges-report-4",
+    "mobile_url": "",
+    "domain": "outlet04.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-15T11:04:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:04:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 5",
+    "url": "https://www.outlet05.com/2026/semiconductor-demand-surges-report-5",
+    "mobile_url": "",
+    "domain": "outlet05.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-15T11:05:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:05:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 6",
+    "url": "https://www.outlet06.com/2026/semiconductor-demand-surges-report-6",
+    "mobile_url": "",
+    "domain": "outlet06.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-15T11:06:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:06:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 7",
+    "url": "https://www.outlet07.com/2026/semiconductor-demand-surges-report-7",
+    "mobile_url": "",
+    "domain": "outlet07.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-15T11:07:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:07:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 8",
+    "url": "https://www.outlet08.com/2026/semiconductor-demand-surges-report-8",
+    "mobile_url": "",
+    "domain": "outlet08.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-15T11:08:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:08:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 9",
+    "url": "https://www.outlet09.com/2026/semiconductor-demand-surges-report-9",
+    "mobile_url": "",
+    "domain": "outlet09.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-15T11:09:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:09:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 10",
+    "url": "https://www.outlet10.com/2026/semiconductor-demand-surges-report-10",
+    "mobile_url": "",
+    "domain": "outlet10.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-15T11:10:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:10:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 11",
+    "url": "https://www.outlet11.com/2026/semiconductor-demand-surges-report-11",
+    "mobile_url": "",
+    "domain": "outlet11.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-15T11:11:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:11:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 12",
+    "url": "https://www.outlet12.com/2026/semiconductor-demand-surges-report-12",
+    "mobile_url": "",
+    "domain": "outlet12.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-15T11:12:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:12:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 13",
+    "url": "https://www.outlet13.com/2026/semiconductor-demand-surges-report-13",
+    "mobile_url": "",
+    "domain": "outlet13.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-15T11:13:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:13:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 14",
+    "url": "https://www.outlet14.com/2026/semiconductor-demand-surges-report-14",
+    "mobile_url": "",
+    "domain": "outlet14.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-15T11:14:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:14:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 15",
+    "url": "https://www.outlet15.com/2026/semiconductor-demand-surges-report-15",
+    "mobile_url": "",
+    "domain": "outlet15.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-15T11:15:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:15:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 16",
+    "url": "https://www.outlet16.com/2026/semiconductor-demand-surges-report-16",
+    "mobile_url": "",
+    "domain": "outlet16.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-15T11:16:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:16:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 17",
+    "url": "https://www.outlet17.com/2026/semiconductor-demand-surges-report-17",
+    "mobile_url": "",
+    "domain": "outlet17.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-15T11:17:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:17:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 18",
+    "url": "https://www.outlet18.com/2026/semiconductor-demand-surges-report-18",
+    "mobile_url": "",
+    "domain": "outlet18.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-15T11:18:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:18:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 19",
+    "url": "https://www.outlet19.com/2026/semiconductor-demand-surges-report-19",
+    "mobile_url": "",
+    "domain": "outlet19.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-15T11:19:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:19:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 20",
+    "url": "https://www.outlet20.com/2026/semiconductor-demand-surges-report-20",
+    "mobile_url": "",
+    "domain": "outlet20.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-15T11:20:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:20:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 21",
+    "url": "https://www.outlet21.com/2026/semiconductor-demand-surges-report-21",
+    "mobile_url": "",
+    "domain": "outlet21.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-15T11:21:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:21:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 22",
+    "url": "https://www.outlet22.com/2026/semiconductor-demand-surges-report-22",
+    "mobile_url": "",
+    "domain": "outlet22.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-15T11:22:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:22:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 23",
+    "url": "https://www.outlet23.com/2026/semiconductor-demand-surges-report-23",
+    "mobile_url": "",
+    "domain": "outlet23.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-15T11:23:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:23:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 24",
+    "url": "https://www.outlet24.com/2026/semiconductor-demand-surges-report-24",
+    "mobile_url": "",
+    "domain": "outlet24.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-15T11:24:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:24:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 25",
+    "url": "https://www.outlet25.com/2026/semiconductor-demand-surges-report-25",
+    "mobile_url": "",
+    "domain": "outlet25.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-15T11:25:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:25:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 26",
+    "url": "https://www.outlet26.com/2026/semiconductor-demand-surges-report-26",
+    "mobile_url": "",
+    "domain": "outlet26.com",
+    "language": "English",
+    "source_country": "United Kingdom",
+    "published_at": "2026-06-15T11:26:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:26:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 27",
+    "url": "https://www.outlet27.com/2026/semiconductor-demand-surges-report-27",
+    "mobile_url": "",
+    "domain": "outlet27.com",
+    "language": "English",
+    "source_country": "Germany",
+    "published_at": "2026-06-15T11:27:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:27:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 28",
+    "url": "https://www.outlet28.com/2026/semiconductor-demand-surges-report-28",
+    "mobile_url": "",
+    "domain": "outlet28.com",
+    "language": "English",
+    "source_country": "Japan",
+    "published_at": "2026-06-15T11:28:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:28:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Semiconductor demand surges report 29",
+    "url": "https://www.outlet29.com/2026/semiconductor-demand-surges-report-29",
+    "mobile_url": "",
+    "domain": "outlet29.com",
+    "language": "English",
+    "source_country": "Canada",
+    "published_at": "2026-06-15T11:29:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-15T11:29:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet00.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet00.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet01.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet01.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:01:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:01:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet02.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet02.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:02:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:02:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet03.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet03.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:03:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:03:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet04.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet04.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:04:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:04:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet05.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet05.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:05:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:05:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet06.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet06.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:06:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:06:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet07.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet07.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:07:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:07:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet08.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet08.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:08:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:08:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Chipmaker announces new fab",
+    "url": "https://www.outlet09.com/2026/chipmaker-announces-new-fab",
+    "mobile_url": "",
+    "domain": "outlet09.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-16T11:09:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-16T11:09:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "AI chip roadmap accelerates",
+    "url": "https://www.cnbc.com/2026/ai-chip-roadmap-accelerates",
+    "mobile_url": "",
+    "domain": "cnbc.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-02T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-02T12:00:00Z",
+    "topics": [
+      "semiconductors",
+      "ai"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ],
+      "ai": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Duplicate chip headline",
+    "url": "https://www.wsj.com/2026/duplicate-chip-headline",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-02T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-02T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  },
+  {
+    "provider": "gdelt",
+    "query": "(semiconductor OR GPU OR Nvidia OR TSMC OR \"chip supply\")",
+    "title": "Duplicate chip headline",
+    "url": "https://www.wsj.com/2026/duplicate-chip-headline?ref=2",
+    "mobile_url": "",
+    "domain": "wsj.com",
+    "language": "English",
+    "source_country": "United States",
+    "published_at": "2026-06-02T12:00:00Z",
+    "raw_seen_date": "",
+    "image_url": "",
+    "ingested_at": "2026-06-02T12:00:00Z",
+    "topics": [
+      "semiconductors"
+    ],
+    "topic_matches": {
+      "semiconductors": [
+        "semiconductor"
+      ]
+    },
+    "primary_topic": "semiconductors"
+  }
+]
