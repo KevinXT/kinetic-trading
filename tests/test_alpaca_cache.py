@@ -10,9 +10,10 @@ from common import cache
 from common.cache import CachePolicy, make_cache_key
 from market_data.domain.requests import BarsRequest
 from market_data.providers.alpaca.client import AlpacaRawPages
-from market_data.providers.alpaca.config import AlpacaProviderConfig
+from market_data.providers.alpaca.config import AlpacaProviderConfig, normalize_api_origin
 from market_data.providers.alpaca.provider import (
     ALPACA_CACHE_NAMESPACE,
+    ALPACA_CACHE_SCHEMA_VERSION,
     AlpacaPriceProvider,
     build_alpaca_cache_payload,
 )
@@ -63,26 +64,34 @@ def _cache_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(cache, "CACHE_ROOT", tmp_path / "cache")
 
 
-def _provider(client: _Client) -> AlpacaPriceProvider:
-    return AlpacaPriceProvider(AlpacaProviderConfig(), client)  # type: ignore[arg-type]
+def _provider(
+    client: _Client,
+    *,
+    base_url: str = "https://data.alpaca.markets",
+) -> AlpacaPriceProvider:
+    return AlpacaPriceProvider(
+        AlpacaProviderConfig(base_url=base_url),
+        client,  # type: ignore[arg-type]
+    )
 
 
 def test_cache_miss_fetches_all_pages_and_writes_raw_result() -> None:
     client = _Client()
     result = _provider(client).fetch_bars(
         _request(),
-        cache_policy=CachePolicy(schema_version="alpaca-bars-v1"),
+        cache_policy=CachePolicy(schema_version=ALPACA_CACHE_SCHEMA_VERSION),
         retrieved_at=NOW,
     )
     assert result.cache_status == "miss"
     assert result.cache_written is True
     assert client.calls == 1
     assert [bar.symbol for bar in result.bars] == ["AAPL", "MSFT"]
+    assert all(bar.currency == "USD" for bar in result.bars)
 
 
 def test_cache_hit_avoids_http_and_preserves_pagination() -> None:
     request = _request()
-    policy = CachePolicy(schema_version="alpaca-bars-v1")
+    policy = CachePolicy(schema_version=ALPACA_CACHE_SCHEMA_VERSION)
     first_client = _Client()
     _provider(first_client).fetch_bars(request, cache_policy=policy, retrieved_at=NOW)
     second_client = _Client()
@@ -101,7 +110,7 @@ def test_cache_hit_avoids_http_and_preserves_pagination() -> None:
 
 def test_expired_cache_invokes_client() -> None:
     request = _request()
-    policy = CachePolicy(ttl_seconds=60, schema_version="alpaca-bars-v1")
+    policy = CachePolicy(ttl_seconds=60, schema_version=ALPACA_CACHE_SCHEMA_VERSION)
     first = _provider(_Client()).fetch_bars(request, cache_policy=policy, retrieved_at=NOW)
     path = cache.CACHE_ROOT / ALPACA_CACHE_NAMESPACE / f"{first.cache_key}.json"
     old_time = path.stat().st_mtime - 120
@@ -117,12 +126,12 @@ def test_expired_cache_invokes_client() -> None:
 
 def test_force_refresh_invokes_client() -> None:
     request = _request()
-    normal = CachePolicy(schema_version="alpaca-bars-v1")
+    normal = CachePolicy(schema_version=ALPACA_CACHE_SCHEMA_VERSION)
     _provider(_Client()).fetch_bars(request, cache_policy=normal, retrieved_at=NOW)
     client = _Client()
     result = _provider(client).fetch_bars(
         request,
-        cache_policy=CachePolicy(force_refresh=True, schema_version="alpaca-bars-v1"),
+        cache_policy=CachePolicy(force_refresh=True, schema_version=ALPACA_CACHE_SCHEMA_VERSION),
         retrieved_at=NOW,
     )
     assert result.cache_status == "force_refresh"
@@ -130,19 +139,55 @@ def test_force_refresh_invokes_client() -> None:
 
 
 def test_cache_payload_is_stable_and_excludes_credentials() -> None:
-    payload = build_alpaca_cache_payload(_request())
+    config = AlpacaProviderConfig()
+    payload = build_alpaca_cache_payload(_request(), config)
     reversed_payload = dict(reversed(list(payload.items())))
     assert make_cache_key(payload) == make_cache_key(reversed_payload)
     serialized = json.dumps(payload)
     assert "fixture-key" not in serialized
     assert "secret" not in serialized
     assert "key_id_env" not in serialized
+    assert payload["api_origin"] == "https://data.alpaca.markets"
+    assert payload["currency"] == "USD"
 
 
 def test_response_affecting_request_values_change_cache_payload() -> None:
-    base = build_alpaca_cache_payload(_request())
-    assert base != build_alpaca_cache_payload(_request(feed="sip"))
-    assert base != build_alpaca_cache_payload(_request(adjustment="raw"))
+    config = AlpacaProviderConfig()
+    base = build_alpaca_cache_payload(_request(), config)
+    assert base != build_alpaca_cache_payload(_request(feed="sip"), config)
+    assert base != build_alpaca_cache_payload(_request(adjustment="raw"), config)
     assert base != build_alpaca_cache_payload(
-        _request(end=datetime(2026, 6, 29, tzinfo=timezone.utc))
+        _request(end=datetime(2026, 6, 29, tzinfo=timezone.utc)),
+        config,
+    )
+    assert base != build_alpaca_cache_payload(_request(currency="CAD"), config)
+
+
+def test_different_api_origins_do_not_share_cache_entries() -> None:
+    request = _request()
+    policy = CachePolicy(schema_version=ALPACA_CACHE_SCHEMA_VERSION)
+    production = _provider(_Client(), base_url="https://data.alpaca.markets")
+    sandbox = _provider(_Client(), base_url="https://data.sandbox.alpaca.markets")
+    first = production.fetch_bars(request, cache_policy=policy, retrieved_at=NOW)
+    second = sandbox.fetch_bars(request, cache_policy=policy, retrieved_at=NOW)
+    assert first.cache_key != second.cache_key
+    assert second.cache_status == "miss"
+
+
+def test_equivalent_normalized_base_urls_share_cache_identity() -> None:
+    request = _request()
+    left = build_alpaca_cache_payload(
+        request, AlpacaProviderConfig(base_url="https://data.alpaca.markets/")
+    )
+    right = build_alpaca_cache_payload(
+        request, AlpacaProviderConfig(base_url="HTTPS://DATA.ALPACA.MARKETS:443")
+    )
+    assert left == right
+    assert normalize_api_origin("https://data.alpaca.markets/") == ("https://data.alpaca.markets")
+
+
+def test_omitted_and_explicit_usd_share_cache_identity() -> None:
+    config = AlpacaProviderConfig()
+    assert build_alpaca_cache_payload(_request(), config) == build_alpaca_cache_payload(
+        _request(currency="USD"), config
     )

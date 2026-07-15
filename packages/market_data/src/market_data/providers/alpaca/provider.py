@@ -14,11 +14,12 @@ from market_data.domain.requests import BarsRequest
 from market_data.providers.alpaca.client import AlpacaBarsClient
 from market_data.providers.alpaca.config import AlpacaProviderConfig, resolve_credentials
 from market_data.providers.alpaca.errors import AlpacaPayloadError
-from market_data.providers.alpaca.normalize import normalize_alpaca_bars
+from market_data.providers.alpaca.normalize import normalize_alpaca_bars, resolve_bar_currency
 from market_data.providers.alpaca.raw_models import AlpacaBarsPage, parse_alpaca_bars_page
 
 ALPACA_CACHE_NAMESPACE = "alpaca_historical_stock_bars"
-ALPACA_CACHE_SCHEMA_VERSION = "alpaca-bars-v1"
+# v2 includes normalized api_origin so sandbox/prod/mock hosts cannot share entries.
+ALPACA_CACHE_SCHEMA_VERSION = "alpaca-bars-v2"
 
 
 def _rfc3339(value: datetime) -> str:
@@ -32,6 +33,7 @@ def safe_request_summary(
     result: dict[str, object] = {
         "provider": "alpaca",
         "operation": "historical_stock_bars",
+        "api_origin": config.api_origin,
         "symbols": list(request.symbols),
         "timeframe": request.timeframe,
         "start": _rfc3339(request.start),
@@ -40,21 +42,24 @@ def safe_request_summary(
         "adjustment": request.adjustment,
         "limit": request.limit,
         "sort": request.sort,
+        "currency": resolve_bar_currency(request),
         "key_id_env": config.key_id_env,
         "secret_key_env": config.secret_key_env,
     }
     if request.asof is not None:
         result["asof"] = request.asof.isoformat()
-    if request.currency is not None:
-        result["currency"] = request.currency
     return result
 
 
-def build_alpaca_cache_payload(request: BarsRequest) -> dict[str, object]:
+def build_alpaca_cache_payload(
+    request: BarsRequest,
+    config: AlpacaProviderConfig,
+) -> dict[str, object]:
     """Build a credential-free key for one complete paginated raw result."""
     payload: dict[str, object] = {
         "provider": "alpaca",
         "endpoint": "historical_stock_bars",
+        "api_origin": config.api_origin,
         "symbols": list(request.symbols),
         "timeframe": request.timeframe,
         "start": _rfc3339(request.start),
@@ -63,11 +68,11 @@ def build_alpaca_cache_payload(request: BarsRequest) -> dict[str, object]:
         "adjustment": request.adjustment,
         "limit": request.limit,
         "sort": request.sort,
+        # Always stamp currency so omitted vs explicit USD share one cache identity.
+        "currency": resolve_bar_currency(request),
     }
     if request.asof is not None:
         payload["asof"] = request.asof.isoformat()
-    if request.currency is not None:
-        payload["currency"] = request.currency
     return payload
 
 
@@ -120,7 +125,7 @@ class AlpacaPriceProvider:
         if retrieved_at.tzinfo is None or retrieved_at.utcoffset() is None:
             raise ValueError("retrieved_at must be timezone-aware")
         retrieved_at = retrieved_at.astimezone(timezone.utc)
-        cache_payload = build_alpaca_cache_payload(request)
+        cache_payload = build_alpaca_cache_payload(request, self.config)
 
         def fetch_raw() -> dict[str, Any]:
             raw = self._client.fetch_pages(request)

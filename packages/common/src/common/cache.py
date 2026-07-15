@@ -77,10 +77,14 @@ def _load_json_cache(
 
     try:
         with path.open("r", encoding="utf-8") as f:
-            return json.load(f)
+            loaded = json.load(f)
     except (json.JSONDecodeError, ValueError):
         logger.warning("corrupt cache file, ignoring: %s", path)
         return None
+    if not isinstance(loaded, dict):
+        logger.warning("corrupt cache file, ignoring: %s", path)
+        return None
+    return loaded
 
 
 def load_json_cache(namespace: str, key: str) -> Optional[JsonDict]:
@@ -141,7 +145,7 @@ def get_or_fetch_json_result(
     refresh = force_refresh or (policy.force_refresh if policy is not None else False)
     ttl_seconds = policy.ttl_seconds if policy is not None else None
 
-    cache_status: Literal["miss", "expired", "force_refresh"] = "force_refresh"
+    cache_status: Literal["hit", "miss", "expired", "force_refresh"] = "force_refresh"
     if not refresh:
         cached, lookup_status = _lookup_json_cache(namespace, key, ttl_seconds=ttl_seconds)
         if cached is not None:

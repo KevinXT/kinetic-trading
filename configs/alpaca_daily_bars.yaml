@@ -16,7 +16,8 @@ cache:
   # This example ends on a completed historical interval, so no TTL is required.
   ttl_seconds: null
   force_refresh: false
-  schema_version: "alpaca-bars-v1"
+  # v2 cache keys include normalized api_origin (sandbox vs production isolation).
+  schema_version: "alpaca-bars-v2"
 
 storage:
   type: jsonl
@@ -41,3 +42,6 @@ pipeline:
       adjustment: all
       limit: 1000
       sort: asc
+      # Optional ISO-4217 code. Omitted requests store USD on PriceBar (Alpaca default).
+      # Forwarded as the requested price denomination; Kinetic does not model FX rates.
+      # currency: USD

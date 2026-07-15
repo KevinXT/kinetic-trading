@@ -134,9 +134,11 @@ class AlpacaBarsClient:
         }
 
     def _backoff(self, attempt: int) -> float:
-        return min(
-            self.config.initial_backoff_seconds * (2 ** (attempt - 1)),
-            self.config.maximum_backoff_seconds,
+        return float(
+            min(
+                self.config.initial_backoff_seconds * (2 ** (attempt - 1)),
+                self.config.maximum_backoff_seconds,
+            )
         )
 
     def _retry_after(self, response: ResponseLike, attempt: int) -> float:
