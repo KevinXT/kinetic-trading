@@ -1,9 +1,8 @@
 """
 Import smoke tests: verify all installable packages import cleanly.
 
-Implemented packages assert key public symbols exist. Placeholder packages
-only verify that they import and have a module docstring — they are not
-expected to export real functionality yet.
+Implemented packages assert key public symbols exist. The strategy_sdk
+boundary only verifies that it imports and has a module docstring.
 """
 
 
@@ -29,21 +28,25 @@ def test_import_news_data():
 
 
 def test_import_market_data():
-    """Placeholder package — just verify it imports and has a docstring."""
-    import market_data
+    from market_data.domain import PriceBar
+    from market_data.providers.alpaca import AlpacaPriceProvider
+    from market_data.storage import JsonlFinancialDataStore
 
-    assert market_data.__doc__
+    assert PriceBar is not None
+    assert AlpacaPriceProvider is not None
+    assert JsonlFinancialDataStore is not None
 
 
 def test_import_strategy_sdk():
-    """Placeholder package — just verify it imports and has a docstring."""
+    """Reserved package boundary — verify it imports and has a docstring."""
     import strategy_sdk
 
     assert strategy_sdk.__doc__
 
 
 def test_import_trading_platform():
-    """Stub app — just verify it imports and exposes a version."""
     import trading_platform
+    from pipeline_core.tasks.registry import TASK_REGISTRY
 
     assert trading_platform.__version__
+    assert "alpaca_historical_bars" in TASK_REGISTRY

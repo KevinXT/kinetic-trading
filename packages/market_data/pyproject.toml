@@ -7,7 +7,7 @@ name = "kinetic-market-data"
 version = "0.1.0"
 description = "Provider-agnostic financial data contracts and integrations"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
 dependencies = [
   "kinetic-common>=0.1.0",
   "requests>=2.31",
