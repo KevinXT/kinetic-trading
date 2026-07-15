@@ -244,3 +244,24 @@ misleading fields. Catalog, builder, feature, and dataset versions were bumped t
 V2. No transitional alias is emitted: there is no released V1 research schema or
 deserializer to preserve, and retaining the misleading names would create a more
 durable compatibility problem.
+
+## 12. Emitted artifacts
+
+The `build_news_market_dataset` task writes the following per-run artifacts
+(under `experiments/<run>/`, not committed):
+
+| Artifact | Contents |
+| --- | --- |
+| `news_topic_daily_features.jsonl` | `NewsTopicDailyFeature` rows (per topic per feature date) |
+| `session_news_features.jsonl` | `SessionNewsFeature` rows (news aligned to a target session) |
+| `market_session_features.jsonl` | `MarketSessionFeature` rows (per instrument per session) |
+| `news_market_observations.{jsonl,csv}` | Terminal `NewsMarketObservation` rows with grouped inputs/contemporaneous/targets/quality/lineage |
+| `feature_catalog.json` | Serialized feature catalog (category, formula, source, leakage class, hypothesis metadata) |
+| `dataset_manifest.json` | `DatasetManifest`: versions, alignment policies, calendar name, cutoff buffer, availability assumptions, alignment-precision counts, bootstrap parameters, hypothesis-registry version, missingness counts, warnings |
+| `join_summary.json` | Join/leakage diagnostics and split assignment counts |
+| `event_study_events.jsonl` | Per-event attention records |
+| `event_study_summary.{json,csv}` | Grouped effect sizes, CIs, and inferential status per hypothesis family |
+| `research_limitations.md` | Generated limitations report shipped alongside every run |
+
+Outputs are deterministic under a fixed clock, which the integration tests use
+to assert byte-stable results.

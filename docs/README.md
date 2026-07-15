@@ -10,6 +10,7 @@ Product notes, development checklists, and technical guides for kinetic-trading.
 | [Looker Studio setup](looker_studio_dashboard.md) | BI reporting views + how to connect them to Looker Studio | current |
 | [Run context](pipeline/run-context.md) | `RunContext`, state contract, and artifact layout | current |
 | [Financial data architecture](architecture/financial-data.md) | Provider-neutral contracts, Alpaca path, identity, cache, and storage | current |
+| [News×market dataset design](research/news_market_dataset_design.md) | Research question, alignment, hypotheses, feature/leakage design, artifacts, and limitations | current |
 | [Dependencies](reference/dependencies.md) | Per-package dependency declarations | current |
 | [Notes](notes/README.md) | Scratch / informal notes | — |
 
