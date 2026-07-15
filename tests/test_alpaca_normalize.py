@@ -50,7 +50,24 @@ def test_exact_field_mapping_and_provider_metadata() -> None:
         "all",
         "1Day",
     )
+    assert apple.currency == "USD"
     assert apple.retrieved_at == RETRIEVED_AT
+
+
+def test_requested_currency_is_stamped_on_normalized_bars() -> None:
+    page = parse_alpaca_bars_page(_payload("one_page_multi_symbol.json"))
+    request = BarsRequest(
+        symbols=("MSFT", "AAPL"),
+        timeframe="1Day",
+        start=datetime(2026, 6, 1, tzinfo=timezone.utc),
+        end=datetime(2026, 6, 30, tzinfo=timezone.utc),
+        feed="iex",
+        adjustment="all",
+        currency="CAD",
+    )
+    bars = normalize_alpaca_bars([page], request=request, retrieved_at=RETRIEVED_AT)
+    assert {bar.currency for bar in bars} == {"CAD"}
+    assert bars[0].logical_key[-1] == "CAD"
 
 
 def test_multiple_pages_and_symbols_are_sorted_deterministically() -> None:

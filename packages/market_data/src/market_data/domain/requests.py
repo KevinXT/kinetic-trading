@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 
-from market_data.domain.models import normalize_cik
+from market_data.domain.models import normalize_cik, normalize_currency
 
 
 def _utc(value: datetime, field_name: str) -> datetime:
@@ -65,7 +65,7 @@ class BarsRequest:
         if self.asof is not None:
             object.__setattr__(self, "asof", _date(self.asof, "asof"))
         if self.currency is not None:
-            object.__setattr__(self, "currency", _text(self.currency, "currency").upper())
+            object.__setattr__(self, "currency", normalize_currency(self.currency))
 
 
 @dataclass(frozen=True, slots=True)
