@@ -1,0 +1,99 @@
+# Versioned topic -> instrument research mappings.
+#
+# These are RESEARCHER-DEFINED assumptions, not objective truth. They are
+# versioned so a later revision does not silently rewrite history. A present-day
+# ticker list is NOT a survivorship-bias-free historical universe: instruments
+# that were delisted or renamed are not represented, which biases any analysis
+# toward survivors. Keep this list small and defensible rather than speculative.
+# `instrument_id` is the durable internal identity. `symbol` is a date-valid
+# market identifier, not a permanent identity; valid_from/valid_to jointly bound
+# the research relationship and symbol assignment. Null windows are a V1
+# simplification and do not remove ticker-change or survivorship risk.
+
+mapping_version: "news-market-mapping-v1"
+
+topics:
+  semiconductors:
+    instruments:
+      - instrument_id: etf_smh
+        symbol: SMH
+        relationship: sector_etf
+        exposure_type: direct_sector
+        weight: 1.0
+        benchmark_symbol: QQQ
+        sector_benchmark_symbol: SMH
+        valid_from: null
+        valid_to: null
+        research_rationale: "Broad semiconductor sector ETF exposure."
+      - instrument_id: equity_nvda
+        symbol: NVDA
+        relationship: constituent
+        exposure_type: company
+        weight: 1.0
+        benchmark_symbol: QQQ
+        sector_benchmark_symbol: SMH
+        valid_from: null
+        valid_to: null
+        research_rationale: "Large semiconductor constituent, explicit research mapping."
+      - instrument_id: equity_amd
+        symbol: AMD
+        relationship: constituent
+        exposure_type: company
+        weight: 1.0
+        benchmark_symbol: QQQ
+        sector_benchmark_symbol: SMH
+        valid_from: null
+        valid_to: null
+        research_rationale: "Second semiconductor constituent for cross-instrument checks."
+
+  ai:
+    instruments:
+      - instrument_id: etf_qqq
+        symbol: QQQ
+        relationship: broad_market
+        exposure_type: broad_index
+        weight: 1.0
+        benchmark_symbol: QQQ
+        sector_benchmark_symbol: null
+        valid_from: null
+        valid_to: null
+        research_rationale: "AI headlines proxied by a broad tech-heavy index; self-benchmarked."
+
+  energy:
+    instruments:
+      - instrument_id: etf_xle
+        symbol: XLE
+        relationship: sector_etf
+        exposure_type: direct_sector
+        weight: 1.0
+        benchmark_symbol: SPY
+        sector_benchmark_symbol: XLE
+        valid_from: null
+        valid_to: null
+        research_rationale: "Energy sector ETF exposure."
+
+  financials:
+    instruments:
+      - instrument_id: etf_xlf
+        symbol: XLF
+        relationship: sector_etf
+        exposure_type: direct_sector
+        weight: 1.0
+        benchmark_symbol: SPY
+        sector_benchmark_symbol: XLF
+        valid_from: null
+        valid_to: null
+        research_rationale: "Financials sector ETF exposure."
+
+  defense_aerospace:
+    instruments:
+      - instrument_id: etf_ita
+        symbol: ITA
+        relationship: sector_etf
+        exposure_type: direct_sector
+        weight: 1.0
+        benchmark_symbol: SPY
+        sector_benchmark_symbol: ITA
+        valid_from: null
+        valid_to: null
+        research_rationale: "Aerospace & defense sector ETF exposure."

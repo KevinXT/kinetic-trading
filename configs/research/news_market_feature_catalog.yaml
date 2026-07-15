@@ -1,0 +1,552 @@
+# News x Market feature catalog.
+#
+# Every field emitted by the research builder is declared here with its category,
+# formula, source, window, availability rule, null behavior, leakage risk, and
+# implementation status. Categories: identity, lineage, availability, input,
+# contemporaneous, target, quality, diagnostic.
+#
+# Leakage rule: every "input" field must be available by feature_cutoff.
+# "contemporaneous" fields describe the target session and are forbidden as
+# predictors of it.
+# "target" fields are computed from the target session and later sessions only.
+
+catalog_version: "news-market-catalog-v2"
+
+features:
+  # --- Identity -------------------------------------------------------------
+  - name: session_date
+    label: Target session date
+    category: identity
+    formula: "aligned target market session (America/New_York)"
+    required_source_fields: [published_at, market_calendar]
+    window: point
+    availability_rule: "known by construction"
+    interpretation: "the first session that can react to the aligned news"
+    units: date
+    implementation_status: core_v1
+  - name: topic
+    label: Topic
+    category: identity
+    formula: "keyword-rule topic tag"
+    required_source_fields: [topics]
+    interpretation: "research topic; counts are not additive across topics"
+    implementation_status: core_v1
+  - name: symbol
+    label: Instrument symbol
+    category: identity
+    formula: "topic->instrument mapping symbol"
+    required_source_fields: [mapping]
+    implementation_status: core_v1
+  - name: news_measurement_method
+    label: News measurement method
+    category: identity
+    formula: "gdelt_doc_artlist | bigquery_gdelt_counts"
+    interpretation: "DOC and BigQuery paths are not interchangeable"
+    implementation_status: core_v1
+
+  # --- Lineage --------------------------------------------------------------
+  - name: alignment_policy
+    label: Alignment policy
+    category: lineage
+    formula: "session_information_window_v2 | conservative_calendar_day_v2"
+    implementation_status: core_v1
+  - name: mapping_version
+    label: Mapping version
+    category: lineage
+    formula: "topic-instrument mapping version"
+    implementation_status: core_v1
+  - name: query_specification_hash
+    label: Query specification hash
+    category: lineage
+    formula: "sha256 of sorted query/theme strings"
+    implementation_status: core_v1
+
+  # --- Availability ---------------------------------------------------------
+  - name: feature_available_at
+    label: Feature available at
+    category: availability
+    formula: "proxy timestamp when the completed feature is treated as available"
+    availability_rule: "must be <= feature_cutoff; equality is allowed"
+    leakage_risk: "high if computed from post-open data"
+    implementation_status: core_v1
+  - name: target_session_open
+    label: Target session open (UTC)
+    category: availability
+    formula: "calendar.session_open(session_date)"
+    implementation_status: core_v1
+  - name: feature_cutoff
+    label: Conservative feature cutoff (UTC)
+    category: availability
+    formula: "target_session_open - cutoff_buffer_seconds"
+    availability_rule: "all input features must be available no later than this timestamp"
+    implementation_status: core_v1
+  - name: cutoff_buffer_seconds
+    label: Cutoff buffer (seconds)
+    category: availability
+    formula: "configured operational gap before market open; default 300"
+    interpretation: "operational conservatism only; not a provider-latency model"
+    implementation_status: core_v1
+  - name: availability_assumption
+    label: Historical availability assumption
+    category: availability
+    formula: "publication_timestamp_proxy_v1 | daily_period_end_proxy_v1"
+    implementation_status: core_v1
+
+  # --- News input features (DOC-rich) --------------------------------------
+  - name: news_title_deduplicated_article_count
+    label: Session/topic title-deduplicated article count
+    category: input
+    formula: "count of unique normalized titles in the session window"
+    required_source_fields: [title]
+    window: session_window
+    includes_current: true
+    availability_rule: "articles published before target open"
+    null_behavior: "null on BigQuery; 0 is valid only for adequately measured DOC coverage"
+    leakage_risk: low
+    interpretation: "news-volume measure (attention proxy)"
+    units: count
+    motivation: "Da/Engelberg/Gao attention; Fang/Peress coverage"
+    implementation_status: core_v1
+  - name: news_attention_count
+    label: Method-specific news-volume count
+    category: input
+    formula: "DOC title-deduplicated count; BigQuery provider daily article_count"
+    interpretation: "method-specific attention proxy; methods never share a rolling baseline"
+    implementation_status: core_v1
+  - name: news_observed_article_count
+    label: Observed article count (incl. copies)
+    category: input
+    formula: "count of all article rows in the session window"
+    required_source_fields: [title]
+    implementation_status: core_v1
+  - name: news_log1p_attention_count
+    label: Log1p method-specific attention count
+    category: input
+    formula: "ln(1 + attention_count)"
+    interpretation: "compresses heavy-tailed counts"
+    implementation_status: core_v1
+  - name: news_observed_copy_count
+    label: Observed duplicate copies
+    category: input
+    formula: "observed_article_count - title_deduplicated_article_count"
+    null_behavior: "null on BigQuery path (unsupported)"
+    interpretation: "repetition/syndication proxy (title-based, run-scoped)"
+    motivation: "Tetlock stale-information reprints"
+    implementation_status: core_v1
+  - name: news_duplicate_ratio
+    label: Duplicate copy ratio
+    category: input
+    formula: "observed_copy_count / observed"
+    null_behavior: "null on BigQuery path"
+    implementation_status: core_v1
+  - name: news_unique_domains
+    label: Unique domains
+    category: input
+    formula: "distinct article domains"
+    required_source_fields: [domain]
+    null_behavior: "null on BigQuery path"
+    interpretation: "media-breadth measure"
+    implementation_status: core_v1
+  - name: news_unique_source_countries
+    label: Unique source countries
+    category: input
+    formula: "distinct source_country values"
+    null_behavior: "null on BigQuery path"
+    interpretation: "metadata proxy; not investor/event geography"
+    implementation_status: core_v1
+  - name: news_domains_per_title_deduplicated_article
+    label: Domains per title-deduplicated article
+    category: input
+    formula: "unique_domains / title_deduplicated_article_count"
+    null_behavior: "null when deduplicated count=0 or BigQuery path"
+    implementation_status: core_v1
+  - name: news_countries_per_title_deduplicated_article
+    label: Countries per title-deduplicated article
+    category: input
+    formula: "unique_source_countries / title_deduplicated_article_count"
+    implementation_status: v1_optional
+  - name: news_primary_topic_share
+    label: Primary-topic share
+    category: input
+    formula: "primary_topic_count / observed_article_count"
+    null_behavior: "null on BigQuery path"
+    implementation_status: core_v1
+  - name: news_multi_topic_share
+    label: Multi-topic article share
+    category: input
+    formula: "articles with >1 topic / observed"
+    interpretation: "cross-topic spillover proxy (H5)"
+    implementation_status: v1_optional
+  - name: news_publication_span_hours
+    label: Publication span (hours)
+    category: input
+    formula: "latest_published_at - earliest_published_at"
+    null_behavior: "null on BigQuery path (no timestamps)"
+    implementation_status: v1_optional
+  - name: news_observed_copy_domain_hhi
+    label: Observed-copy domain HHI
+    category: input
+    formula: "sum(p_i^2) over all observed article-copy domain shares"
+    null_behavior: "null when no sources or BigQuery path"
+    interpretation: "source concentration; 1.0 = single domain"
+    implementation_status: v1_optional
+  - name: news_observed_copy_domain_entropy
+    label: Observed-copy domain entropy
+    category: input
+    formula: "-sum(p_i ln p_i) over per-domain shares"
+    implementation_status: v1_optional
+  - name: news_observed_copy_effective_domain_count
+    label: Observed-copy effective domain count
+    category: input
+    formula: "exp(observed_copy_domain_entropy)"
+    interpretation: "domain-breadth proxy for H2; domains are not verified independent outlets"
+    implementation_status: v1_optional
+  - name: news_observed_copy_source_country_hhi
+    label: Observed-copy source-country HHI
+    category: input
+    formula: "sum(p_i^2) over per-country shares"
+    implementation_status: v1_optional
+  - name: news_largest_duplicate_group
+    label: Largest normalized-title duplicate group
+    category: input
+    formula: "maximum observed copies sharing one normalized title"
+    null_behavior: "null on BigQuery path"
+    implementation_status: core_v1
+  - name: news_duplicate_group_count
+    label: Normalized-title duplicate-group count
+    category: input
+    formula: "number of normalized titles with more than one observed copy"
+    null_behavior: "null on BigQuery path"
+    implementation_status: core_v1
+  - name: news_attention_zscore_7
+    label: Lag-only 7-session attention z-score
+    category: input
+    formula: "(count - mean(prior 7)) / std(prior 7)"
+    window: prior_7_sessions
+    includes_current: false
+    availability_rule: "prior window strictly excludes current"
+    null_behavior: "null unless 7 eligible prior session-window observations exist or dispersion is zero"
+    minimum_history: 7
+    leakage_risk: "high if current is included in baseline"
+    motivation: "attention shock / surprise"
+    implementation_status: core_v1
+  - name: news_attention_zscore_30
+    label: Lag-only 30-session attention z-score
+    category: input
+    formula: "(count - mean(prior 30)) / std(prior 30)"
+    window: prior_30_sessions
+    includes_current: false
+    null_behavior: "null unless 30 eligible prior session-window observations exist or dispersion is zero"
+    minimum_history: 30
+    leakage_risk: high
+    interpretation: "primary attention-shock feature (H1 event rule)"
+    hypothesis_class: confirmatory
+    hypothesis_family: confirmatory_h1_attention_volatility_v1
+    hypothesis_id: H1
+    implementation_status: core_v1
+  - name: news_attention_ratio_7
+    label: Attention ratio to prior-7 mean
+    category: input
+    formula: "count / mean(prior 7)"
+    includes_current: false
+    implementation_status: v1_optional
+  - name: news_attention_ratio_30
+    label: Attention ratio to prior-30 mean
+    category: input
+    formula: "count / mean(prior 30)"
+    includes_current: false
+    implementation_status: v1_optional
+  - name: news_attention_percentile_prior
+    label: Trailing attention percentile
+    category: input
+    formula: "fraction of prior observations <= current"
+    includes_current: false
+    implementation_status: v1_optional
+  - name: news_article_count_change_1
+    label: 1-session attention change
+    category: input
+    formula: "current - prior session count"
+    includes_current: false
+    implementation_status: v1_optional
+
+  # --- Market prior-state inputs (through previous session close) -----------
+  - name: mkt_prior_simple_return
+    label: Prior-session simple return
+    category: input
+    formula: "close_{S-1}/close_{S-2} - 1"
+    window: prior_1_session
+    availability_rule: "known at prior close, before target open"
+    leakage_risk: low
+    implementation_status: core_v1
+  - name: mkt_prior_trailing_return_5
+    label: Prior trailing 5-session return
+    category: input
+    formula: "close_{S-1}/close_{S-6} - 1"
+    window: prior_5_sessions
+    implementation_status: core_v1
+  - name: mkt_prior_trailing_return_20
+    label: Prior trailing 20-session return
+    category: input
+    formula: "close_{S-1}/close_{S-21} - 1"
+    window: prior_20_sessions
+    implementation_status: core_v1
+  - name: mkt_prior_trailing_close_to_close_vol_20
+    label: Prior trailing close-to-close volatility (20)
+    category: input
+    formula: "sample std of last 20 daily log returns ending S-1"
+    window: prior_20_sessions
+    interpretation: "rolling volatility estimate, not realized HF vol"
+    minimum_history: 20
+    implementation_status: core_v1
+  - name: mkt_prior_rolling_parkinson_20
+    label: Prior rolling Parkinson variance (20)
+    category: input
+    formula: "mean of last 20 daily Parkinson variances ending S-1"
+    window: prior_20_sessions
+    interpretation: "daily range-based variance estimator"
+    implementation_status: v1_optional
+  - name: mkt_prior_volume_zscore_20
+    label: Prior volume z-score (20)
+    category: input
+    formula: "lag z-score of prior-session volume vs prior 20"
+    includes_current: false
+    minimum_history: 20
+    implementation_status: core_v1
+  - name: mkt_prior_log_volume
+    label: Prior log volume
+    category: input
+    formula: "ln(1 + volume_{S-1})"
+    implementation_status: core_v1
+  - name: mkt_prior_dollar_volume
+    label: Prior dollar-volume proxy
+    category: input
+    formula: "close_{S-1} * volume_{S-1}"
+    interpretation: "dollar-volume proxy, not verified turnover"
+    implementation_status: core_v1
+  - name: mkt_prior_amihud_illiquidity_proxy
+    label: Prior Amihud illiquidity proxy
+    category: input
+    formula: "abs(return_{S-1}) / dollar_volume_{S-1}"
+    interpretation: "daily price/volume liquidity proxy, not market impact"
+    motivation: "Amihud (2002) illiquidity"
+    implementation_status: core_v1
+  - name: mkt_prior_distance_from_mean_20
+    label: Prior distance from trailing 20-session mean
+    category: input
+    formula: "close_{S-1}/mean(close, 20) - 1"
+    implementation_status: v1_optional
+  - name: mkt_prior_prior_direction
+    label: Prior-session direction
+    category: input
+    formula: "sign(return_{S-1})"
+    implementation_status: v1_optional
+  - name: mkt_prior_vwap_deviation
+    label: Prior close-to-VWAP deviation
+    category: input
+    formula: "close_{S-1}/vwap_{S-1} - 1"
+    null_behavior: "null when vwap missing"
+    implementation_status: v1_optional
+
+  # --- Predeclared interactions --------------------------------------------
+  - name: inter_attn30_x_prior_vol
+    label: Attention shock x prior volatility
+    category: input
+    formula: "attention_zscore_30 * prior close-to-close vol (20)"
+    interpretation: "H4: attention effect conditioned on uncertainty"
+    implementation_status: v1_optional
+    hypothesis_class: exploratory
+    hypothesis_family: exploratory_attention_prior_volatility_v1
+    hypothesis_id: H4
+  - name: inter_attn30_x_dup_ratio
+    label: Attention shock x syndication
+    category: input
+    formula: "attention_zscore_30 * duplicate_ratio"
+    interpretation: "H3: repeated vs fresh coverage"
+    implementation_status: v1_optional
+    hypothesis_class: exploratory
+    hypothesis_family: exploratory_repetition_reversal_v1
+    hypothesis_id: H3
+  - name: inter_attn30_x_observed_copy_effective_domains
+    label: Attention shock x observed-copy effective domain count
+    category: input
+    formula: "attention_zscore_30 * observed_copy_effective_domain_count"
+    interpretation: "H2: breadth vs repetition"
+    implementation_status: v1_optional
+    hypothesis_class: confirmatory
+    hypothesis_family: confirmatory_h2_coverage_structure_v1
+    hypothesis_id: H2
+
+  # --- Contemporaneous (same target session; NOT predictors) ----------------
+  - name: mkt_volume
+    label: Target-session volume
+    category: contemporaneous
+    formula: "volume_S"
+    leakage_risk: "prohibited as a predictor of session S"
+    implementation_status: core_v1
+  - name: mkt_log_volume
+    label: Target-session log volume
+    category: contemporaneous
+    formula: "ln(1 + volume_S)"
+    implementation_status: core_v1
+  - name: mkt_dollar_volume
+    label: Target-session dollar volume
+    category: contemporaneous
+    formula: "close_S * volume_S"
+    implementation_status: core_v1
+  - name: mkt_vwap_deviation
+    label: Target-session close-to-VWAP deviation
+    category: contemporaneous
+    formula: "close_S/vwap_S - 1"
+    implementation_status: v1_optional
+  - name: mkt_close_location
+    label: Target-session close location in range
+    category: contemporaneous
+    formula: "(close_S - low_S)/(high_S - low_S); 0.5 if zero range"
+    implementation_status: v1_optional
+  - name: mkt_true_range
+    label: Target-session true range
+    category: contemporaneous
+    formula: "max(H-L, |H-prevC|, |L-prevC|)"
+    implementation_status: v1_optional
+  - name: mkt_trade_count
+    label: Target-session reported trade count
+    category: contemporaneous
+    formula: "provider trade_count_S"
+    null_behavior: "null when provider does not report trade count"
+    implementation_status: v1_optional
+  - name: mkt_volume_per_trade
+    label: Target-session reported volume-per-trade proxy
+    category: contemporaneous
+    formula: "volume_S / trade_count_S"
+    interpretation: "not verified average order size"
+    implementation_status: v1_optional
+  - name: mkt_high_low_range
+    label: Target-session normalized high-low range
+    category: contemporaneous
+    formula: "(high_S - low_S) / close_S"
+    implementation_status: core_v1
+  - name: mkt_intraday_return
+    label: Target-session intraday return
+    category: contemporaneous
+    formula: "close_S / open_S - 1"
+    implementation_status: v1_optional
+
+  # --- Targets (target session and later) -----------------------------------
+  - name: target_session_return
+    label: Target-session simple return
+    category: target
+    formula: "close_S/close_{S-1} - 1"
+    window: target_session
+    availability_rule: "resolved at target close"
+    implementation_status: core_v1
+  - name: target_session_log_return
+    label: Target-session log return
+    category: target
+    formula: "ln(close_S/close_{S-1})"
+    implementation_status: core_v1
+  - name: target_session_absolute_return
+    label: Target-session absolute return
+    category: target
+    formula: "abs(close_S/close_{S-1} - 1)"
+    interpretation: "primary H1 response (volatility reaction)"
+    hypothesis_class: confirmatory
+    hypothesis_family: confirmatory_h1_attention_volatility_v1
+    hypothesis_id: H1
+    implementation_status: core_v1
+  - name: target_session_high_low_range
+    label: Target-session high-low range
+    category: target
+    formula: "(high_S - low_S)/close_S"
+    implementation_status: core_v1
+  - name: target_session_parkinson_variance
+    label: Target-session Parkinson variance
+    category: target
+    formula: "(1/(4 ln2)) * ln(high_S/low_S)^2"
+    hypothesis_class: confirmatory
+    hypothesis_family: confirmatory_h1_attention_volatility_v1
+    hypothesis_id: H1
+    implementation_status: core_v1
+  - name: target_session_benchmark_adjusted_return
+    label: Target-session benchmark-adjusted return
+    category: target
+    formula: "return_S(instrument) - return_S(benchmark)"
+    interpretation: "simple benchmark difference; not alpha or a market-model residual"
+    motivation: "MacKinlay expected-return discipline"
+    implementation_status: core_v1
+  - name: target_session_benchmark_return
+    label: Target-session benchmark return
+    category: target
+    formula: "return_S(benchmark)"
+    implementation_status: core_v1
+  - name: target_session_complete
+    label: Target-session completeness
+    category: quality
+    formula: "true when target-session bar exists"
+    implementation_status: core_v1
+  - name: target_through_plus_4_cumulative_return
+    label: Target-through-plus-4 cumulative return
+    category: target
+    formula: "close_{S+4}/close_{S-1} - 1"
+    window: forward_5_sessions
+    null_behavior: "null unless all 5 sessions exist"
+    implementation_status: core_v1
+  - name: target_through_plus_4_cumulative_benchmark_adjusted_return
+    label: Target-through-plus-4 cumulative benchmark-adjusted return
+    category: target
+    formula: "sum_{i=0..4}(r_inst,i - r_bench,i)"
+    interpretation: "sum over S..S+4 of instrument minus benchmark return; not alpha"
+    implementation_status: core_v1
+  - name: target_through_plus_4_return_std
+    label: Target-through-plus-4 return standard deviation
+    category: target
+    formula: "sample std of instrument returns over S..S+4"
+    implementation_status: v1_optional
+  - name: target_through_plus_4_volume_ratio_to_prior_20
+    label: Target-through-plus-4 volume ratio to prior 20
+    category: target
+    formula: "mean(volume S..S+4) / mean(volume prior 20)"
+    implementation_status: v1_optional
+  - name: target_through_plus_4_complete
+    label: Target-through-plus-4 completeness
+    category: quality
+    formula: "true when all forward sessions exist"
+    implementation_status: core_v1
+
+  # --- Quality / diagnostic -------------------------------------------------
+  - name: news_coverage_status
+    label: News coverage status
+    category: quality
+    formula: "measured | measured_zero | provider_truncated | ..."
+    interpretation: "distinguishes measured zero from unavailable"
+    implementation_status: core_v1
+  - name: market_coverage_status
+    label: Market coverage status
+    category: quality
+    formula: "measured | market_bar_missing"
+    implementation_status: core_v1
+  - name: history_sufficient
+    label: History sufficiency flag
+    category: quality
+    formula: "true when a prior market session exists"
+    implementation_status: core_v1
+  - name: response_truncated
+    label: Provider truncation flag
+    category: quality
+    formula: "true when DOC records hit the max-record cap"
+    implementation_status: core_v1
+  - name: feature_capabilities
+    label: Feature capability matrix
+    category: quality
+    formula: "per-method supported/unsupported flags"
+    interpretation: "false => field is null, not zero"
+    implementation_status: core_v1
+  - name: news_attention_history_len
+    label: Attention history length
+    category: diagnostic
+    formula: "count of prior sessions available for rolling baselines"
+    implementation_status: core_v1
+  - name: market_history_len
+    label: Market history length
+    category: diagnostic
+    formula: "count of prior market sessions for this symbol"
+    implementation_status: core_v1
