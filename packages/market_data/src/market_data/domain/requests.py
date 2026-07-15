@@ -40,6 +40,10 @@ class BarsRequest:
     end: datetime
     feed: str
     adjustment: str
+    limit: int = 1000
+    sort: str = "asc"
+    asof: date | None = None
+    currency: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "symbols", _symbols(self.symbols))
@@ -51,6 +55,17 @@ class BarsRequest:
         object.__setattr__(self, "end", _utc(self.end, "end"))
         if self.start > self.end:
             raise ValueError("start must not be after end")
+        if isinstance(self.limit, bool) or not isinstance(self.limit, int):
+            raise ValueError("limit must be an integer")
+        if not 1 <= self.limit <= 10_000:
+            raise ValueError("limit must be between 1 and 10000")
+        object.__setattr__(self, "sort", _text(self.sort, "sort").lower())
+        if self.sort not in {"asc", "desc"}:
+            raise ValueError("sort must be 'asc' or 'desc'")
+        if self.asof is not None:
+            object.__setattr__(self, "asof", _date(self.asof, "asof"))
+        if self.currency is not None:
+            object.__setattr__(self, "currency", _text(self.currency, "currency").upper())
 
 
 @dataclass(frozen=True, slots=True)

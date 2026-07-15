@@ -8,7 +8,7 @@ import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Literal, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +38,9 @@ class CacheResult:
     """Cached payload plus safe observability metadata."""
 
     data: JsonDict
-    status: str
+    status: Literal["hit", "miss", "expired", "force_refresh"]
     key: str
+    written: bool = False
 
 
 def make_cache_key(payload: JsonDict) -> str:
@@ -115,6 +116,18 @@ def _policy_payload(payload: JsonDict, policy: CachePolicy | None) -> JsonDict:
     return {"schema_version": policy.schema_version, "request": payload}
 
 
+def _lookup_json_cache(
+    namespace: str, key: str, *, ttl_seconds: int | None
+) -> tuple[Optional[JsonDict], Literal["hit", "miss", "expired"]]:
+    path = _cache_file_path(namespace, key)
+    if not path.exists():
+        return None, "miss"
+    if ttl_seconds is not None and time.time() - path.stat().st_mtime > ttl_seconds:
+        return None, "expired"
+    data = _load_json_cache(namespace, key)
+    return (data, "hit") if data is not None else (None, "miss")
+
+
 def get_or_fetch_json_result(
     *,
     namespace: str,
@@ -128,16 +141,18 @@ def get_or_fetch_json_result(
     refresh = force_refresh or (policy.force_refresh if policy is not None else False)
     ttl_seconds = policy.ttl_seconds if policy is not None else None
 
+    cache_status: Literal["miss", "expired", "force_refresh"] = "force_refresh"
     if not refresh:
-        cached = _load_json_cache(namespace, key, ttl_seconds=ttl_seconds)
+        cached, lookup_status = _lookup_json_cache(namespace, key, ttl_seconds=ttl_seconds)
         if cached is not None:
             logger.info("cache HIT namespace=%s key=%s", namespace, key[:12])
             return CacheResult(data=cached, status="hit", key=key)
+        cache_status = lookup_status
 
     logger.info("cache MISS namespace=%s key=%s", namespace, key[:12])
     fresh_data = fetch_fn()
     save_json_cache(namespace, key, fresh_data)
-    return CacheResult(data=fresh_data, status="miss", key=key)
+    return CacheResult(data=fresh_data, status=cache_status, key=key, written=True)
 
 
 def get_or_fetch_json(

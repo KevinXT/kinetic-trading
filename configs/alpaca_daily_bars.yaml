@@ -1,0 +1,43 @@
+name: alpaca-daily-bars
+
+providers:
+  market:
+    alpaca:
+      base_url: "https://data.alpaca.markets"
+      key_id_env: "ALPACA_API_KEY_ID"
+      secret_key_env: "ALPACA_API_SECRET_KEY"
+      timeout_seconds: 30
+      maximum_attempts: 4
+      initial_backoff_seconds: 1
+      maximum_backoff_seconds: 30
+      maximum_pages: 100
+
+cache:
+  # This example ends on a completed historical interval, so no TTL is required.
+  ttl_seconds: null
+  force_refresh: false
+  schema_version: "alpaca-bars-v1"
+
+storage:
+  type: jsonl
+  root: "data/processed/market"
+
+pipeline:
+  ingest:
+    source: alpaca_historical_bars
+    provider: alpaca
+    request:
+      symbols:
+        - SPY
+        - QQQ
+        - AAPL
+        - MSFT
+        - NVDA
+        - AMD
+      timeframe: "1Day"
+      start: "2026-06-01T00:00:00Z"
+      end: "2026-06-30T23:59:59Z"
+      feed: iex
+      adjustment: all
+      limit: 1000
+      sort: asc

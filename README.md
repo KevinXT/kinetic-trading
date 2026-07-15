@@ -33,7 +33,7 @@ python3 -m http.server 8000
 | BI reporting      | Local dashboard preview plus Looker Studio setup documentation                                    |
 | Data quality      | Missing-field checks, duplicate detection, latest-record freshness                                |
 | Python automation | CLI runners for pipelines, view building, exports, and cost reports                               |
-| Testing           | 436 tests across pipeline behavior, SQL guardrails, reporting views, and dashboard sample schemas |
+| Testing           | 524 passing tests across providers, pipelines, SQL guardrails, reporting, and dashboard schemas |
 
 **Tech:** Python 3.11+ · Google BigQuery · GDELT · SQL · YAML · pytest · GitHub Actions · ruff / black · HTML / CSS / JS (SVG charts).
 
@@ -82,7 +82,7 @@ Implemented today:
 
 **Quality**
 
-- **436 tests** across config loading, pipeline engine, GDELT DOC transforms, BigQuery SQL/cost/cache/guardrails, theme discovery/bundles, local overrides, collection runner, and the reporting/BI layer
+- **524 passing tests** plus one opt-in live-provider test across config, pipelines, Alpaca, GDELT, BigQuery safety, reporting, and local persistence
 
 Planned / placeholder boundaries:
 
@@ -718,6 +718,7 @@ Each package uses a `pyproject.toml` and `src/<import_name>/` layout.
 
 | Task name | Package | Purpose |
 | --- | --- | --- |
+| `alpaca_historical_bars` | `market_data` | Provider-neutral historical US stock bars via Alpaca |
 | `gdelt_docs` | `news_data` | Ingest recent articles via GDELT DOC API |
 | `bigquery_gdelt_counts` | `news_data` | Historical daily topic counts via BigQuery |
 | `bigquery_gdelt_theme_discovery` | `news_data` | Debug: list GDELT theme codes in a date window |
@@ -736,9 +737,9 @@ Each package uses a `pyproject.toml` and `src/<import_name>/` layout.
 common           ← lowest layer: config, cache, errors, cost policy/ledger
 pipeline_core    ← depends on common
 news_data        ← depends on common (GDELT DOC + BigQuery providers)
-market_data      ← placeholder boundary
+market_data      ← depends on common (financial contracts, Alpaca bars, JSONL store)
 strategy_sdk     ← placeholder boundary
-trading_platform ← app layer, depends on pipeline_core + news_data
+trading_platform ← app layer, composes pipeline_core + news_data + market_data
 ```
 
 Packages never depend upward on `apps/`. Lower layers do not depend on higher-level product code.
@@ -784,6 +785,18 @@ Run the GDELT DOC demo pipeline:
 python3 -m trading_platform configs/demo.yaml
 ```
 
+Run the deterministic Alpaca historical-bars example:
+
+```bash
+export ALPACA_API_KEY_ID="..."
+export ALPACA_API_SECRET_KEY="..."
+python3 -m trading_platform configs/alpaca_daily_bars.yaml
+```
+
+The example explicitly requests the IEX feed and never falls back from SIP. Raw
+responses are cached, normalized into provider-neutral `PriceBar` records, and
+stored locally as JSONL. No order execution or live streaming is implemented.
+
 Run tests:
 
 ```bash
@@ -796,7 +809,7 @@ ruff check .
 ## Tests
 
 ```bash
-pytest          # 436 tests
+pytest          # 524 passed, 1 opt-in provider test skipped by default
 ruff check .    # lint
 ```
 
@@ -806,6 +819,7 @@ Coverage by area:
 | --- | --- |
 | Config loading | `test_config_loader`, `test_local_config_overrides` |
 | Pipeline engine | `test_parser`, `test_registry`, `test_runner_failure`, `test_context`, `test_imports` |
+| Alpaca historical bars | `test_alpaca_client`, `test_alpaca_normalize`, `test_alpaca_cache`, `test_alpaca_task`, `test_alpaca_registration` |
 | GDELT DOC path | `test_cache`, `test_gdelt_normalize`, `test_dedupe_articles`, `test_tag_articles`, `test_aggregate_article_features`, `test_store_articles`, `test_store_features`, `test_run_collections` |
 | BigQuery path | `test_bigquery_gdelt_queries`, `test_bigquery_gdelt_counts_task`, `test_bigquery_theme_discovery_queries`, `test_bigquery_theme_discovery_task`, `test_bigquery_sql_guardrails`, `test_bigquery_normalize_counts`, `test_bigquery_cache`, `test_safe_bigquery_client` |
 | Reporting / BI layer | `test_reporting_views`, `test_reporting_dashboard_data` |

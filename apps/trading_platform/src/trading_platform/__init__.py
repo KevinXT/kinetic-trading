@@ -12,6 +12,10 @@ __version__ = "0.1.0"
 
 def _register_tasks() -> None:
     """Populate the pipeline task registry with provider-specific tasks."""
+    from market_data.providers.alpaca.task import (
+        alpaca_historical_bars_task,
+        create_price_provider_registry,
+    )
     from news_data.task import (
         aggregate_article_features_task,
         bigquery_gdelt_counts_task,
@@ -25,17 +29,21 @@ def _register_tasks() -> None:
     )
     from pipeline_core.tasks.registry import TASK_REGISTRY
 
+    def registered_alpaca_historical_bars_task(ctx, params):
+        return alpaca_historical_bars_task(
+            ctx,
+            params,
+            registry=create_price_provider_registry(),
+        )
+
+    TASK_REGISTRY.setdefault("alpaca_historical_bars", registered_alpaca_historical_bars_task)
     TASK_REGISTRY.setdefault("gdelt_docs", gdelt_docs_task)
     TASK_REGISTRY.setdefault("bigquery_gdelt_counts", bigquery_gdelt_counts_task)
-    TASK_REGISTRY.setdefault(
-        "bigquery_gdelt_theme_discovery", bigquery_gdelt_theme_discovery_task
-    )
+    TASK_REGISTRY.setdefault("bigquery_gdelt_theme_discovery", bigquery_gdelt_theme_discovery_task)
     TASK_REGISTRY.setdefault("filter_articles", filter_articles_task)
     TASK_REGISTRY.setdefault("dedupe_articles", dedupe_articles_task)
     TASK_REGISTRY.setdefault("tag_articles", tag_articles_task)
-    TASK_REGISTRY.setdefault(
-        "aggregate_article_features", aggregate_article_features_task
-    )
+    TASK_REGISTRY.setdefault("aggregate_article_features", aggregate_article_features_task)
     TASK_REGISTRY.setdefault("store_features", store_features_task)
     TASK_REGISTRY.setdefault("store_articles", store_articles_task)
 

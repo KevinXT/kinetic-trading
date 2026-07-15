@@ -16,8 +16,8 @@ provider client
 Providers fetch data. Normalizers translate it. Stores persist it. Feature pipelines
 combine it. Strategies and dashboards consume normalized records.
 
-Phase 1 defines the contracts and local persistence foundation. It does not make
-network calls or register runnable provider tasks.
+Phase 1 defines the contracts and local persistence foundation. Phase 2 implements
+the first complete provider path: Alpaca historical US stock bars.
 
 ## Domain contracts
 
@@ -55,9 +55,62 @@ The focused protocols are `PriceDataProvider`, `CompanyDataProvider`, and
 normalized records. They intentionally do not form one large provider interface.
 
 `ProviderRegistry` holds separate factories for each category. Registry instances
-are explicit and do not share global mutable state. Alpaca, SEC EDGAR, FRED, and
-future mock/provider factories will be registered in their implementation phases.
+are explicit and do not share global mutable state. Alpaca is registered as the
+`alpaca` price provider; SEC EDGAR, FRED, and future mock/provider factories remain
+separate implementation phases.
 Downstream modules should import domain records or protocols, never concrete clients.
+
+## Alpaca historical stock bars
+
+`alpaca_historical_bars` uses the existing provider-blind YAML runner and the
+multi-symbol endpoint at `https://data.alpaca.markets/v2/stocks/bars`. The client,
+raw validation, cache adapter, and normalizer are isolated under
+`market_data.providers.alpaca`. Code outside that namespace consumes `PriceBar`.
+
+Supported request fields are symbols, timeframe, explicit RFC 3339 start/end,
+feed, adjustment, limit, sort, optional `asof`, and optional currency. A task may
+also resolve `lookback_days` once at startup. Committed examples use explicit dates
+so cache keys and artifacts remain reproducible.
+
+Feed and adjustment are required. The example uses `feed: iex`, which is suitable
+for many free-tier accounts but is not the complete consolidated SIP market feed.
+The client never silently falls back between feeds. SIP entitlement or recency
+errors identify the requested feed without exposing credentials.
+
+Pagination continues through every returned token, including pages that contain
+only one of several requested symbols. Repeated tokens and the configured maximum
+page count fail explicitly. Retryable transport failures, HTTP 429, and selected
+5xx responses use bounded retries; ordinary 4xx failures are not retried.
+
+Raw pages are cached as one complete logical result, preserving page boundaries.
+Cache keys include every response-affecting request field and the schema version,
+but never credentials. Cache summaries distinguish hit, miss, expired, and forced
+refresh and report whether a cache file was written.
+
+Run:
+
+```bash
+export ALPACA_API_KEY_ID="..."
+export ALPACA_API_SECRET_KEY="..."
+python3 -m trading_platform configs/alpaca_daily_bars.yaml
+```
+
+The run writes:
+
+```text
+alpaca_request.json
+alpaca_cache_summary.json
+alpaca_pages_summary.json
+normalized_price_bars.jsonl
+alpaca_validation_summary.json
+alpaca_store_summary.json
+alpaca_summary.json
+```
+
+Normalized bars are also placed in `ctx.state["price_bars"]` and upserted through
+`FinancialDataStore` into `data/processed/market/market_bars.jsonl` for the example.
+No order, account, position, WebSocket, quote, trade, option, crypto, or news API is
+implemented.
 
 ## Instrument identity
 
@@ -158,18 +211,16 @@ SEC_USER_AGENT
 FRED_API_KEY
 ```
 
-The project does not load `.env` files. Provider phases will read these values from
-the process environment and validate them before network calls. Never put real
+The project does not load `.env` files. Alpaca reads its two credentials from the
+process environment and validates them before network calls. Never put real
 values in YAML, committed files, logs, snapshots, cache keys, or run artifacts.
 
 ## Planned provider phases
 
-1. Alpaca historical bars with pagination, retries, rate-limit handling, caching,
-   fixture tests, and an independent pipeline task.
-2. SEC ticker/CIK mapping, recent filing metadata, and company facts with a
+1. SEC ticker/CIK mapping, recent filing metadata, and company facts with a
    conservative limiter and independent tasks.
-3. FRED observations with missing-value and vintage-aware normalization.
-4. SEC/GDELT event adapters and basic point-in-time event-reaction research.
+2. FRED observations with missing-value and vintage-aware normalization.
+3. SEC/GDELT event adapters and basic point-in-time event-reaction research.
 
 Each provider pipeline will remain independently rerunnable because update schedules
 and failure modes differ.
@@ -181,6 +232,12 @@ Feed and adjustment modes must not be silently mixed. Filing dates are not a
 substitute for SEC acceptance times, and revised macro data must not enter an earlier
 as-of analysis. Missing bars and exchange calendars require explicit handling in
 event studies.
+
+Default tests use sanitized fixtures and fake transports. The opt-in live smoke test
+requires `RUN_PROVIDER_INTEGRATION_TESTS=1` plus both Alpaca credential variables.
+Provider responses can be incomplete because of market sessions, symbol history,
+entitlements, feed coverage, or provider outages; successful ingestion is not a
+guarantee of complete market data.
 
 Kinetic Trading currently supports research and paper analysis. It does not execute
 live trades, provide investment advice, guarantee predictions, or establish that an
