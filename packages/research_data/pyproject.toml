@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kinetic-research-data"
+version = "0.1.0"
+description = "Normalized, leakage-aware news×market research-data layer (derived product)"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+  "kinetic-common>=0.1.0",
+  "kinetic-market-data>=0.1.0",
+  "kinetic-news-data>=0.1.0",
+  # zoneinfo needs an IANA database. macOS/Linux usually ship one, but pinning
+  # the pure-python fallback keeps America/New_York session math reproducible in
+  # isolated wheel installs and CI runners without system tzdata.
+  "tzdata>=2024.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+research_data = ["py.typed"]
