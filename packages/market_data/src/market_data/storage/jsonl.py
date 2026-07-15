@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Iterator, TypeVar
 
 from market_data.domain.models import (
+    DEFAULT_PRICE_BAR_CURRENCY,
     FilingEvent,
     FinancialFact,
     Instrument,
@@ -26,6 +27,10 @@ from market_data.storage.errors import (
 )
 
 FINANCIAL_DATA_SCHEMA_VERSION = "financial-data.v1"
+
+# Retrieval metadata is useful for first-seen provenance but must not mark
+# unchanged market payloads as corrections during idempotent upserts.
+_VOLATILE_METADATA_FIELDS = frozenset({"retrieved_at"})
 
 RecordT = TypeVar(
     "RecordT",
@@ -49,7 +54,29 @@ def _fields_key(*fields: str) -> Callable[[JsonRecord], RecordKey]:
     return key
 
 
-_BAR_KEY = _fields_key("symbol", "timestamp", "timeframe", "provider", "feed", "adjustment")
+def _bar_key(record: JsonRecord) -> RecordKey:
+    """
+    Logical bar identity.
+
+    Legacy rows written before currency existed are treated as USD for keying.
+    Reads do not rewrite the file; currency is only written on insert/update.
+    """
+    required = ("symbol", "timestamp", "timeframe", "provider", "feed", "adjustment")
+    missing = [field for field in required if field not in record]
+    if missing:
+        raise ValueError(f"stored record is missing logical key fields: {', '.join(missing)}")
+    currency = record.get("currency", DEFAULT_PRICE_BAR_CURRENCY)
+    return (
+        record["symbol"],
+        record["timestamp"],
+        record["timeframe"],
+        record["provider"],
+        record["feed"],
+        record["adjustment"],
+        currency,
+    )
+
+
 _FILING_KEY = _fields_key("accession_number")
 _FACT_KEY = _fields_key(
     "cik",
@@ -71,6 +98,26 @@ _MACRO_KEY = _fields_key(
     "provider",
 )
 _INSTRUMENT_KEY = _fields_key("instrument_id")
+
+
+def _semantic_payload(record: JsonRecord, *, record_type: str) -> JsonRecord:
+    """Payload used for insert/update decisions (excludes volatile metadata)."""
+    payload = {key: value for key, value in record.items() if key not in _VOLATILE_METADATA_FIELDS}
+    if record_type == "PriceBar":
+        payload.setdefault("currency", DEFAULT_PRICE_BAR_CURRENCY)
+    return payload
+
+
+def records_semantically_equal(
+    existing: JsonRecord,
+    incoming: JsonRecord,
+    *,
+    record_type: str,
+) -> bool:
+    """True when provider/market payload matches, ignoring retrieval metadata."""
+    return _semantic_payload(existing, record_type=record_type) == _semantic_payload(
+        incoming, record_type=record_type
+    )
 
 
 class JsonlFinancialDataStore:
@@ -178,8 +225,7 @@ class JsonlFinancialDataStore:
         }
         if metadata != expected:
             raise DatasetSchemaError(
-                f"incompatible dataset metadata at {path}: "
-                f"expected {expected!r}, got {metadata!r}"
+                f"incompatible dataset metadata at {path}: expected {expected!r}, got {metadata!r}"
             )
         return True
 
@@ -187,6 +233,8 @@ class JsonlFinancialDataStore:
     def _collapse_batch(
         incoming: Sequence[RecordT],
         key_fn: Callable[[JsonRecord], RecordKey],
+        *,
+        record_type: str,
     ) -> tuple[dict[RecordKey, JsonRecord], int]:
         collapsed: dict[RecordKey, JsonRecord] = {}
         duplicate_count = 0
@@ -196,7 +244,7 @@ class JsonlFinancialDataStore:
             existing = collapsed.get(key)
             if existing is None:
                 collapsed[key] = record
-            elif existing == record:
+            elif records_semantically_equal(existing, record, record_type=record_type):
                 duplicate_count += 1
             else:
                 raise ConflictingBatchRecordsError(key)
@@ -212,7 +260,7 @@ class JsonlFinancialDataStore:
         path = self.root / filename
         metadata_path = path.with_suffix(f"{path.suffix}.metadata.json")
         lock_path = path.with_suffix(f"{path.suffix}.lock")
-        batch, skipped = self._collapse_batch(incoming, key_fn)
+        batch, skipped = self._collapse_batch(incoming, key_fn, record_type=record_type)
 
         with self._writer_lock(lock_path):
             has_metadata = self._validate_metadata(metadata_path, record_type)
@@ -225,7 +273,7 @@ class JsonlFinancialDataStore:
                 if existing is None:
                     records[key] = record
                     inserted += 1
-                elif existing == record:
+                elif records_semantically_equal(existing, record, record_type=record_type):
                     skipped += 1
                 else:
                     records[key] = record
@@ -247,7 +295,7 @@ class JsonlFinancialDataStore:
         )
 
     def upsert_price_bars(self, records: Sequence[PriceBar]) -> StoreResult:
-        return self._upsert("market_bars.jsonl", "PriceBar", records, _BAR_KEY)
+        return self._upsert("market_bars.jsonl", "PriceBar", records, _bar_key)
 
     def upsert_filing_events(self, records: Sequence[FilingEvent]) -> StoreResult:
         return self._upsert("sec_filings.jsonl", "FilingEvent", records, _FILING_KEY)

@@ -39,10 +39,30 @@ This checklist tracks project milestones: what's shipped and what's next.
 
 ---
 
+## Milestone: Market data + Alpaca bars — complete
+
+- [x] Provider-neutral domain contracts (`PriceBar`, filings, facts, macro, instruments)
+- [x] JSONL financial store with logical keys, atomic writes, and writer locks
+- [x] Alpaca historical bars client, cache, normalizer, task, and offline tests
+- [x] Currency-aware bar identity; semantic upsert equality excluding `retrieved_at`
+- [x] Cache identity includes normalized API origin (`alpaca-bars-v2`)
+- [x] Strict Alpaca numeric/boolean config parsing
+
+---
+
+## Milestone: CI quality gates — complete
+
+- [x] GitHub Actions: pytest, ruff, black, mypy, package build, import smoke
+- [x] Python version matrix (3.11, 3.12)
+- [x] Live Alpaca test remains opt-in / secret-dependent
+
+---
+
 ## Next up
 
-- [ ] Add `packages/market_data` providers (bars, feeds)
 - [ ] Flesh out `packages/strategy_sdk` (signals, risk, portfolio logic)
-- [ ] Add CI (GitHub Actions: pytest + ruff + mypy)
+- [ ] SEC EDGAR and FRED adapters on existing contracts
+- [ ] Time-aligned joins between news features and market bars
+- [ ] Research-grade backtesting prototype
 - [ ] End-to-end test with mocked HTTP for the demo pipeline
 - [ ] Refresh technical guides under `docs/` as APIs evolve

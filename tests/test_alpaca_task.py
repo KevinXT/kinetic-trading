@@ -73,7 +73,7 @@ def _config(tmp_path: Path) -> dict:
         "cache": {
             "ttl_seconds": None,
             "force_refresh": False,
-            "schema_version": "alpaca-bars-v1",
+            "schema_version": "alpaca-bars-v2",
         },
         "storage": {"type": "jsonl", "root": str(tmp_path / "market")},
     }
@@ -184,6 +184,32 @@ def test_identical_rerun_hits_cache_and_store_skips_duplicates(tmp_path: Path) -
     assert store_summary["inserted"] == 0
     assert store_summary["updated"] == 0
     assert store_summary["skipped"] == 2
+
+
+def test_force_refresh_without_payload_change_does_not_count_as_update(
+    tmp_path: Path,
+) -> None:
+    created: list[_Client] = []
+    registry = _registry(created)
+    first = _ctx(tmp_path, "first")
+    second = _ctx(tmp_path, "second")
+    second.cfg["cache"]["force_refresh"] = True
+    later = datetime(2026, 7, 2, 12, tzinfo=timezone.utc)
+    alpaca_historical_bars_task(first, _params(), registry=registry, clock=lambda: NOW)
+    alpaca_historical_bars_task(second, _params(), registry=registry, clock=lambda: later)
+    summary = json.loads(
+        (second.artifacts_dir / "alpaca_store_summary.json").read_text(encoding="utf-8")
+    )
+    request_artifact = json.loads(
+        (second.artifacts_dir / "alpaca_request.json").read_text(encoding="utf-8")
+    )
+    assert summary["inserted"] == 0
+    assert summary["updated"] == 0
+    assert summary["skipped"] == 2
+    assert request_artifact["api_origin"] == "https://data.alpaca.markets"
+    assert request_artifact["currency"] == "USD"
+    assert "fixture-key-id" not in json.dumps(request_artifact)
+    assert "fixture-secret-key" not in json.dumps(request_artifact)
 
 
 def test_force_refreshed_corrected_bar_is_counted_as_update(tmp_path: Path) -> None:

@@ -23,6 +23,11 @@ def _bar(
     close: float = 204.0,
     feed: str = "iex",
     adjustment: str = "all",
+    currency: str = "USD",
+    volume: int = 1000,
+    vwap: float | None = None,
+    trade_count: int | None = None,
+    retrieved_at: datetime = NOW,
 ) -> PriceBar:
     return PriceBar(
         symbol=symbol,
@@ -32,13 +37,14 @@ def _bar(
         high=205.0,
         low=199.0,
         close=close,
-        volume=1000,
-        vwap=None,
-        trade_count=None,
+        volume=volume,
+        vwap=vwap,
+        trade_count=trade_count,
         provider="alpaca",
         feed=feed,
         adjustment=adjustment,
-        retrieved_at=NOW,
+        currency=currency,
+        retrieved_at=retrieved_at,
     )
 
 
@@ -163,3 +169,122 @@ def test_replace_failure_preserves_existing_target_and_cleans_temp(
 
 def test_market_event_storage_is_deferred() -> None:
     assert not hasattr(JsonlFinancialDataStore, "upsert_market_events")
+
+
+def test_currency_is_part_of_logical_identity(tmp_path: Path) -> None:
+    store = JsonlFinancialDataStore(tmp_path)
+    result = store.upsert_price_bars([_bar(currency="USD"), _bar(currency="CAD")])
+    assert result.inserted == 2
+    assert result.total_records == 2
+    currencies = {row["currency"] for row in _rows(result.path)}
+    assert currencies == {"USD", "CAD"}
+
+
+def test_retrieved_at_only_change_is_not_an_update(tmp_path: Path) -> None:
+    store = JsonlFinancialDataStore(tmp_path)
+    first = store.upsert_price_bars([_bar(retrieved_at=NOW)])
+    later = datetime(2026, 7, 15, 20, 0, tzinfo=timezone.utc)
+    second = store.upsert_price_bars([_bar(retrieved_at=later)])
+    assert (first.inserted, first.updated, first.skipped) == (1, 0, 0)
+    assert (second.inserted, second.updated, second.skipped) == (0, 0, 1)
+    assert _rows(second.path)[0]["retrieved_at"] == "2026-07-14T20:00:00Z"
+
+
+def test_volume_change_is_an_update(tmp_path: Path) -> None:
+    store = JsonlFinancialDataStore(tmp_path)
+    store.upsert_price_bars([_bar(volume=1000, vwap=202.0, trade_count=10)])
+    result = store.upsert_price_bars([_bar(volume=1001, vwap=202.0, trade_count=10)])
+    assert (result.inserted, result.updated, result.skipped) == (0, 1, 0)
+    assert _rows(result.path)[0]["volume"] == 1001
+
+
+def test_vwap_change_is_an_update(tmp_path: Path) -> None:
+    store = JsonlFinancialDataStore(tmp_path)
+    store.upsert_price_bars([_bar(vwap=202.0, trade_count=10)])
+    result = store.upsert_price_bars([_bar(vwap=202.5, trade_count=10)])
+    assert (result.inserted, result.updated, result.skipped) == (0, 1, 0)
+    assert _rows(result.path)[0]["vwap"] == 202.5
+
+
+def test_trade_count_change_is_an_update(tmp_path: Path) -> None:
+    store = JsonlFinancialDataStore(tmp_path)
+    store.upsert_price_bars([_bar(vwap=202.0, trade_count=10)])
+    result = store.upsert_price_bars([_bar(vwap=202.0, trade_count=11)])
+    assert (result.inserted, result.updated, result.skipped) == (0, 1, 0)
+    assert _rows(result.path)[0]["trade_count"] == 11
+
+
+def _write_legacy_bar(tmp_path: Path, **overrides: object) -> Path:
+    path = tmp_path / "market_bars.jsonl"
+    metadata = tmp_path / "market_bars.jsonl.metadata.json"
+    legacy = {
+        "symbol": "AAPL",
+        "timestamp": "2026-07-14T20:00:00Z",
+        "timeframe": "1Day",
+        "open": 200.0,
+        "high": 205.0,
+        "low": 199.0,
+        "close": 204.0,
+        "volume": 1000,
+        "vwap": None,
+        "trade_count": None,
+        "provider": "alpaca",
+        "feed": "iex",
+        "adjustment": "all",
+        "retrieved_at": "2026-07-14T20:00:00Z",
+    }
+    legacy.update(overrides)
+    assert "currency" not in legacy
+    path.write_text(json.dumps(legacy, separators=(",", ":")) + "\n", encoding="utf-8")
+    metadata.write_text(
+        '{"record_type":"PriceBar","schema_version":"financial-data.v1"}\n',
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_legacy_rows_without_currency_default_to_usd_identity(tmp_path: Path) -> None:
+    path = _write_legacy_bar(tmp_path)
+    result = JsonlFinancialDataStore(tmp_path).upsert_price_bars([_bar(currency="USD")])
+    assert (result.inserted, result.updated, result.skipped) == (0, 0, 1)
+    assert "currency" not in _rows(path)[0]
+
+
+def test_legacy_usd_skip_preserves_first_seen_retrieved_at(tmp_path: Path) -> None:
+    path = _write_legacy_bar(tmp_path)
+    later = datetime(2026, 7, 15, 20, 0, tzinfo=timezone.utc)
+    result = JsonlFinancialDataStore(tmp_path).upsert_price_bars(
+        [_bar(currency="USD", retrieved_at=later)]
+    )
+    assert result.skipped == 1
+    assert _rows(path)[0]["retrieved_at"] == "2026-07-14T20:00:00Z"
+    assert "currency" not in _rows(path)[0]
+
+
+def test_legacy_non_usd_currency_inserts_distinct_record(tmp_path: Path) -> None:
+    _write_legacy_bar(tmp_path)
+    result = JsonlFinancialDataStore(tmp_path).upsert_price_bars([_bar(currency="CAD")])
+    assert (result.inserted, result.updated, result.skipped) == (1, 0, 0)
+    assert result.total_records == 2
+    currencies = {row.get("currency", "USD") for row in _rows(result.path)}
+    assert currencies == {"USD", "CAD"}
+
+
+def test_legacy_real_correction_rewrites_current_schema(tmp_path: Path) -> None:
+    path = _write_legacy_bar(tmp_path)
+    result = JsonlFinancialDataStore(tmp_path).upsert_price_bars(
+        [_bar(currency="USD", close=203.0)]
+    )
+    assert (result.inserted, result.updated, result.skipped) == (0, 1, 0)
+    row = _rows(path)[0]
+    assert row["close"] == 203.0
+    assert row["currency"] == "USD"
+    assert row["retrieved_at"] == "2026-07-14T20:00:00Z"
+
+
+def test_batch_duplicate_with_different_retrieved_at_is_skipped(tmp_path: Path) -> None:
+    later = datetime(2026, 7, 15, 20, 0, tzinfo=timezone.utc)
+    result = JsonlFinancialDataStore(tmp_path).upsert_price_bars(
+        [_bar(retrieved_at=NOW), _bar(retrieved_at=later)]
+    )
+    assert (result.inserted, result.updated, result.skipped) == (1, 0, 1)

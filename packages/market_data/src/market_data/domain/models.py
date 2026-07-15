@@ -50,10 +50,28 @@ def _date(value: date, field_name: str) -> date:
     return value
 
 
+DEFAULT_PRICE_BAR_CURRENCY = "USD"
+
+
 def _finite(value: float, field_name: str) -> float:
     normalized = float(value)
     if not math.isfinite(normalized):
         raise ValueError(f"{field_name} must be finite")
+    return normalized
+
+
+def _non_negative_finite(value: float, field_name: str) -> float:
+    normalized = _finite(value, field_name)
+    if normalized < 0:
+        raise ValueError(f"{field_name} must be non-negative")
+    return normalized
+
+
+def normalize_currency(value: str, field_name: str = "currency") -> str:
+    """Return an uppercase ISO-4217 currency code."""
+    normalized = _required_text(value, field_name).upper()
+    if len(normalized) != 3 or not normalized.isalpha():
+        raise ValueError(f"{field_name} must be a three-letter ISO-4217 code")
     return normalized
 
 
@@ -72,6 +90,7 @@ class PriceBar:
     provider: str
     feed: str
     adjustment: str
+    currency: str
     retrieved_at: datetime
 
     def __post_init__(self) -> None:
@@ -83,10 +102,13 @@ class PriceBar:
                 self, field_name, _identity_text(getattr(self, field_name), field_name)
             )
         object.__setattr__(self, "provider", _identity_text(self.provider, "provider"))
+        object.__setattr__(self, "currency", normalize_currency(self.currency))
         for field_name in ("open", "high", "low", "close"):
-            object.__setattr__(self, field_name, _finite(getattr(self, field_name), field_name))
+            object.__setattr__(
+                self, field_name, _non_negative_finite(getattr(self, field_name), field_name)
+            )
         if self.vwap is not None:
-            object.__setattr__(self, "vwap", _finite(self.vwap, "vwap"))
+            object.__setattr__(self, "vwap", _non_negative_finite(self.vwap, "vwap"))
         if isinstance(self.volume, bool) or not isinstance(self.volume, int) or self.volume < 0:
             raise ValueError("volume must be a non-negative integer")
         if self.trade_count is not None and (
@@ -97,6 +119,12 @@ class PriceBar:
             raise ValueError("trade_count must be a non-negative integer or None")
         if self.high < self.low:
             raise ValueError("high must be greater than or equal to low")
+        if not self.low <= self.open <= self.high:
+            raise ValueError("open must be between low and high inclusive")
+        if not self.low <= self.close <= self.high:
+            raise ValueError("close must be between low and high inclusive")
+        # Non-negative OHLC/VWAP matches current equity-bar usage. Instruments that
+        # can print negative prices are out of scope for this model version.
 
     @property
     def logical_key(self) -> LogicalKey:
@@ -107,6 +135,26 @@ class PriceBar:
             self.provider,
             self.feed,
             self.adjustment,
+            self.currency,
+        )
+
+    def market_data_equal(self, other: PriceBar) -> bool:
+        """Compare provider market payload, ignoring retrieval metadata."""
+        return (
+            self.symbol == other.symbol
+            and self.timestamp == other.timestamp
+            and self.timeframe == other.timeframe
+            and self.open == other.open
+            and self.high == other.high
+            and self.low == other.low
+            and self.close == other.close
+            and self.volume == other.volume
+            and self.vwap == other.vwap
+            and self.trade_count == other.trade_count
+            and self.provider == other.provider
+            and self.feed == other.feed
+            and self.adjustment == other.adjustment
+            and self.currency == other.currency
         )
 
 

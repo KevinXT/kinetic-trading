@@ -15,7 +15,11 @@ from common.errors import ConfigError
 from market_data.domain.requests import BarsRequest
 from market_data.domain.serialization import record_to_dict
 from market_data.providers.alpaca.client import validate_alpaca_request
-from market_data.providers.alpaca.config import AlpacaProviderConfig
+from market_data.providers.alpaca.config import (
+    AlpacaProviderConfig,
+    parse_strict_int,
+)
+from market_data.providers.alpaca.errors import AlpacaConfigError
 from market_data.providers.alpaca.provider import (
     ALPACA_CACHE_SCHEMA_VERSION,
     AlpacaPriceProvider,
@@ -108,6 +112,18 @@ def resolve_bars_request(
     missing = [field for field in required_text if not request_config.get(field)]
     if missing:
         raise ConfigError("Alpaca request is missing required field(s): " + ", ".join(missing))
+    try:
+        limit = parse_strict_int(
+            request_config.get("limit", 1000),
+            "pipeline.ingest.request.limit",
+            minimum=1,
+            maximum=10_000,
+        )
+    except AlpacaConfigError as exc:
+        raise ConfigError(str(exc)) from exc
+    currency_raw = request_config.get("currency")
+    if currency_raw is not None and not isinstance(currency_raw, str):
+        raise ConfigError("Alpaca request currency must be a string or null")
     return BarsRequest(
         symbols=tuple(symbols),
         timeframe=str(request_config["timeframe"]),
@@ -115,16 +131,14 @@ def resolve_bars_request(
         end=end,
         feed=str(request_config["feed"]),
         adjustment=str(request_config["adjustment"]),
-        limit=int(request_config.get("limit", 1000)),
+        limit=limit,
         sort=str(request_config.get("sort", "asc")),
         asof=(
             _date(request_config["asof"], "asof")
             if request_config.get("asof") is not None
             else None
         ),
-        currency=(
-            str(request_config["currency"]) if request_config.get("currency") is not None else None
-        ),
+        currency=currency_raw,
     )
 
 

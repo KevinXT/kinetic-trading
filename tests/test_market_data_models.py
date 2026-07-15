@@ -33,6 +33,7 @@ def _bar(**overrides: object) -> PriceBar:
         "provider": "alpaca",
         "feed": "iex",
         "adjustment": "all",
+        "currency": "USD",
         "retrieved_at": NOW,
     }
     values.update(overrides)
@@ -55,6 +56,35 @@ def test_price_bar_rejects_naive_datetime() -> None:
 def test_price_bar_key_keeps_feed_and_adjustment_distinct() -> None:
     assert _bar(feed="iex").logical_key != _bar(feed="sip").logical_key
     assert _bar(adjustment="raw").logical_key != _bar(adjustment="all").logical_key
+
+
+def test_price_bar_key_includes_currency() -> None:
+    assert _bar(currency="USD").logical_key != _bar(currency="CAD").logical_key
+    assert record_to_dict(_bar(currency="usd"))["currency"] == "USD"
+
+
+def test_price_bar_rejects_ohlc_outside_range() -> None:
+    with pytest.raises(ValueError, match="open must be between low and high"):
+        _bar(open=198.0)
+    with pytest.raises(ValueError, match="close must be between low and high"):
+        _bar(close=206.0)
+    with pytest.raises(ValueError, match="high must be greater than or equal to low"):
+        _bar(high=198.0, low=199.0, open=198.5, close=198.5)
+
+
+def test_price_bar_rejects_negative_prices_and_invalid_currency() -> None:
+    with pytest.raises(ValueError, match="open must be non-negative"):
+        _bar(open=-1.0, low=-2.0, high=1.0, close=0.0)
+    with pytest.raises(ValueError, match="three-letter"):
+        _bar(currency="US")
+    with pytest.raises(ValueError, match="vwap must be non-negative"):
+        _bar(vwap=-0.1)
+
+
+def test_market_data_equal_ignores_retrieved_at() -> None:
+    later = NOW + timedelta(minutes=5)
+    assert _bar(retrieved_at=NOW).market_data_equal(_bar(retrieved_at=later))
+    assert not _bar(close=204.0).market_data_equal(_bar(close=203.0))
 
 
 def test_filing_preserves_accession_identity_and_missing_acceptance() -> None:

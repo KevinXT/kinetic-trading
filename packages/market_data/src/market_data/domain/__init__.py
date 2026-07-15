@@ -1,6 +1,7 @@
 """Provider-independent financial data contracts."""
 
 from market_data.domain.models import (
+    DEFAULT_PRICE_BAR_CURRENCY,
     FilingEvent,
     FinancialFact,
     Instrument,
@@ -18,6 +19,7 @@ from market_data.domain.requests import (
 __all__ = [
     "BarsRequest",
     "CompanyFactsRequest",
+    "DEFAULT_PRICE_BAR_CURRENCY",
     "FilingEvent",
     "FilingRequest",
     "FinancialFact",

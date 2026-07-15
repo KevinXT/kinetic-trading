@@ -7,7 +7,7 @@ name = "kinetic-trading-platform"
 version = "0.1.0"
 description = "Trading platform application entrypoints and orchestration"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
 dependencies = [
   "kinetic-pipeline-core>=0.1.0",
   "kinetic-news-data>=0.1.0",
