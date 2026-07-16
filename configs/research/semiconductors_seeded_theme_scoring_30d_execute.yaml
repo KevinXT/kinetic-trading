@@ -1,0 +1,80 @@
+name: semiconductors_seeded_theme_scoring_30d_execute
+
+# SEEDED vs BACKGROUND theme SCORING — real BigQuery EXECUTION (typed gate).
+#
+# Seeded discovery ranks themes by raw co-occurrence frequency, which is
+# dominated by ubiquitous generic themes (TAX_ECON_PRICE, EPU_ECONOMY_HISTORIC,
+# LEADER, ...). This experiment adds the missing denominator: in ONE scan it
+# counts, per theme, both the seeded unique-record count AND the background
+# unique-record count over the same window, so lift / log-lift / odds ratio are
+# computable. Because BigQuery bills by bytes scanned (a row-level WHERE does not
+# reduce bytes), the background counts come at essentially the same cost as
+# seeded discovery alone.
+#
+# Company aliases are matched as whole tokens (so `intel` no longer matches
+# `intelligence`); industry phrases keep substring matching. Output is a
+# HUMAN-REVIEW candidate list — it never selects codes or edits the bundle.
+#
+# Run ONLY after the dry-run estimate looks safe. Even with execute_query:
+# "ENABLE", SafeBigQueryClient ALWAYS dry-runs first and enforces
+# maximum_bytes_billed + the cost policy before any billable query. Requires
+# BigQuery credentials and a real providers.bigquery.project_id.
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
+    table: "gdelt-bq.gdeltv2.gkg_partitioned"
+
+pipeline:
+  ingest:
+    source: bigquery_gdelt_seeded_theme_scoring
+    query_name: semiconductors_seeded_theme_scoring_30d_partition
+    topic: semiconductors
+
+    # Structured seeds: separate company entities (token-boundary matched, with
+    # disambiguated aliases) from industry phrases (substring matched).
+    seed_specs:
+      - {canonical: "semiconductor", kind: "industry_phrase", aliases: ["semiconductor"]}
+      - {canonical: "semiconductors", kind: "industry_phrase", aliases: ["semiconductors"]}
+      - {canonical: "microprocessor", kind: "industry_phrase", aliases: ["microprocessor"]}
+      - {canonical: "chipmaker", kind: "industry_phrase", aliases: ["chipmaker"]}
+      - {canonical: "wafer fabrication", kind: "industry_phrase", aliases: ["wafer fabrication"]}
+      - {canonical: "tsmc", kind: "company_alias", aliases: ["tsmc", "taiwan semiconductor"]}
+      - {canonical: "nvidia", kind: "company_alias", aliases: ["nvidia"]}
+      - {canonical: "amd", kind: "company_alias", aliases: ["amd", "advanced micro devices"]}
+      - {canonical: "intel", kind: "company_alias", aliases: ["intel corp", "intel corporation", "intel"]}
+      - {canonical: "asml", kind: "company_alias", aliases: ["asml"]}
+      - {canonical: "broadcom", kind: "company_alias", aliases: ["broadcom"]}
+      - {canonical: "micron", kind: "company_alias", aliases: ["micron technology", "micron"]}
+      - {canonical: "qualcomm", kind: "company_alias", aliases: ["qualcomm"]}
+      - {canonical: "samsung electronics", kind: "company_alias", aliases: ["samsung electronics"]}
+
+    seed_search_columns:
+      - V2Organizations
+
+    sample_source_column: SourceCommonName
+
+    partition_filter:
+      enabled: true
+      column: "_PARTITIONTIME"
+      type: "timestamp"
+
+    window:
+      preset: last_30_days
+      bucket: 1d
+
+    limit: 500
+    sample_size: 5
+    # Drop themes with fewer than this many seeded unique records before scoring,
+    # so tiny-support ratios cannot explode into misleading lift.
+    min_support: 25
+
+    cost_controls:
+      dry_run: false
+      execute_query: "ENABLE"
+      # Same scan footprint as seeded discovery (~10 GiB); this cap (~30 GiB)
+      # stays below single_query_cap_usd ($0.20). Verify against the dry-run.
+      maximum_bytes_billed: 30000000000
+      cost_policy_path: "configs/cost_policy.yaml"
+      ledger_path: "data/cost/cost_ledger.jsonl"
+      use_cache: false

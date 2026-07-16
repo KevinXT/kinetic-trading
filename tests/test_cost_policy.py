@@ -18,7 +18,10 @@ def test_loads_repo_cost_policy_yaml() -> None:
     assert isinstance(policy, CostPolicy)
     assert policy.monthly_cap_usd == 10.0
     assert policy.emergency_stop_usd == 8.0
-    assert policy.single_query_cap_usd == 0.10
+    # Single-query cap raised to $0.20 (~32.8 GiB at $6.25/TiB) so the year-long
+    # semiconductor GDELT scans (and the seeded free-text scan) can run under the
+    # typed execution gate; still well below the daily/monthly caps.
+    assert policy.single_query_cap_usd == 0.20
     assert policy.execute_confirmation_value == "ENABLE"
     assert policy.bigquery_usd_per_tib == 6.25
     assert policy.free_query_tib_per_month == 1.0

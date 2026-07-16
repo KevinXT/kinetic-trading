@@ -107,3 +107,45 @@ def test_passes_guardrails() -> None:
 def test_guardrails_accept_without_partition_filter() -> None:
     # DATE BETWEEN alone still satisfies the date-filter guardrail.
     validate_bigquery_sql(_build(partition_filter=None), [TABLE])
+
+
+# ── matching modes ────────────────────────────────────────────────────────────
+
+
+def test_default_mode_is_substring_backward_compatible() -> None:
+    # No match_mode given -> the historical LIKE '%pattern%' behavior, unchanged.
+    sql = _build(search_patterns=["foundry"])
+    assert "LOWER(theme) LIKE '%foundry%'" in sql
+    assert "-- match_mode: substring" in sql
+
+
+def test_token_mode_rejects_foundryman_for_foundry() -> None:
+    # foundry as a whole `_`-delimited token must NOT match FOUNDRYMAN.
+    sql = _build(search_patterns=["foundry"], match_mode="token")
+    assert "REGEXP_CONTAINS(LOWER(theme), r'(^|_)foundry(_|$)')" in sql
+    assert "LIKE '%foundry%'" not in sql
+    assert "-- match_mode: token" in sql
+
+
+def test_exact_mode_matches_whole_code() -> None:
+    sql = _build(search_patterns=["econ_inflation"], match_mode="exact")
+    assert "LOWER(theme) = 'econ_inflation'" in sql
+    assert "-- match_mode: exact" in sql
+
+
+def test_token_mode_pattern_is_delimiter_safe_no_regex_injection() -> None:
+    # A pattern with regex metacharacters cannot reach the generated SQL.
+    with pytest.raises(ValueError, match="delimiter-safe"):
+        _build(search_patterns=["foundry.*"], match_mode="token")
+
+
+def test_unknown_match_mode_rejected() -> None:
+    with pytest.raises(ValueError, match="match_mode"):
+        _build(search_patterns=["semiconductor"], match_mode="fuzzy")
+
+
+def test_token_mode_passes_guardrails() -> None:
+    validate_bigquery_sql(
+        _build(search_patterns=["semiconductor", "integrated_circuit"], match_mode="token"),
+        [TABLE],
+    )

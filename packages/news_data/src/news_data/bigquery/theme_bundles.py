@@ -75,9 +75,7 @@ def load_theme_bundles(path: str | Path = DEFAULT_THEME_BUNDLES_PATH) -> Dict[st
     return bundles
 
 
-def get_bundle_themes(
-    bundle_name: str, path: str | Path = DEFAULT_THEME_BUNDLES_PATH
-) -> List[str]:
+def get_bundle_themes(bundle_name: str, path: str | Path = DEFAULT_THEME_BUNDLES_PATH) -> List[str]:
     """
     Return the theme codes for ``bundle_name``.
 
@@ -91,7 +89,13 @@ def get_bundle_themes(
         )
     themes = bundles[bundle_name]
     if not themes:
-        raise ConfigError(f"theme_bundle {bundle_name!r} resolves to no theme codes.")
+        raise ConfigError(
+            f"theme_bundle {bundle_name!r} resolves to no theme codes. It is a "
+            "placeholder pending human review: run the matching theme-discovery "
+            "execute config, review the emitted theme_discovery.csv, then populate "
+            f"the {bundle_name!r} bundle's 'themes' list in "
+            f"{DEFAULT_THEME_BUNDLES_PATH} with the validated codes."
+        )
     return themes
 
 

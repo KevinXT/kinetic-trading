@@ -17,6 +17,49 @@
 # (de-duplicated, query_terms first).
 
 theme_bundles:
+  # --- PLACEHOLDER: pending human review of theme discovery -----------------
+  # This bundle is intentionally EMPTY. GDELT theme codes must never be guessed
+  # and committed as if validated. Populate `themes` ONLY with codes that appear
+  # in a real semiconductors theme-discovery run (see
+  # configs/research/semiconductors_theme_discovery_90d_execute.yaml) after a human
+  # reviews the emitted theme_discovery.csv.
+  #
+  # While `themes` is empty, any downstream count config that references this
+  # bundle fails clearly (get_bundle_themes raises), which is the intended gate.
+  #
+  # Review record (fill in when codes are added):
+  #   bundle_version:            semiconductors-v0-placeholder
+  #   review_date:               <YYYY-MM-DD when a human validated the codes>
+  #   source_discovery_run_id:   <run id of the executed theme-discovery run>
+  #   selected_theme_codes:      <codes kept, with counts>
+  #   excluded_ambiguous_codes:  <codes seen but rejected as too broad/ambiguous>
+  #   rationale:                 <one line: why these codes represent the topic>
+  semiconductors:
+    description: >-
+      PLACEHOLDER semiconductor bundle. Empty until a human reviews real theme
+      discovery output and records the selected/excluded codes below. Do not add
+      broad guessed terms.
+    status: placeholder_pending_discovery
+    bundle_version: "semiconductors-v0-placeholder"
+    review_date: "2026-07-15"
+    source_discovery_run_id: "semiconductors_theme_discovery_90d_execute"
+    selected_theme_codes: []
+    excluded_ambiguous_theme_codes:
+      - code: "TAX_FNCACT_FOUNDRYMAN"
+        count: 29
+        rationale: >-
+          False-positive substring match on "foundry"; represents the occupation
+          foundryman rather than semiconductor fabrication or chip foundries.
+    rationale: >-
+      The first live 90-day discovery (run id semiconductors_theme_discovery_90d_execute,
+      ~26.94 GiB scanned, ~$0.164) returned no valid semiconductor-specific theme
+      codes: its only result, TAX_FNCACT_FOUNDRYMAN, is a rejected false positive
+      (see excluded_ambiguous_theme_codes). The bundle therefore stays EMPTY and
+      non-executable. Populate `themes` only after refined/seeded discovery
+      surfaces codes that unambiguously represent semiconductor coverage and a
+      human records them here.
+    themes: []
+
   inflation_rates:
     description: >-
       Candidate bundle for inflation/rates research: inflation, interest-rate,
