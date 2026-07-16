@@ -11,6 +11,7 @@ Product notes, development checklists, and technical guides for kinetic-trading.
 | [Run context](pipeline/run-context.md) | `RunContext`, state contract, and artifact layout | current |
 | [Financial data architecture](architecture/financial-data.md) | Provider-neutral contracts, Alpaca path, identity, cache, and storage | current |
 | [News×market dataset design](research/news_market_dataset_design.md) | Research question, alignment, hypotheses, feature/leakage design, artifacts, and limitations | current |
+| [Semiconductor theme scoring](research/semiconductor-theme-scoring/) | Curated 30-day BigQuery scoring snapshot and negative identity-layer verdict | current |
 | [Dependencies](reference/dependencies.md) | Per-package dependency declarations | current |
 | [Notes](notes/README.md) | Scratch / informal notes | — |
 

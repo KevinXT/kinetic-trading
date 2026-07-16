@@ -1,81 +1,127 @@
 # Kinetic Trading
 
-A cost-controlled financial and news-data research platform that ingests provider data, normalizes it into stable domain models, persists it deterministically, and exposes reproducible reporting and research workflows.
+Kinetic Trading is a research-oriented market data platform that collects financial and news data, runs reproducible experiments, and keeps unreviewed research outputs out of trading systems.
 
-It is **not** a brokerage, order router, autonomous trader, profitability engine, or generic stock dashboard. The engineering focus is reliable ingestion, clear package boundaries, cloud/API cost guardrails, and a leakage-aware research layer that aligns news with market data without look-ahead.
+It is **not** a brokerage, order router, autonomous trader, or profitability engine. The point of the project is reliable ingestion, clear package boundaries, cloud cost control, and research workflows that are easy to audit.
 
 [![CI](https://github.com/KevinXT/kinetic-trading/actions/workflows/ci.yml/badge.svg)](https://github.com/KevinXT/kinetic-trading/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-## Technical highlights
+## What is implemented now
 
-- **Provider-neutral domain contracts** for prices, filings, company facts, and macro observations, with a **fully implemented Alpaca `PriceBar` ingestion path**. Only normalized records cross provider boundaries.
-- **Alpaca historical stock bars**: multi-symbol pagination, bounded retries, raw-page caching keyed by normalized API origin, and normalization into `PriceBar`.
-- **Deterministic JSONL storage**: atomic rewrites, exclusive writer locks, idempotent logical-key upserts, and semantic equality that ignores volatile `retrieved_at` metadata.
-- **Cost-aware BigQuery path**: dry-run estimates, partition-pruning guardrails, query-size limits, and a spend policy/ledger.
-- **GDELT news ingestion**: DOC/artlist path plus historical BigQuery GKG counts, theme bundles, and local reporting views.
-- **Leakage-aware research datasets**: align timestamped GDELT news with Alpaca market sessions using explicit pre-open availability cutoffs, versioned topic mappings, structurally separated inputs and targets, deterministic manifests, and offline event-study reporting.
-- **Registry-based composition**: YAML pipelines, a task registry, and per-invocation provider registries with no global mutable provider state.
-- **Offline-first test suite**: fake-transport coverage for pagination, retries, cache, normalization, storage, and secret redaction; live provider tests are opt-in and CI runs the offline suite only.
+- Config-driven pipelines with a task registry and per-run artifacts
+- Alpaca historical US stock-bar ingestion into normalized `PriceBar` records
+- Deterministic JSONL storage with idempotent upserts
+- GDELT DOC ingestion plus BigQuery GKG research paths
+- Dry-run / live gates, byte caps, and a spend policy for BigQuery
+- Seeded theme discovery and complete-family statistical theme scoring
+- Leakage-aware news × market research datasets and offline event-study reporting
+- Offline test suite (live provider calls are opt-in)
+- Local reporting dashboard over committed sample JSON
+
+Planned but **not** implemented: live order execution, multi-provider market coverage beyond Alpaca bars, SEC EDGAR / FRED adapters, and a text-based semiconductor relevance classifier.
+
+## Why this is hard
+
+Public news datasets are noisy. Company aliases create false positives (`intel` vs `intelligence`). BigQuery scans cost money even when a `WHERE` clause filters rows. At large candidate counts, raw p-values overstate discovery. Research outputs must not silently become trading inputs. Reproducibility means keeping SQL, config, cost decisions, and run metadata together.
+
+## Latest experiment: Are GDELT themes useful for semiconductor identification?
+
+**Hypothesis:** GDELT GKG theme codes can act as a primary semiconductor identity layer.
+
+**Method:** Match semiconductor companies and industry phrases in `V2Organizations` with token-safe rules, score every support-qualified theme against a disjoint non-seed background in one partition-pruned scan, correct for multiple testing over the complete family, check exact source/day/seed concentration, classify with deterministic rules, and refuse automatic promotion into the production theme bundle.
+
+**Verdict:** Rejected as a primary semiconductor identity layer. Themes may remain useful as contextual features. Semiconductor relevance should be established through entity resolution and text-based classification instead.
+
+| Metric | Result |
+| --- | ---: |
+| Window | 30 days (2026-06-17 → 2026-07-16) |
+| Seeded GKG records | 40,334 |
+| Non-seed background records | 7,607,554 |
+| Support-qualified themes | 1,359 |
+| Complete hypothesis family | Yes (cap 5,000) |
+| Hypothesis tests | 1,330 z-tests + 29 Fisher exact |
+| Multiple-testing correction | Benjamini–Hochberg over 1,359 |
+| Query scan | 10.624 GiB |
+| Estimated cost | $0.0648 |
+| Numerically screened candidates | 185 |
+| `industry_core` classifications | 0 |
+| Production themes promoted | 0 |
+
+The run found many statistically enriched themes around semiconductor organizations — manufacturing, servers, storage, inflation, currencies, monetary policy. None functioned as a reliable semiconductor identity label under the current rules. The production `semiconductors` bundle stayed empty.
+
+What made the negative result useful:
+
+- complete-family FDR (BH was not applied to a truncated top-N list)
+- disjoint seed / non-seed comparison
+- Fisher exact for sparse 2×2 tables
+- exact concentration checks for every candidate
+- deterministic evidence sampling for human review
+- production immutability (no auto-promotion)
+- automatic human-readable research report
+
+Curated snapshot (sanitized; raw `experiments/` stays gitignored): [docs/research/semiconductor-theme-scoring/](docs/research/semiconductor-theme-scoring/).
 
 ## Architecture
 
 ```mermaid
-flowchart LR
-  cfg[YAML config] --> runner[pipeline_core runner]
-  runner --> reg[Task / provider registries]
-
-  reg --> alpaca[Alpaca adapter]
-  alpaca --> cache[Raw page cache]
-  cache --> bars[PriceBar records]
-  bars --> store[(Deterministic JSONL store)]
-  store --> mktfeat[MarketSessionFeature]
-
-  reg --> gdelt[GDELT DOC / BigQuery]
-  gdelt --> news[Normalized articles / counts]
-  news --> bq[(BigQuery / local stores)]
-  bq --> views[Reporting views] --> dash[Local dashboard]
-  news --> newsfeat[NewsTopicDailyFeature to SessionNewsFeature]
-
-  mktfeat --> obs[NewsMarketObservation]
-  newsfeat --> obs
-  obs --> out[Dataset manifest, event study, research reports]
+flowchart TD
+  cfg[YAML configuration] --> runner[pipeline_core runner]
+  runner --> ingest[Provider ingestion]
+  ingest --> gates[Validation and cost controls]
+  gates --> run[Immutable experiment run]
+  run --> arts[SQL, scores, cost, metadata]
+  arts --> review[Statistical research review]
+  review --> boundary{Manual approval boundary}
+  boundary -->|approved codes only| prod[Theme bundles / future systems]
+  boundary -->|rejected or empty| hold[No production change]
 ```
+
+Research does not automatically enter trading. Empty or placeholder bundles fail closed until a human records validated theme codes.
 
 | Layer | Responsibility |
 | --- | --- |
-| `pipeline_core` | Config load, plan parse, task dispatch, artifacts — no provider knowledge |
-| `market_data` / `news_data` | Provider clients, validation, normalization, domain-specific storage |
-| `research_data` | Calendar/availability alignment, feature builders, leakage-checked join, event study, manifest |
+| `pipeline_core` | Config load, plan parse, task dispatch, artifacts |
+| `market_data` | Domain models, Alpaca adapter, JSONL financial store |
+| `news_data` | GDELT DOC + BigQuery path, seed matching, theme scoring |
+| `research_data` | Calendar alignment, leakage-checked join, event study |
 | `common` | Shared cache, YAML merge, cost policy primitives |
 | `trading_platform` | CLI composition root and task registration |
 
-Alpaca and GDELT are separate ingestion paths that share the same runner, cache, and artifact conventions. The `research_data` layer is a **derived product** that consumes both normalized sources; it never replaces them and is not a trading signal.
+## Engineering safeguards
 
-## Reliability and research-integrity decisions
+- BigQuery always dry-runs before a billable query
+- `maximum_bytes_billed` and typed `execute_query: "ENABLE"` gate
+- Cost policy + ledger with single-query / daily / monthly caps
+- Cache hit/miss recorded in artifacts
+- Generated SQL stored beside results
+- Run metadata records git commit, window, and task params
+- Production theme bundles are immutable from scoring tasks
+- Complete-family statistical safeguards; incomplete families skip BH
+- Secrets stay in environment variables / ignored `configs/local.yaml`
 
-**Ingestion and storage**
+## Repository layout
 
-- **Cache raw pages before normalization** so retries and re-runs do not re-hit the provider for identical historical requests. Alpaca cache identity includes the normalized `api_origin` (schema `alpaca-bars-v2`), so production, sandbox, mock, and proxy responses cannot share entries.
-- **Bound pagination and retries** with maximum page counts, token-loop detection, backoff caps, and no retry on ordinary 4xx failures.
-- **Idempotent logical-key upserts** with atomic writes and exclusive locks. Semantic equality excludes `retrieved_at`, so force-refreshing identical OHLCV is a skip that preserves first-seen provenance instead of a false correction.
-- **BigQuery dry runs and cost caps fail closed** before expensive scans; partition filters are required for research configs.
-- **Secrets stay in environment variables.** Caches, logs, artifacts, and examples carry env var *names*, never credential values. Live provider tests are opt-in (`RUN_PROVIDER_INTEGRATION_TESTS=1`).
+```text
+packages/
+  common/            Shared YAML merge, cache, cost policy
+  pipeline_core/     Runner, parser, hooks, task registry
+  news_data/         GDELT DOC + BigQuery research path
+  market_data/       Price domain models and Alpaca path
+  research_data/     News × market alignment and event study
+  strategy_sdk/      Reserved boundary (intentionally empty)
+apps/
+  trading_platform/  CLI and task registration
+  reporting_dashboard/ Local sample-data dashboard
+configs/             Demo, research, cost policy, theme bundles
+docs/                Architecture and research write-ups
+tests/               Offline suite + opt-in live provider tests
+```
 
-**Research integrity**
+## How to run
 
-- **Pre-open feature cutoff.** Inputs are aggregated to `target_session_open - cutoff_buffer_seconds` (default 300s). Equality at the cutoff is allowed; the buffer is operational conservatism, not a provider-latency model.
-- **Alignment precision follows source capability.** DOC records support article-timestamp windows; BigQuery counts have no timestamps and reject exact-window alignment unless an explicit `daily_approximation` downgrade is enabled and recorded.
-- **Structural input/target separation.** Every field belongs to exactly one category — identity, lineage, availability, **input** (lag-only), **contemporaneous** (same-session, not a predictor), **forward target**, quality, or diagnostic — and the separation is validated per row.
-- **Measured zero, unsupported, and missing are distinct** and never collapsed to `0`.
-- **No profitability, causal, or execution claims.**
-
-Detailed hypotheses, bootstrap method, FDR families, target-horizon formulas, availability assumptions, calendar scope, and the full limitations live in the [research dataset design](docs/research/news_market_dataset_design.md).
-
-## Quick start
-
-Credentials are **not** required for the offline test suite, the research demo, or the local dashboard.
+Credentials are not required for the offline test suite, the research demo, or the local dashboard.
 
 ```bash
 git clone https://github.com/KevinXT/kinetic-trading.git
@@ -96,173 +142,74 @@ python3 -m pip install -e ./packages/common \
 pytest -q
 ```
 
-### Optional network / provider workflows
-
-These require network access and, in some cases, credentials or a cloud project.
-
-```bash
-# GDELT DOC demo (network call to GDELT; no cloud credentials)
-python3 -m trading_platform configs/demo.yaml
-
-# Live Alpaca historical bars (requires Alpaca credentials)
-export ALPACA_API_KEY_ID="..."
-export ALPACA_API_SECRET_KEY="..."
-python3 -m trading_platform configs/alpaca_daily_bars.yaml
-```
-
-BigQuery research configs are partition-pruned and require a real project id via `configs/local.yaml`. Always dry-run before executing; execute configs are explicitly gated.
-
-```bash
-python3 -m trading_platform configs/research/inflation_rates_bigquery_30d_partition_dryrun.yaml
-python3 -m trading_platform configs/research/inflation_rates_bigquery_30d_partition_execute.yaml
-```
-
-Additional partition-pruned configs live under `configs/research/`, including shorter and longer inflation dry-runs (`inflation_rates_bigquery_7d_partition_dryrun.yaml`, `inflation_rates_bigquery_1y_partition_dryrun.yaml`) and GDELT theme-discovery pairs (`debug_gdelt_themes_inflation_30d_partition_dryrun.yaml`, `debug_gdelt_themes_inflation_30d_partition_execute.yaml`). Research topics map to GKG theme codes via the theme bundle definitions in `configs/gdelt_theme_bundles.yaml`.
-
-## Offline research demo
-
-The strongest single demonstration of the platform is the fully offline news × market dataset build — no Alpaca, BigQuery, GDELT, or internet access:
+Offline news × market demo (no network):
 
 ```bash
 python3 -m trading_platform configs/research/news_market_dataset_demo.yaml
 ```
 
-```text
-GDELT articles / historical counts        Alpaca PriceBar records
-              |                                      |
-   NewsTopicDailyFeature                    MarketSessionFeature
-              |                                      |
-   SessionNewsFeature  ----→ NewsMarketObservation ←----
-                                     |
-              dataset manifest · event study · research reports
-```
-
-- **Row grain:** one `topic × instrument × aligned market session × feature cutoff × mapping version × dataset version`.
-- **Default alignment:** `session_information_window_v2` aggregates timestamped DOC news over `[previous session close → feature_cutoff]`.
-- **DOC vs BigQuery:** DOC supports article-level breadth, source concentration, and publication-timing features; BigQuery GKG counts support volume only, with richer fields emitted as `null` (never a fabricated `0`) and tagged by per-row `feature_capabilities`.
-- **Separation:** inputs (lag-only), contemporaneous descriptors, forward targets, quality, and lineage are kept in distinct groups and validated.
-- **Event study:** attention events use a lag-only `attention_zscore_30 ≥ threshold` rule (config-driven, not chosen after seeing returns); eligible H1 inference uses a session-date moving-block bootstrap with Benjamini–Hochberg correction inside the H1 family, and undersized groups get null CIs/p-values.
-
-The run emits normalized feature tables, joined JSONL/CSV observations, a feature catalog, a dataset manifest, join diagnostics, event-level records, summary statistics, and a generated `research_limitations.md` (per run, not committed). Full schema, methodology, and artifact reference: [research dataset design](docs/research/news_market_dataset_design.md).
-
-Representative observation (trimmed; groups kept separate):
-
-```json
-{
-  "topic": "semiconductors",
-  "symbol": "AMD",
-  "session_date": "2026-05-04",
-  "inputs": {
-    "news_attention_zscore_30": null,
-    "mkt_prior_simple_return": null
-  },
-  "contemporaneous": {
-    "mkt_volume": 21168255
-  },
-  "targets": {
-    "target_session_return": 0.005708
-  },
-  "quality": {
-    "target_through_plus_4_complete": true
-  }
-}
-```
-
-## Repository map
-
-```text
-packages/
-  common/            Shared YAML merge, cache, errors, cost policy/ledger
-  pipeline_core/     Runner, parser, hooks, RunContext, task registry
-  news_data/         GDELT DOC + BigQuery path, transforms, reporting views
-  market_data/       Domain models, Alpaca adapter, JSONL financial store
-  research_data/     News×market layer: calendar, alignment, features, join, event study
-  strategy_sdk/      Reserved boundary (intentionally empty)
-apps/
-  trading_platform/  CLI and task registration
-  reporting_dashboard/ Static HTML/CSS/JS preview over sample reporting JSON
-configs/             Demo, collections, research, Alpaca, reporting, cost policy
-tests/               Offline suite + opt-in live provider test
-docs/                Architecture and research documentation
-```
-
-## Testing and quality gates
-
-CI (GitHub Actions) runs on Python **3.11 and 3.12**:
-
-- **Black** is the formatter, scoped to the market-data, cache, and research-layer packages/tests it owns (full-tree Black is not yet clean, so it is not enforced repo-wide).
-- **Ruff** is used for lint only (Ruff format conflicts with Black on assert wrapping).
-- **mypy** is package-scoped (`common`, `market_data`, `pipeline_core`, `research_data` sources), not full-repository.
-- Wheels are built for every package and imported in an isolated venv from an empty directory (import smoke test).
-- `pytest` runs the offline suite; live Alpaca calls require `RUN_PROVIDER_INTEGRATION_TESTS=1` and are skipped in CI.
+Safe BigQuery dry-run example (needs a real `providers.bigquery.project_id` via ignored `configs/local.yaml`):
 
 ```bash
-pytest -q
-ruff check .
-mypy packages/common/src packages/market_data/src packages/pipeline_core/src packages/research_data/src
-black --check packages/market_data packages/research_data packages/common/src/common/cache.py \
-  tests/test_alpaca_*.py tests/test_financial_jsonl_store.py \
-  tests/test_market_data_models.py tests/test_imports.py tests/test_research_*.py
+python3 -m trading_platform configs/research/semiconductors_seeded_theme_scoring_30d_dryrun.yaml
 ```
 
-The offline suite exercises provider failures, pagination, cache API-origin isolation, normalization, registry composition, storage corrections, concurrency conflicts, config validation, secret redaction, and the full research-layer build.
+Live BigQuery execution incurs cost. Run only after reviewing the dry-run estimate:
 
-## Current status and roadmap
+```bash
+python3 -m trading_platform configs/research/semiconductors_seeded_theme_scoring_30d_execute.yaml
+```
 
-**Implemented**
+Configs ship with `project_id: "YOUR_PROJECT_ID"`. Do not commit real project ids or credentials.
 
-- YAML pipeline engine with recursive includes and local overrides
-- GDELT DOC ingestion, transforms, stores, and collection runner
-- BigQuery GDELT counts/theme discovery with dry-run and cost guardrails
-- Market-data domain contracts and JSONL persistence; Alpaca historical US stock bars end-to-end (client → cache → normalize → store → artifacts)
-- Dashboard-ready reporting views with a local sample-data dashboard
-- Normalized, leakage-aware news×market research layer with market-calendar alignment, feature catalog, offline event study, and dataset manifest
+## Validation status
 
-**Next**
+Verified on branch tip `feature/semiconductor-theme-scoring` (2026-07-16):
 
-- Research-grade backtesting on top of the research-data layer
-- SEC EDGAR and FRED provider adapters on the existing contracts
-- Rolling market-model (beta) expected returns and additional alignment policies
-
-**Explicitly not implemented**
-
-- Live order execution or brokerage operations
-- Profitability claims or autonomous trading
-- Managed production data platform / multi-tenant SaaS
-- Multi-provider market-data coverage beyond Alpaca bars
-
-## Key limitations
-
-- GDELT coverage is a **media-attention proxy**, not measured investor attention; DOC record caps can censor counts.
-- Reported publication time is only a **historical-availability proxy**; indexing, timestamp revision, delivery, and live-pipeline latency are not modeled.
-- Topic tags and topic→instrument mappings are **researcher-defined** (with survivorship/selection bias).
-- Daily bars cannot reproduce **intraday price discovery**; Amihud is a daily liquidity proxy, not order-book depth.
-- Benchmark-adjusted return is a simple difference, **not factor-model alpha**.
-- Statistical association is **not causality or profitability**; multiple testing can manufacture false discoveries.
-- Transaction costs and execution are **out of scope**.
-- The curated 2018–2035 calendar is **not an authoritative exchange schedule** and omits unscheduled closures.
-
-Full detail is in the [research dataset design](docs/research/news_market_dataset_design.md) and the generated `research_limitations.md`.
-
-## Documentation
-
-| Doc | Purpose |
+| Check | Result |
 | --- | --- |
-| [Financial data architecture](docs/architecture/financial-data.md) | Domain identity, Alpaca path, cache, storage, currency semantics |
-| [News×market dataset design](docs/research/news_market_dataset_design.md) | Research question, alignment, hypotheses, feature/leakage design, artifacts, limitations |
-| [Config builder](docs/guides/config-builder.md) | YAML `include:` / merge behavior |
-| [Looker Studio setup](docs/looker_studio_dashboard.md) | Reporting views → Looker Studio |
-| [Dependencies](docs/reference/dependencies.md) | Per-package dependency declarations |
-| [Docs index](docs/README.md) | Full documentation map |
+| Full offline pytest | 2032 passed, 8 skipped |
+| Ruff | passed |
+| Task-scoped Black (changed scoring files) | passed |
+| CI mypy target (`common`, `market_data`, `pipeline_core`, `research_data`) | passed |
+| mypy on changed scoring modules | passed |
+| Repository-wide Black | 21 pre-existing files still require formatting |
+
+CI runs Black only on the owned market-data / research-data scopes, not the full tree. Live Alpaca tests require `RUN_PROVIDER_INTEGRATION_TESTS=1` and are skipped in CI.
+
+## Current limitations
+
+- No demonstrated predictive returns
+- No production trading connection
+- GDELT GKG records are not unique articles
+- Entity, language, and publisher bias remain
+- The semiconductor seed corpus in the latest run is NVIDIA-heavy
+- A text-based relevance classifier is not implemented yet
+- Generated research is auditable evidence, not scientific proof of market edge
+- Some packages are research-stage; `strategy_sdk` is intentionally empty
+
+## Roadmap
+
+Next experiment: build a small human-labeled semiconductor-relevance benchmark and compare deterministic entity matching against an entity-and-text classifier using held-out precision, recall, F1, calibration, and abstention.
 
 ## Local dashboard
 
 ![Local reporting dashboard preview — sample/demo data](docs/images/reporting_dashboard_preview.png)
 
-Screenshots use **committed sample JSON** matching the BigQuery reporting-view schemas; they are not live production feeds.
+Screenshots use committed sample JSON matching the BigQuery reporting-view schemas; they are not live production feeds.
 
 ```bash
 cd apps/reporting_dashboard
 python3 -m http.server 8000
 # open http://localhost:8000
 ```
+
+## Documentation
+
+| Doc | Purpose |
+| --- | --- |
+| [Semiconductor theme scoring snapshot](docs/research/semiconductor-theme-scoring/) | Latest real BigQuery experiment and negative verdict |
+| [News × market dataset design](docs/research/news_market_dataset_design.md) | Alignment, leakage rules, hypotheses, artifacts |
+| [Financial data architecture](docs/architecture/financial-data.md) | Domain identity, Alpaca path, cache, storage |
+| [Config builder](docs/guides/config-builder.md) | YAML `include:` / merge behavior |
+| [Docs index](docs/README.md) | Full documentation map |
