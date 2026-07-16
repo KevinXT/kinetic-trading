@@ -78,7 +78,7 @@ flowchart TD
   boundary -->|rejected or empty| hold[No production change]
 ```
 
-Research does not automatically enter trading. Empty or placeholder bundles fail closed until a human records validated theme codes.
+Scoring and discovery only write review artifacts. They never update the production theme lists used by later pipelines. If a topic’s theme list is still empty (as semiconductors is today), any job that depends on it stops with an error instead of guessing codes.
 
 | Layer | Responsibility |
 | --- | --- |
