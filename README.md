@@ -92,7 +92,7 @@ Scoring tasks write review artifacts only. They do not edit production theme bun
 
 **Method.** Compare GKG records that mention semiconductor companies with a disjoint background over the same 30-day window, correct for testing more than 1,300 themes, and check whether hits were dominated by one source, date, or seed company.
 
-| | |
+| Metric | Result |
 | --- | ---: |
 | Window | 30 days |
 | Seeded records | 40,334 |
