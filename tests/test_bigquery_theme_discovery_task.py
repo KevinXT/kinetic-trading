@@ -214,6 +214,76 @@ def test_task_is_registered() -> None:
     assert "bigquery_gdelt_theme_discovery" in TASK_REGISTRY
 
 
+def test_summary_includes_phase8_review_fields(tmp_path: Path) -> None:
+    _FakeClient.response = SafeQueryResult(
+        decision=SafeQueryDecision.DRY_RUN_ONLY,
+        rows=[],
+        cache_hit=False,
+        estimate=_estimate(),
+    )
+    ctx = _ctx(tmp_path)
+    bigquery_gdelt_theme_discovery_task(ctx, _params(dry_run=True))
+    summary = _read(ctx, "bigquery_summary.json")
+    assert summary["matching_mode"] == "substring"  # default, backward compatible
+    assert summary["source_table"] == "gdelt-bq.gdeltv2.gkg_partitioned"
+    assert summary["partition_filter"]["column"] == "_PARTITIONTIME"
+    assert summary["returned_theme_count"] == 0
+    assert summary["selected_theme_count"] == 0
+    assert "warnings" in summary
+
+
+def test_token_match_mode_flows_into_sql(tmp_path: Path) -> None:
+    _FakeClient.response = SafeQueryResult(
+        decision=SafeQueryDecision.DRY_RUN_ONLY,
+        rows=[],
+        cache_hit=False,
+        estimate=_estimate(),
+    )
+    ctx = _ctx(tmp_path)
+    p = _params(dry_run=True)
+    p["match_mode"] = "token"
+    p["theme_search_patterns"] = ["foundry"]
+    bigquery_gdelt_theme_discovery_task(ctx, p)
+    sql = (ctx.artifacts_dir / "bigquery_sql.sql").read_text(encoding="utf-8")
+    assert "REGEXP_CONTAINS(LOWER(theme), r'(^|_)foundry(_|$)')" in sql
+    assert "LIKE '%foundry%'" not in sql
+    summary = _read(ctx, "bigquery_summary.json")
+    assert summary["matching_mode"] == "token"
+
+
+def test_known_rejected_theme_is_surfaced(tmp_path: Path) -> None:
+    _FakeClient.response = SafeQueryResult(
+        decision=SafeQueryDecision.ALLOW,
+        rows=[{"theme": "TAX_FNCACT_FOUNDRYMAN", "cnt": 29}],
+        cache_hit=False,
+        estimate=_estimate(),
+    )
+    ctx = _ctx(tmp_path)
+    p = _params(dry_run=False, execute_query="ENABLE")
+    p["known_rejected_theme_codes"] = ["TAX_FNCACT_FOUNDRYMAN"]
+    bigquery_gdelt_theme_discovery_task(ctx, p)
+    summary = _read(ctx, "bigquery_summary.json")
+    assert summary["rejected_theme_count"] == 1
+    assert summary["rejected_matches"][0]["theme"] == "TAX_FNCACT_FOUNDRYMAN"
+    assert summary["rejected_matches"][0]["review_status"] == "rejected_known_false_positive"
+    assert any("known rejected false positive" in w for w in summary["warnings"])
+
+
+def test_executed_empty_result_warns_and_notes_execution(tmp_path: Path) -> None:
+    _FakeClient.response = SafeQueryResult(
+        decision=SafeQueryDecision.ALLOW,
+        rows=[],
+        cache_hit=False,
+        estimate=_estimate(),
+    )
+    ctx = _ctx(tmp_path)
+    bigquery_gdelt_theme_discovery_task(ctx, _params(dry_run=False, execute_query="ENABLE"))
+    summary = _read(ctx, "bigquery_summary.json")
+    assert summary["returned_theme_count"] == 0
+    assert "dry_run=true" not in summary["note"]
+    assert any("seeded record-based" in w for w in summary["warnings"])
+
+
 # ── cache-key regression: stale theme_discovery results are never reused ──────
 
 from news_data.bigquery.cache import (  # noqa: E402
