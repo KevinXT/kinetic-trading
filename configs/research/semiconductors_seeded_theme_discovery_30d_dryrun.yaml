@@ -1,0 +1,73 @@
+name: semiconductors_seeded_theme_discovery_30d_dryrun
+
+# SEEDED (record-based) semiconductor theme discovery — DRY-RUN (default, safe).
+#
+# Fallback for when theme-NAME discovery finds nothing usable: instead of matching
+# theme-code text, this finds GKG records that mention semiconductor seed terms
+# (company / topic names) in a free-text column, then ranks the theme codes those
+# records carry. Output is a HUMAN-REVIEW candidate list — co-occurrence frequency
+# is a ranking signal, not proof of relevance, and this NEVER edits the bundle.
+#
+# It estimates scanned bytes/cost and logs a ledger decision; it does NOT run a
+# billable query and fetches no data. If the dry-run estimate exceeds budget,
+# shrink the window or the seed_search_columns before executing.
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
+    table: "gdelt-bq.gdeltv2.gkg_partitioned"
+
+pipeline:
+  ingest:
+    source: bigquery_gdelt_seeded_theme_discovery
+    query_name: semiconductors_seeded_theme_discovery_30d_partition
+    topic: semiconductors
+
+    # Free-text seed phrases (case-insensitive substring). Company names are the
+    # strongest signal; generic words also match industry-org names.
+    seed_terms:
+      - semiconductor
+      - semiconductors
+      - microprocessor
+      - chipmaker
+      - "wafer fabrication"
+      - TSMC
+      - NVIDIA
+      - AMD
+      - Intel
+      - ASML
+      - Broadcom
+      - Micron
+      - Qualcomm
+      - "Samsung Electronics"
+
+    # Scanned free-text column(s) for seeds. V2Organizations only, to keep bytes
+    # scanned low; add AllNames only if the dry-run shows it is affordable.
+    seed_search_columns:
+      - V2Organizations
+
+    # Column used for sample source identifiers (domains, not article bodies).
+    sample_source_column: SourceCommonName
+
+    partition_filter:
+      enabled: true
+      column: "_PARTITIONTIME"
+      type: "timestamp"
+
+    window:
+      preset: last_30_days
+      bucket: 1d
+
+    limit: 200
+    sample_size: 3
+
+    cost_controls:
+      dry_run: true
+      # Scanning a free-text org column is larger than the compact V2Themes
+      # scan; this cap (~28 GiB) stays below single_query_cap_usd ($0.20). If the
+      # dry-run estimate is higher, reduce the window or columns before executing.
+      maximum_bytes_billed: 30000000000
+      execute_query: ""
+      cost_policy_path: "configs/cost_policy.yaml"
+      ledger_path: "data/cost/cost_ledger.jsonl"
+      use_cache: false

@@ -1,0 +1,14 @@
+canonical_seed,seed_kind,unique_seed_records_matching_entity,share_of_unique_seed_records_matching_entity,record_seed_match_count,share_of_all_record_seed_matches
+nvidia,company_alias,17944,0.444885209,17944,0.32296035
+samsung electronics,company_alias,7926,0.196509149,7926,0.14265402
+intel,company_alias,7778,0.192839788,7778,0.139990281
+semiconductor,industry_phrase,6101,0.151261963,6101,0.109807239
+micron,company_alias,4475,0.110948579,4475,0.080542107
+qualcomm,company_alias,3740,0.09272574,3740,0.067313403
+broadcom,company_alias,3476,0.086180394,3476,0.062561869
+tsmc,company_alias,1635,0.04053652,1635,0.029427116
+amd,company_alias,1558,0.038627461,1558,0.028041252
+semiconductors,industry_phrase,852,0.021123618,852,0.015334497
+asml,company_alias,50,0.001239649,50,0.000899912
+chipmaker,industry_phrase,18,0.000446274,18,0.000323968
+microprocessor,industry_phrase,8,0.000198344,8,0.000143986

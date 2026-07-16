@@ -1,0 +1,68 @@
+name: semiconductors_seeded_theme_discovery_30d_execute
+
+# SEEDED (record-based) semiconductor theme discovery — real BigQuery execution.
+#
+# Run ONLY after the dry-run (semiconductors_seeded_theme_discovery_30d_dryrun)
+# estimate looks safe. Even with execute_query: "ENABLE", the SafeBigQueryClient
+# ALWAYS dry-runs first and enforces maximum_bytes_billed + the cost policy before
+# any billable query.
+#
+# Writes seeded_theme_candidates.csv / .jsonl / seeded_theme_discovery_summary.json
+# for HUMAN review. This NEVER edits configs/gdelt_theme_bundles.yaml — promoting a
+# reviewed code into the bundle stays a deliberate manual edit.
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
+    table: "gdelt-bq.gdeltv2.gkg_partitioned"
+
+pipeline:
+  ingest:
+    source: bigquery_gdelt_seeded_theme_discovery
+    query_name: semiconductors_seeded_theme_discovery_30d_partition
+    topic: semiconductors
+
+    seed_terms:
+      - semiconductor
+      - semiconductors
+      - microprocessor
+      - chipmaker
+      - "wafer fabrication"
+      - TSMC
+      - NVIDIA
+      - AMD
+      - Intel
+      - ASML
+      - Broadcom
+      - Micron
+      - Qualcomm
+      - "Samsung Electronics"
+
+    seed_search_columns:
+      - V2Organizations
+
+    sample_source_column: SourceCommonName
+
+    partition_filter:
+      enabled: true
+      column: "_PARTITIONTIME"
+      type: "timestamp"
+
+    window:
+      preset: last_30_days
+      bucket: 1d
+
+    limit: 200
+    sample_size: 3
+
+    cost_controls:
+      dry_run: false
+      # Typed execution gate: a billable query runs only when execute_query is the
+      # literal "ENABLE" AND the internal dry-run estimate is within budget.
+      execute_query: "ENABLE"
+      # Scanning a free-text org column is larger than the compact V2Themes scan;
+      # this cap (~28 GiB) stays below single_query_cap_usd ($0.20).
+      maximum_bytes_billed: 30000000000
+      cost_policy_path: "configs/cost_policy.yaml"
+      ledger_path: "data/cost/cost_ledger.jsonl"
+      use_cache: false
