@@ -127,15 +127,12 @@ def test_builder_emits_partition_and_date_filters() -> None:
     assert "SELECT *" not in sql
 
 
-def test_readme_references_partition_configs() -> None:
+def test_readme_points_to_research_configs() -> None:
+    """Landing-page README links to the research config directory, not a filename dump."""
     readme = Path("README.md").read_text(encoding="utf-8")
-    for name in (
-        "inflation_rates_bigquery_7d_partition_dryrun.yaml",
-        "inflation_rates_bigquery_30d_partition_dryrun.yaml",
-        "inflation_rates_bigquery_30d_partition_execute.yaml",
-        "inflation_rates_bigquery_1y_partition_dryrun.yaml",
-    ):
-        assert name in readme, f"README must reference {name}"
+    assert "configs/research/" in readme
+    # Concrete dry-run example still documented for the semiconductor scoring path.
+    assert "semiconductors_seeded_theme_scoring_30d_dryrun.yaml" in readme
 
 
 # ── theme discovery configs ──────────────────────────────────────────────────
@@ -187,9 +184,9 @@ def test_theme_bundles_config_exists() -> None:
     assert Path("configs/gdelt_theme_bundles.yaml").is_file()
 
 
-def test_readme_references_theme_discovery_and_bundles() -> None:
+def test_readme_references_theme_bundles() -> None:
+    """README documents theme-bundle location without listing every discovery YAML."""
     readme = Path("README.md").read_text(encoding="utf-8")
-    assert _DISCOVERY_DRYRUN in readme
-    assert _DISCOVERY_EXECUTE in readme
     assert "theme bundle" in readme.lower()
     assert "gdelt_theme_bundles.yaml" in readme
+    assert "configs/gdelt_theme_bundles.yaml" in readme
