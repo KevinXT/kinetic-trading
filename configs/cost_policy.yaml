@@ -11,9 +11,9 @@ cost_policy:
   monthly_cap_usd: 10.00
   emergency_stop_usd: 8.00
   daily_cap_usd: 0.50
-  single_query_cap_usd: 0.10
+  single_query_cap_usd: 0.20
 
-  default_max_query_gb: 12
+  default_max_query_gb: 35
 
   require_dry_run: true
   require_cache_check: true

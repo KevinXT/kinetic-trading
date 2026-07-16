@@ -19,6 +19,8 @@ def _register_tasks() -> None:
     from news_data.task import (
         aggregate_article_features_task,
         bigquery_gdelt_counts_task,
+        bigquery_gdelt_seeded_theme_discovery_task,
+        bigquery_gdelt_seeded_theme_scoring_task,
         bigquery_gdelt_theme_discovery_task,
         dedupe_articles_task,
         filter_articles_task,
@@ -41,6 +43,14 @@ def _register_tasks() -> None:
     TASK_REGISTRY.setdefault("gdelt_docs", gdelt_docs_task)
     TASK_REGISTRY.setdefault("bigquery_gdelt_counts", bigquery_gdelt_counts_task)
     TASK_REGISTRY.setdefault("bigquery_gdelt_theme_discovery", bigquery_gdelt_theme_discovery_task)
+    TASK_REGISTRY.setdefault(
+        "bigquery_gdelt_seeded_theme_discovery",
+        bigquery_gdelt_seeded_theme_discovery_task,
+    )
+    TASK_REGISTRY.setdefault(
+        "bigquery_gdelt_seeded_theme_scoring",
+        bigquery_gdelt_seeded_theme_scoring_task,
+    )
     TASK_REGISTRY.setdefault("filter_articles", filter_articles_task)
     TASK_REGISTRY.setdefault("dedupe_articles", dedupe_articles_task)
     TASK_REGISTRY.setdefault("tag_articles", tag_articles_task)
