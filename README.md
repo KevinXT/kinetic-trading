@@ -61,8 +61,6 @@ What made the negative result useful:
 - production immutability (no auto-promotion)
 - automatic human-readable research report
 
-Curated snapshot (sanitized; raw `experiments/` stays gitignored): [docs/research/semiconductor-theme-scoring/](docs/research/semiconductor-theme-scoring/).
-
 ## Architecture
 
 ```mermaid
