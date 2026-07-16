@@ -162,6 +162,8 @@ python3 -m trading_platform configs/research/semiconductors_seeded_theme_scoring
 
 Configs ship with `project_id: "YOUR_PROJECT_ID"`. Do not commit real project ids or credentials.
 
+Additional partition-pruned research configs live under `configs/research/`, including inflation dry-runs and executes (`inflation_rates_bigquery_7d_partition_dryrun.yaml`, `inflation_rates_bigquery_30d_partition_dryrun.yaml`, `inflation_rates_bigquery_30d_partition_execute.yaml`, `inflation_rates_bigquery_1y_partition_dryrun.yaml`) and GDELT theme-discovery pairs (`debug_gdelt_themes_inflation_30d_partition_dryrun.yaml`, `debug_gdelt_themes_inflation_30d_partition_execute.yaml`). Research topics map to GKG theme codes via the theme bundle definitions in `configs/gdelt_theme_bundles.yaml`.
+
 ## Validation status
 
 Verified on branch tip `feature/semiconductor-theme-scoring` (2026-07-16):
