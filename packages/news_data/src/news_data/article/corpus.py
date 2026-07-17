@@ -24,6 +24,8 @@ from news_data.article.normalize import (
     stable_article_id,
 )
 
+SAFE_REJECTION_SCHEMA_VERSION = "safe-import-rejection-v1"
+
 
 @runtime_checkable
 class ArticleCorpusProvider(Protocol):
@@ -34,18 +36,149 @@ class ArticleCorpusProvider(Protocol):
         ...
 
 
+def _classify_reason_code(reason: str) -> str:
+    text = reason.casefold()
+    if text.startswith("invalid_json"):
+        return "INVALID_JSON"
+    if "row_must_be_object" in text:
+        return "ROW_NOT_OBJECT"
+    if "empty title" in text:
+        return "EMPTY_TITLE"
+    if "missing url" in text:
+        return "MISSING_URL"
+    if "cannot normalize" in text or "url missing hostname" in text:
+        return "INVALID_URL"
+    if "must be timezone-aware" in text or "naive" in text:
+        return "NAIVE_TIMESTAMP"
+    if "unsupported content_status" in text or "unsupported status" in text:
+        return "UNSUPPORTED_STATUS"
+    if "provenance" in text:
+        return "INVALID_PROVENANCE"
+    if text.startswith("duplicate_article_id"):
+        return "DUPLICATE_ARTICLE_ID"
+    return "VALIDATION_ERROR"
+
+
+def build_safe_import_rejection(
+    *,
+    row_index: int,
+    reason: str,
+    raw: Mapping[str, Any],
+) -> "SafeImportRejectionV1":
+    """Build a versioned rejection summary that never embeds body/description text."""
+    body_raw = raw.get("body")
+    desc_raw = raw.get("description")
+    title_raw = raw.get("title")
+    url_raw = raw.get("url")
+    title_sha: Optional[str] = None
+    if isinstance(title_raw, str) and title_raw.strip():
+        title_sha = sha256_hex(normalize_text_for_hash(title_raw))
+    url_sha: Optional[str] = None
+    if isinstance(url_raw, str) and url_raw.strip():
+        try:
+            url_sha = sha256_hex(normalize_url(str(url_raw).strip()))
+        except (TypeError, ValueError):
+            url_sha = sha256_hex(str(url_raw).strip())
+    provider = str(raw["provider"]).strip() if raw.get("provider") else None
+    provider_record_id = None
+    if raw.get("provider_record_id") is not None:
+        provider_record_id = str(raw["provider_record_id"]).strip() or None
+    elif raw.get("id") is not None:
+        provider_record_id = str(raw["id"]).strip() or None
+    article_id = str(raw["article_id"]).strip() if raw.get("article_id") else None
+    field_names = tuple(sorted(str(k) for k in raw.keys()))
+    body_present = body_raw is not None and str(body_raw).strip() != ""
+    desc_present = desc_raw is not None and str(desc_raw).strip() != ""
+    return SafeImportRejectionV1(
+        row_index=row_index,
+        reason_code=_classify_reason_code(reason),
+        reason=str(reason),
+        provider=provider,
+        provider_record_id=provider_record_id,
+        article_id=article_id,
+        url_sha256=url_sha,
+        title_sha256=title_sha,
+        raw_field_names=field_names,
+        body_present=body_present,
+        body_length=(len(str(body_raw)) if body_present else None),
+        description_present=desc_present,
+        description_length=(len(str(desc_raw)) if desc_present else None),
+        published_at_raw_present=raw.get("published_at") is not None,
+        schema_version=SAFE_REJECTION_SCHEMA_VERSION,
+    )
+
+
 @dataclass(frozen=True)
-class ImportRejection:
+class SafeImportRejectionV1:
+    """Safe, versioned rejection summary for research artifacts.
+
+    Never serializes full body, description, title, URL, or arbitrary raw values.
+    """
+
     row_index: int
+    reason_code: str
     reason: str
-    raw: Mapping[str, Any]
+    provider: Optional[str]
+    provider_record_id: Optional[str]
+    article_id: Optional[str]
+    url_sha256: Optional[str]
+    title_sha256: Optional[str]
+    raw_field_names: tuple[str, ...]
+    body_present: bool
+    body_length: Optional[int]
+    description_present: bool
+    description_length: Optional[int]
+    published_at_raw_present: bool
+    schema_version: str = SAFE_REJECTION_SCHEMA_VERSION
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "row_index": self.row_index,
+            "reason_code": self.reason_code,
             "reason": self.reason,
-            "raw": dict(self.raw),
+            "provider": self.provider,
+            "provider_record_id": self.provider_record_id,
+            "article_id": self.article_id,
+            "url_sha256": self.url_sha256,
+            "title_sha256": self.title_sha256,
+            "raw_field_names": list(self.raw_field_names),
+            "body_present": self.body_present,
+            "body_length": self.body_length,
+            "description_present": self.description_present,
+            "description_length": self.description_length,
+            "published_at_raw_present": self.published_at_raw_present,
+            "schema_version": self.schema_version,
         }
+
+
+@dataclass(frozen=True)
+class ImportRejection:
+    """In-memory rejection with optional raw diagnostic payload.
+
+    ``to_dict()`` emits only :class:`SafeImportRejectionV1`. The ``raw`` mapping
+    is retained for trusted local debugging and must not be written by research
+    tasks.
+    """
+
+    row_index: int
+    reason: str
+    raw: Mapping[str, Any]
+    safe: SafeImportRejectionV1 = field(init=False)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "safe",
+            build_safe_import_rejection(row_index=self.row_index, reason=self.reason, raw=self.raw),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize the safe rejection summary only (never full raw input)."""
+        return self.safe.to_dict()
+
+    def diagnostic_raw(self) -> Mapping[str, Any]:
+        """Trusted local debugging only — never serialize in research artifacts."""
+        return self.raw
 
 
 @dataclass
@@ -59,6 +192,7 @@ class LocalCorpusImportResult:
             "accepted": len(self.records),
             "rejected": len(self.rejections),
             "provenance": dict(self.provenance),
+            "rejection_reason_codes": sorted({r.safe.reason_code for r in self.rejections}),
         }
 
 
@@ -66,7 +200,7 @@ class LocalArticleCorpusProvider:
     """Read deterministic JSONL fixtures or user-provided local JSONL.
 
     Validates every input row, preserves provenance, reports rejected rows with
-    explicit reasons, never invents missing article text, and produces
+    explicit safe reasons, never invents missing article text, and produces
     deterministic normalized output. Idempotent under fixed inputs.
     """
 
@@ -105,7 +239,11 @@ class LocalArticleCorpusProvider:
                 raw_obj = json.loads(line)
             except json.JSONDecodeError as exc:
                 rejections.append(
-                    ImportRejection(row_index=row_index, reason=f"invalid_json: {exc}", raw={})
+                    ImportRejection(
+                        row_index=row_index,
+                        reason=f"invalid_json: {exc}",
+                        raw={},
+                    )
                 )
                 continue
             if not isinstance(raw_obj, dict):
@@ -129,7 +267,11 @@ class LocalArticleCorpusProvider:
                     ImportRejection(
                         row_index=row_index,
                         reason=f"duplicate_article_id:{record.article_id}",
-                        raw=raw_obj,
+                        raw={
+                            "article_id": record.article_id,
+                            "provider": record.provider,
+                            "provider_record_id": record.provider_record_id,
+                        },
                     )
                 )
                 continue
@@ -252,7 +394,11 @@ def records_from_iterable(
                 ImportRejection(
                     row_index=row_index,
                     reason=f"duplicate_article_id:{record.article_id}",
-                    raw=raw,
+                    raw={
+                        "article_id": record.article_id,
+                        "provider": record.provider,
+                        "provider_record_id": record.provider_record_id,
+                    },
                 )
             )
             continue

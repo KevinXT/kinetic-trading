@@ -336,6 +336,7 @@ Human required:
 A successful offline run writes (among others):
 
 - `article_text_records.jsonl`, `article_import_rejections.jsonl`
+  (`SafeImportRejectionV1` summaries only — no full rejected bodies)
 - `entity_matches.jsonl`
 - `exact_duplicate_clusters.jsonl`, `near_duplicate_candidates.csv`,
   `dedupe_summary.json`

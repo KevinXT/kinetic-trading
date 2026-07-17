@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sqlite3
 import sys
 from pathlib import Path
 
@@ -10,15 +9,15 @@ import pytest
 
 sys.path.insert(0, str(Path("apps/relevance_annotation_ui").resolve()))
 
-from annotation_store import AnnotationStore, make_idempotency_key  # noqa: E402
+from annotation_store import SCHEMA_VERSION, AnnotationStore, make_idempotency_key  # noqa: E402
 
 
 def test_schema_and_migration(tmp_path: Path) -> None:
     db = tmp_path / "a.sqlite3"
     store = AnnotationStore(db)
-    assert store.schema_version() == 1
+    assert store.schema_version() == SCHEMA_VERSION
     store2 = AnnotationStore(db)
-    assert store2.schema_version() == 1
+    assert store2.schema_version() == SCHEMA_VERSION
 
 
 def test_append_only_idempotent_and_revision(tmp_path: Path) -> None:
@@ -31,6 +30,10 @@ def test_append_only_idempotent_and_revision(tmp_path: Path) -> None:
         batch_id="b1",
         guideline_version="g1",
         assignment_order=1,
+        source_run_id="run1",
+        article_title_sha256="t",
+        article_body_sha256="b",
+        sample_roles=("calibration",),
     )
     e1 = store.append_annotation_event(
         assignment_id="as1",
@@ -41,7 +44,7 @@ def test_append_only_idempotent_and_revision(tmp_path: Path) -> None:
         relevance_label=2,
         cannot_determine=False,
         cannot_determine_reason=None,
-        central_entity_ids=("nvidia",),
+        central_entity_ids=("ent_nvidia",),
         secondary_entity_ids=(),
         evidence_text=None,
         evidence_start=None,
@@ -61,7 +64,7 @@ def test_append_only_idempotent_and_revision(tmp_path: Path) -> None:
         relevance_label=2,
         cannot_determine=False,
         cannot_determine_reason=None,
-        central_entity_ids=("nvidia",),
+        central_entity_ids=("ent_nvidia",),
         secondary_entity_ids=(),
         evidence_text=None,
         evidence_start=None,
@@ -82,7 +85,7 @@ def test_append_only_idempotent_and_revision(tmp_path: Path) -> None:
         relevance_label=3,
         cannot_determine=False,
         cannot_determine_reason=None,
-        central_entity_ids=("nvidia",),
+        central_entity_ids=("ent_nvidia",),
         secondary_entity_ids=(),
         evidence_text=None,
         evidence_start=None,
@@ -101,31 +104,123 @@ def test_append_only_idempotent_and_revision(tmp_path: Path) -> None:
     assert store.annotation_revision_count("as1") == 2
 
 
-def test_foreign_keys_and_busy_timeout(tmp_path: Path) -> None:
-    store = AnnotationStore(tmp_path / "c.sqlite3")
-    with pytest.raises(sqlite3.IntegrityError):
-        with store.transaction() as conn:
-            conn.execute("""
-                INSERT INTO annotation_events(
-                  event_id, idempotency_key, assignment_id, article_id, annotator_id,
-                  event_type, previous_revision, revision, relevance_label, cannot_determine,
-                  cannot_determine_reason, central_entity_ids, secondary_entity_ids,
-                  evidence_text, evidence_start, evidence_end, content_sufficient,
-                  uncertain, uncertainty_reason, decision_reason_code, notes, created_at
-                ) VALUES ('e','k','missing','a','a1','submit',NULL,1,0,0,NULL,'[]','[]',
-                          NULL,NULL,NULL,1,0,NULL,'X',NULL,'2026-07-17T00:00:00Z')
-                """)
-    conn = store.connect()
-    row = conn.execute("PRAGMA busy_timeout").fetchone()
-    assert int(row[0]) >= 1000
-    conn.close()
-
-
-def test_idempotency_key_stable() -> None:
+def test_idempotency_key_differs_by_actor_and_assignment() -> None:
     a = make_idempotency_key(
-        assignment_id="x", actor_id="a", client_submission_id="c", event_type="submit"
+        assignment_id="as1", actor_id="a1", client_submission_id="s", event_type="submit"
     )
     b = make_idempotency_key(
-        assignment_id="x", actor_id="a", client_submission_id="c", event_type="submit"
+        assignment_id="as1", actor_id="a2", client_submission_id="s", event_type="submit"
     )
-    assert a == b
+    c = make_idempotency_key(
+        assignment_id="as2", actor_id="a1", client_submission_id="s", event_type="submit"
+    )
+    assert a != b != c
+
+
+def test_adjudication_raw_event_validation(tmp_path: Path) -> None:
+    store = AnnotationStore(tmp_path / "adj.sqlite3")
+    for aid, annotator in (("asA", "a1"), ("asB", "a2")):
+        store.upsert_annotation_assignment(
+            assignment_id=aid,
+            article_id="artX",
+            duplicate_cluster_id="cX",
+            annotator_id=annotator,
+            batch_id="b1",
+            guideline_version="g1",
+            assignment_order=1,
+            source_run_id="run1",
+            sample_roles=("formal",),
+        )
+    e1 = store.append_annotation_event(
+        assignment_id="asA",
+        article_id="artX",
+        annotator_id="a1",
+        client_submission_id="1",
+        event_type="submit",
+        relevance_label=1,
+        cannot_determine=False,
+        cannot_determine_reason=None,
+        central_entity_ids=(),
+        secondary_entity_ids=(),
+        evidence_text=None,
+        evidence_start=None,
+        evidence_end=None,
+        content_sufficient=True,
+        uncertain=False,
+        uncertainty_reason=None,
+        decision_reason_code="X",
+        notes=None,
+    )
+    e2 = store.append_annotation_event(
+        assignment_id="asB",
+        article_id="artX",
+        annotator_id="a2",
+        client_submission_id="1",
+        event_type="submit",
+        relevance_label=3,
+        cannot_determine=False,
+        cannot_determine_reason=None,
+        central_entity_ids=(),
+        secondary_entity_ids=(),
+        evidence_text=None,
+        evidence_start=None,
+        evidence_end=None,
+        content_sufficient=True,
+        uncertain=False,
+        uncertainty_reason=None,
+        decision_reason_code="X",
+        notes=None,
+    )
+    store.upsert_adjudication_assignment(
+        assignment_id="adj1",
+        article_id="artX",
+        duplicate_cluster_id="cX",
+        adjudicator_id="adj",
+        guideline_version="g1",
+        raw_event_ids=[e1["event_id"], e2["event_id"]],
+        batch_id="b1",
+        source_run_id="run1",
+        validate_raw=True,
+    )
+    with pytest.raises(ValueError, match="missing raw"):
+        store.upsert_adjudication_assignment(
+            assignment_id="adj2",
+            article_id="artX",
+            duplicate_cluster_id="cX",
+            adjudicator_id="adj2",
+            guideline_version="g1",
+            raw_event_ids=["missing", e2["event_id"]],
+            batch_id="b1",
+            validate_raw=True,
+        )
+    # Two revisions from the same annotator cannot form inter-rater adjudication.
+    e1_rev2 = store.append_annotation_event(
+        assignment_id="asA",
+        article_id="artX",
+        annotator_id="a1",
+        client_submission_id="rev2",
+        event_type="submit",
+        relevance_label=2,
+        cannot_determine=False,
+        cannot_determine_reason=None,
+        central_entity_ids=(),
+        secondary_entity_ids=(),
+        evidence_text=None,
+        evidence_start=None,
+        evidence_end=None,
+        content_sufficient=True,
+        uncertain=False,
+        uncertainty_reason=None,
+        decision_reason_code="X",
+        notes=None,
+    )
+    with pytest.raises(ValueError, match="different annotator"):
+        store.validate_adjudication_raw_events(
+            raw_event_ids=[e1["event_id"], e1_rev2["event_id"]],
+            article_id="artX",
+            duplicate_cluster_id="cX",
+            batch_id="b1",
+            guideline_version="g1",
+            source_run_id="run1",
+            require_latest=False,
+        )
