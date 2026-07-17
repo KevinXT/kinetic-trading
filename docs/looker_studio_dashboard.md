@@ -1,8 +1,9 @@
 # Looker Studio setup (BI / reporting layer)
 
 This document describes how to create a Looker Studio dashboard from the
-reporting views. The repo currently includes a local dashboard preview under
-`apps/reporting_dashboard/`; a managed Looker Studio report can be added
+reporting views. The Python reporting layer under
+`packages/news_data/.../reporting/` remains available for BigQuery view
+creation and optional JSON export; a managed Looker Studio report can be added
 separately from the steps below.
 
 This project ships a lightweight analytics/reporting layer that turns the

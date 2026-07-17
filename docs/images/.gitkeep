@@ -3,6 +3,6 @@
 # These are optional images to add after running things locally (they are
 # referenced from README.md but the docs do not fail if they are absent):
 #
-#   reporting_dashboard_preview.png  - the local apps/reporting_dashboard page
 #   reporting_dry_run.png            - terminal output of `build_views --dry-run`
 #   looker_studio_dashboard.png      - the managed Looker Studio dashboard (if built)
+#   relevance_annotation_ui.png      - local annotation workstation (optional)

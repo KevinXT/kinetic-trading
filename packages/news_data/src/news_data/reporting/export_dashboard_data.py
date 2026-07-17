@@ -1,10 +1,8 @@
 """
-Optional: export real BigQuery reporting-view results to the dashboard JSON.
+Optional: export real BigQuery reporting-view results to local JSON files.
 
-This is a convenience tool for replacing the committed *sample* JSON under
-``apps/reporting_dashboard/public/sample_data/`` with the *real* output of the
-reporting views. It is entirely optional -- the dashboard runs on the sample
-data without it and without any BigQuery credentials.
+This is a convenience tool for writing reporting-view result arrays to a local
+directory for inspection or BI tooling. It does not serve a web dashboard.
 
 It reuses the same cost-aware path as everything else (``SafeBigQueryClient``,
 SQL guardrails, cost policy + ledger) and is **dry-run by default**: it estimates
@@ -16,12 +14,11 @@ Usage::
     # Estimate only (writes nothing):
     python -m news_data.reporting.export_dashboard_data --dry-run
 
-    # Fetch real rows and write the dashboard JSON files:
+    # Fetch real rows and write JSON files under the ignored local export dir:
     python -m news_data.reporting.export_dashboard_data --execute --yes
 
 Each view is written as ``<out_dir>/<view_name>.json`` -- a JSON array of row
-objects whose keys are exactly the reporting-view output aliases, which is the
-shape the dashboard (and the committed sample data) expects.
+objects whose keys are exactly the reporting-view output aliases.
 """
 
 from __future__ import annotations
@@ -42,7 +39,7 @@ from .build_views import resolve_settings
 from .views import get_reporting_views, render_view_sql
 
 _DEFAULT_CONFIG_PATH = "configs/reporting.yaml"
-_DEFAULT_OUT_DIR = "apps/reporting_dashboard/public/sample_data"
+_DEFAULT_OUT_DIR = "data/local_only/reporting_exports"
 
 
 def build_parser() -> argparse.ArgumentParser:

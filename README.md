@@ -1,6 +1,6 @@
 # Kinetic Trading
 
-Market and news data pipelines for reproducible event research.
+Kinetic Trading is a reproducible market-and-news research system. Its current local application is a human annotation and audit workstation for the semiconductor relevance benchmark. It is not a public trading dashboard or live market terminal.
 
 The system pulls Alpaca historical bars and GDELT news through the DOC API and BigQuery GKG, then builds aligned news × market datasets and event-study summaries.
 
@@ -144,17 +144,6 @@ Protocol: [real-corpus pilot protocol](docs/research/semiconductor_relevance_rea
 
 Synthetic fixtures validate the machinery only. Without a rights-cleared local corpus under ignored `data/real_corpus/`, real-pilot execution remains blocked. This does not implement models, sentiment, return prediction, or trading.
 
-
-## Reporting preview
-
-![Local reporting dashboard](docs/images/reporting_dashboard_preview.png)
-
-*Local dashboard using committed sample data; no live market or trading feed.*
-
-```bash
-cd apps/reporting_dashboard
-python3 -m http.server 8000
-```
 
 ## Validation
 
