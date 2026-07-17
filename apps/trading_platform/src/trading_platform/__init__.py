@@ -30,6 +30,9 @@ def _register_tasks() -> None:
         tag_articles_task,
     )
     from pipeline_core.tasks.registry import TASK_REGISTRY
+    from research_data.real_corpus_pilot_task import (
+        run_semiconductor_relevance_real_corpus_pilot_task,
+    )
     from research_data.relevance_benchmark_task import (
         build_semiconductor_relevance_benchmark_task,
     )
@@ -64,6 +67,10 @@ def _register_tasks() -> None:
     TASK_REGISTRY.setdefault(
         "build_semiconductor_relevance_benchmark",
         build_semiconductor_relevance_benchmark_task,
+    )
+    TASK_REGISTRY.setdefault(
+        "run_semiconductor_relevance_real_corpus_pilot",
+        run_semiconductor_relevance_real_corpus_pilot_task,
     )
 
 

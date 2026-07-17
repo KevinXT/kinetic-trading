@@ -130,6 +130,21 @@ Annotation guidelines: [relevance annotation guidelines](docs/research/semicondu
 This phase does **not** implement a text classifier, sentiment model, or trading signal. Fixture metrics are synthetic test ground truth, not real-world model performance. Human labels and coverage remain limited. No trading system consumes these outputs. No predictive return has been demonstrated.
 
 
+## Real-corpus relevance annotation pilot
+
+A second offline task prepares rights-aware sampling, calibration, duplicate-pair review, and readiness gates for a local rights-cleared corpus:
+
+```bash
+python3 -m trading_platform \
+  configs/research/semiconductor_relevance_real_corpus_pilot_local.yaml \
+  --run-id semiconductor_relevance_real_corpus_pilot_local
+```
+
+Protocol: [real-corpus pilot protocol](docs/research/semiconductor_relevance_real_corpus_pilot_protocol.md).
+
+Synthetic fixtures validate the machinery only. Without a rights-cleared local corpus under ignored `data/real_corpus/`, real-pilot execution remains blocked. This does not implement models, sentiment, return prediction, or trading.
+
+
 ## Reporting preview
 
 ![Local reporting dashboard](docs/images/reporting_dashboard_preview.png)

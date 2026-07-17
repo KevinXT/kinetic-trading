@@ -71,7 +71,12 @@ jobs:
             tests/test_relevance_dedupe.py \
             tests/test_relevance_annotation_metrics.py \
             tests/test_relevance_splits_sampling.py \
-            tests/test_relevance_benchmark_integration.py
+            tests/test_relevance_benchmark_integration.py \
+            tests/test_pilot_planning.py \
+            tests/test_pilot_rights_eligibility_sampling.py \
+            tests/test_pilot_agreement_duplicates.py \
+            tests/test_pilot_integration.py \
+            packages/research_data/src/research_data/real_corpus_pilot_task.py
 
       - name: Lint
         run: ruff check .
