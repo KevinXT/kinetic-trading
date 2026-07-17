@@ -28,6 +28,10 @@ from research_data.models import (
     SessionNewsFeature,
     TopicInstrumentMapping,
 )
+from research_data.relevance import (
+    SemiconductorRelevanceAnnotationV1,
+    binary_relevant,
+)
 
 __version__ = "0.1.0"
 
@@ -43,9 +47,11 @@ __all__ = [
     "NewsTopicDailyFeature",
     "POLICY_CONSERVATIVE",
     "POLICY_SESSION_WINDOW",
+    "SemiconductorRelevanceAnnotationV1",
     "SessionNewsFeature",
     "TopicInstrumentMapping",
     "USEquitySessionCalendarV1",
+    "binary_relevant",
     "build_alignment_policy",
     "build_dataset",
     "load_feature_catalog",

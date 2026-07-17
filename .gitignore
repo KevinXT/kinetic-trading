@@ -73,6 +73,8 @@ data/cache/
 
 # Large generated datasets
 *.jsonl
+# Committed offline fixtures for the semiconductor relevance benchmark.
+!tests/fixtures/research/relevance_benchmark/*.jsonl
 
 # =========================================================
 # Logs

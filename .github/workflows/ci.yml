@@ -62,13 +62,22 @@ jobs:
             tests/test_research_join_leakage.py \
             tests/test_research_event_study.py \
             tests/test_research_manifest.py \
-            tests/test_research_task_integration.py
+            tests/test_research_task_integration.py \
+            packages/news_data/src/news_data/article \
+            packages/news_data/src/news_data/entity \
+            packages/news_data/src/news_data/dedupe \
+            tests/test_relevance_article_normalize.py \
+            tests/test_relevance_entity_matching.py \
+            tests/test_relevance_dedupe.py \
+            tests/test_relevance_annotation_metrics.py \
+            tests/test_relevance_splits_sampling.py \
+            tests/test_relevance_benchmark_integration.py
 
       - name: Lint
         run: ruff check .
 
       - name: Type check
-        run: mypy packages/common/src packages/market_data/src packages/pipeline_core/src packages/research_data/src
+        run: mypy packages/common/src packages/market_data/src packages/pipeline_core/src packages/research_data/src packages/news_data/src/news_data/article packages/news_data/src/news_data/entity packages/news_data/src/news_data/dedupe
 
       - name: Build wheels and isolated import smoke
         run: |

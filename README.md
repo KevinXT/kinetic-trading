@@ -20,6 +20,7 @@ Each run stores its resolved configuration, metadata, outputs, and—when BigQue
 | Storage | Idempotent JSONL writes for market and news records |
 | Cloud controls | BigQuery dry-run first, byte caps, spend policy + ledger (`configs/cost_policy.yaml`) |
 | Research outputs | Leakage-aware alignment, event studies, run artifacts under `experiments/` |
+| Relevance benchmark | Versioned article-text records, exact/near dedupe, human annotation workflow, chronological splits, deterministic entity-rule baselines, offline metrics |
 | Validation | Offline pytest, Ruff, scoped Black/mypy, wheel import smoke on Python 3.11/3.12 |
 
 ## Run the offline demo
@@ -103,6 +104,31 @@ Scoring tasks write review artifacts only. They do not edit production theme bun
 **Result.** Contextual themes appeared around manufacturing, servers, storage, and macroeconomic news, but none worked as a reliable semiconductor identity label. No themes were promoted into the production bundle. The next approach is entity resolution plus text classification rather than another theme-code search.
 
 Full write-up: [semiconductor theme scoring](docs/research/semiconductor-theme-scoring/).
+
+## Next foundation: semiconductor relevance benchmark
+
+Because themes failed as an identity layer, the repository now includes an **offline, human-label-ready article relevance benchmark**:
+
+- Versioned `ArticleTextRecordV1` research records and a local JSONL corpus provider
+- Conservative exact duplicate clustering plus near-duplicate **review candidates**
+- Blind annotation workflow with raw labels preserved and separate adjudication
+- Duplicate-cluster-aware chronological development / validation / holdout splits
+- Transparent deterministic entity-rule baselines (no ML, embeddings, or GPU)
+- Offline metrics with Wilson intervals and explicit undefined-metric nulls
+
+```bash
+python3 -m trading_platform \
+  configs/research/semiconductor_relevance_benchmark_offline.yaml \
+  --run-id semiconductor_relevance_benchmark_offline
+```
+
+No `.env`, credentials, BigQuery, Alpaca, network, or GPU are required for that command.
+
+Design: [semiconductor relevance benchmark](docs/research/semiconductor_relevance_benchmark_design.md).  
+Annotation guidelines: [relevance annotation guidelines](docs/research/semiconductor_relevance_annotation_guidelines.md).
+
+This phase does **not** implement a text classifier, sentiment model, or trading signal. Fixture metrics are synthetic test ground truth, not real-world model performance. Human labels and coverage remain limited. No trading system consumes these outputs. No predictive return has been demonstrated.
+
 
 ## Reporting preview
 
