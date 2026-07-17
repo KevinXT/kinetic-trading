@@ -70,10 +70,14 @@ def test_worst_case_and_underfilled() -> None:
         row["n_with_unusable_reserve"] for row in plan.required_representative_by_prevalence
     )
     assert plan.underfilled is True
+    assert plan.underpowered is True
+    assert plan.feasible is False
     assert plan.population_can_satisfy_plan is False
     assert any("UNDERFILLED" in w for w in plan.warnings)
-    # Operational target is rounded; not quietly reduced below derived worst-case.
-    assert plan.operational_target_representative >= plan.worst_case_representative_n
+    assert any("UNDERPOWERED" in w for w in plan.warnings)
+    # Operational draw may be capped at N while inferential requirement stays visible.
+    assert plan.operational_target_representative <= plan.eligible_cluster_population_size
+    assert plan.required_sample_size > plan.eligible_cluster_population_size
 
 
 def test_determinism() -> None:
@@ -108,3 +112,100 @@ def test_operational_round_near_200() -> None:
     )
     # At p=0.5, n≈193 → round to 200 when round_up_to=10
     assert plan.operational_target_representative == 200
+
+
+def test_fpc_does_not_reduce_impossible_positive_denominator() -> None:
+    # N=100, q=0.10, m+=60 → n+ = 600. FPC must not reduce 600.
+    plan = build_pilot_sample_size_plan(
+        eligible_cluster_population_size=100,
+        planning_prevalence_scenarios=(0.10,),
+        desired_minimum_positive_denominator=60,
+        desired_minimum_negative_denominator=1,
+        expected_unusable_fraction=0.0,
+        apply_finite_population_correction=True,
+        round_up_to_multiple=1,
+        target_prevalence_half_width=0.50,
+    )
+    row = plan.required_representative_by_prevalence[0]
+    assert row["n_for_positive_denominator"] == 600
+    assert row["required_sample_size"] == 600
+    assert row["feasible"] is False
+    assert plan.underpowered is True
+    assert plan.feasible is False
+    # Prevalence FPC may shrink n_prev, but not the positive requirement.
+    assert row["n_prev_with_fpc"] <= row["n_for_prevalence_half_width"]
+    assert row["n_with_finite_population_correction"] == 600
+
+
+def test_fpc_does_not_reduce_impossible_negative_denominator() -> None:
+    # N=100, q=0.95, m-=60 → n- = 1200.
+    plan = build_pilot_sample_size_plan(
+        eligible_cluster_population_size=100,
+        planning_prevalence_scenarios=(0.95,),
+        desired_minimum_positive_denominator=1,
+        desired_minimum_negative_denominator=60,
+        expected_unusable_fraction=0.0,
+        apply_finite_population_correction=True,
+        round_up_to_multiple=1,
+        target_prevalence_half_width=0.50,
+    )
+    row = plan.required_representative_by_prevalence[0]
+    assert row["n_for_negative_denominator"] == 1200
+    assert row["required_sample_size"] == 1200
+    assert plan.underpowered is True
+    assert plan.feasible is False
+
+
+def test_fpc_reduces_prevalence_precision_only() -> None:
+    n0 = minimum_n_for_wilson_half_width(0.50, 0.07, z=z_for_confidence(0.95))
+    n_fpc = finite_population_corrected_n(n0, 250)
+    assert n_fpc < n0
+    plan = build_pilot_sample_size_plan(
+        eligible_cluster_population_size=250,
+        planning_prevalence_scenarios=(0.50,),
+        desired_minimum_positive_denominator=1,
+        desired_minimum_negative_denominator=1,
+        expected_unusable_fraction=0.0,
+        apply_finite_population_correction=True,
+        round_up_to_multiple=1,
+        target_prevalence_half_width=0.07,
+    )
+    row = plan.required_representative_by_prevalence[0]
+    assert row["n_prev_with_fpc"] == n_fpc
+    assert row["n_for_prevalence_half_width"] == n0
+    assert row["fpc_applied_only_to_prevalence_precision"] is True
+
+
+def test_open_population_skips_fpc() -> None:
+    plan = build_pilot_sample_size_plan(
+        eligible_cluster_population_size=0,
+        planning_prevalence_scenarios=(0.50,),
+        desired_minimum_positive_denominator=1,
+        desired_minimum_negative_denominator=1,
+        expected_unusable_fraction=0.0,
+        apply_finite_population_correction=True,
+        round_up_to_multiple=1,
+        target_prevalence_half_width=0.07,
+    )
+    row = plan.required_representative_by_prevalence[0]
+    assert row["finite_population_correction_applied"] is False
+    assert row["n_prev_with_fpc"] == row["n_for_prevalence_half_width"]
+
+
+def test_small_synthetic_population_labeled_underpowered() -> None:
+    # 22 eligible clusters cannot satisfy ~60 positives and ~60 negatives.
+    plan = build_pilot_sample_size_plan(
+        eligible_cluster_population_size=22,
+        planning_prevalence_scenarios=(0.25, 0.50),
+        desired_minimum_positive_denominator=60,
+        desired_minimum_negative_denominator=60,
+        expected_unusable_fraction=0.0,
+        apply_finite_population_correction=True,
+        round_up_to_multiple=1,
+    )
+    assert plan.underpowered is True
+    assert plan.feasible is False
+    assert plan.required_sample_size > 22
+    assert any("SMALL_SYNTHETIC" in w or "UNDERPOWERED" in w for w in plan.warnings)
+    # Software fixture can exercise workflow; statistical requirement remains underpowered.
+    assert plan.operational_target_representative <= 22

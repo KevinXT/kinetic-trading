@@ -144,15 +144,21 @@ Protocol: [real-corpus pilot protocol](docs/research/semiconductor_relevance_rea
 
 Synthetic fixtures validate the machinery only. Without a rights-cleared local corpus under ignored `data/real_corpus/`, real-pilot execution remains blocked. This does not implement models, sentiment, return prediction, or trading.
 
+> Do not ingest real article bodies until the content-safety regression tests pass and the remediation commit is checked out. Rejected import rows serialize safe summaries only (no full bodies). Finite-population correction applies only to prevalence-precision planning; class-denominator requirements that exceed \(N\) remain visibly underpowered.
+
 ## Local Relevance Annotation Workstation
 
 The current local application is a **trusted Streamlit workstation** for corpus preflight, blind article relevance annotation, duplicate review, adjudication, and deterministic export. It is a thin human-review layer over the existing `news_data` / `research_data` CLI engine — not a public trading dashboard or live market terminal.
 
 - Local-only bind (`127.0.0.1`); usage stats disabled
+- Single selected pilot-run context; assignments bound to run/corpus/article hashes
 - Durable annotation events in ignored SQLite (`data/local_only/relevance_annotation_ui.sqlite3`)
+- Stable UI submission tokens (double-click / rerun idempotent); append-only history
+- Batch-scoped exports preserve stored guideline versions and sample roles
 - Real article bodies stay in ignored local storage; exports omit bodies by default
 - Does **not** run models, calculate sentiment, predict returns, or place trades
 - Mode selection (`preflight` / `annotator` / `duplicate_reviewer` / `adjudicator` / `audit`) is workflow separation, not multi-tenant security
+- Suitable for a five-article rights-cleared smoke test after remediation validation; no real pilot has been completed
 
 ```bash
 python3 -m pip install -e ./apps/relevance_annotation_ui

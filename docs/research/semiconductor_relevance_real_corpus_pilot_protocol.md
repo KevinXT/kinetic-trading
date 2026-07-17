@@ -170,10 +170,17 @@ local input
 
 - Confidence level and half-widths are configurable (defaults: 95%, prevalence half-width 0.07).
 - Wilson score intervals for unweighted binomial proportions; numerical \(n\) solver.
-- Positive/negative denominator scenarios via Buderer-style planning.
-- Finite-population correction reported with and without application when \(N\) is known.
+- Positive/negative denominator scenarios via Buderer-style planning:
+  \(n_+=\lceil m_+/q\rceil\), \(n_-=\lceil m_-/(1-q)\rceil\).
+- Finite-population correction applies **only** to the prevalence-precision requirement:
+  \(n_{\text{prev,FPC}}=\lceil N n_{0,\text{prev}}/(N+n_{0,\text{prev}}-1)\rceil\).
+  FPC is never applied to \(n_+\) or \(n_-\).
+- \(n_{\text{required}}=\max(n_{\text{prev,FPC}}, n_+, n_-)\). If \(n_{\text{required}}>N\), the plan is infeasible / underpowered (not clamped to appear satisfied).
 - Challenge and double-annotation counts may be operational conveniences — labeled as such.
-- Underfilled populations emit typed underpowered / underfilled status; targets are not quietly reduced.
+- Underfilled / underpowered populations emit typed status; targets are not quietly reduced.
+- Small synthetic fixture populations can exercise workflow while remaining statistically underpowered.
+
+> Do not ingest real article bodies until the content-safety regression tests pass and the remediation commit is checked out.
 
 ---
 
@@ -188,11 +195,15 @@ local input
 
 ## 9. Duplicate-threshold evaluation
 
-Evaluate a threshold grid (title and body separate). Sample pair-score strata above and below the current candidate threshold. Blocking universe must be stated. Default:
+Evaluate a threshold grid (title and body separate). Pair-review sampling uses mutually exclusive strata:
+
+`candidate_status × score_bin × candidate_rule_category`
+
+where candidate status is owned by `classify_pair_candidate_status` before grouping. Within each stratum, SRSWOR with \(\pi_h=n_h/N_h\) and \(w_h=N_h/n_h\). Blocking universe must be stated. Pairs sharing an article are dependent; independent-pair intervals are exploratory unless component bootstrap is implemented. Default:
 
 `duplicate_threshold_recommendation_status: HUMAN_REVIEW_REQUIRED`
 
-Do not auto-select a threshold by F1 alone.
+Do not auto-select a threshold by F1 alone. Alternative-threshold estimates reuse the fixed stratified review design.
 
 ---
 

@@ -28,7 +28,20 @@ from research_data.relevance.pilot_models import (
 from research_data.relevance.provenance import ArticleContentProvenanceV1
 from research_data.relevance.sampling import _industry_phrase_hit
 
-PILOT_SAMPLING_VERSION = "pilot-probability-sampling-v1"
+PILOT_SAMPLING_VERSION = "pilot-probability-sampling-v2"
+PAIR_REVIEW_SAMPLING_VERSION = "pair-review-stratified-srs-wor-v1"
+
+# Mutually exclusive candidate-rule categories for pair-review strata.
+PAIR_CANDIDATE_RULE_BOTH = "BOTH"
+PAIR_CANDIDATE_RULE_TITLE = "TITLE_THRESHOLD"
+PAIR_CANDIDATE_RULE_BODY = "BODY_THRESHOLD"
+PAIR_CANDIDATE_RULE_BELOW = "BELOW_THRESHOLD_AUDIT"
+PAIR_CANDIDATE_RULES = (
+    PAIR_CANDIDATE_RULE_BOTH,
+    PAIR_CANDIDATE_RULE_TITLE,
+    PAIR_CANDIDATE_RULE_BODY,
+    PAIR_CANDIDATE_RULE_BELOW,
+)
 
 # Mutually exclusive primary stratum precedence (documented).
 STRATUM_PRECEDENCE = (
@@ -660,6 +673,41 @@ def stable_pair_id(article_id_a: str, article_id_b: str) -> str:
     return hashlib.sha256(f"{a}|{b}".encode("utf-8")).hexdigest()[:24]
 
 
+def classify_pair_candidate_status(
+    *,
+    title_similarity: Optional[float],
+    body_similarity: Optional[float],
+    title_threshold: float,
+    body_threshold: float,
+) -> tuple[bool, str]:
+    """Single owner of candidate determination for pair-review sampling.
+
+    Returns ``(candidate_at_current_threshold, candidate_rule_category)`` where
+    categories are mutually exclusive:
+    BOTH, TITLE_THRESHOLD, BODY_THRESHOLD, BELOW_THRESHOLD_AUDIT.
+    """
+    title_hit = title_similarity is not None and title_similarity >= title_threshold
+    body_hit = body_similarity is not None and body_similarity >= body_threshold
+    if title_hit and body_hit:
+        return True, PAIR_CANDIDATE_RULE_BOTH
+    if title_hit:
+        return True, PAIR_CANDIDATE_RULE_TITLE
+    if body_hit:
+        return True, PAIR_CANDIDATE_RULE_BODY
+    return False, PAIR_CANDIDATE_RULE_BELOW
+
+
+def pair_review_stratum_key(
+    *,
+    candidate_at_current_threshold: bool,
+    score_bin: str,
+    candidate_rule_category: str,
+) -> str:
+    """Mutually exclusive stratum: candidate_status × score_bin × rule category."""
+    status = "candidate" if candidate_at_current_threshold else "non_candidate"
+    return f"{status}|{score_bin}|{candidate_rule_category}"
+
+
 @dataclass(frozen=True)
 class PairFrameRow:
     pair_id: str
@@ -675,6 +723,14 @@ class PairFrameRow:
     domain_pair: str
     score_bin: str
     candidate_at_current_threshold: bool
+    candidate_rule_category: str = PAIR_CANDIDATE_RULE_BELOW
+
+    def stratum_key(self) -> str:
+        return pair_review_stratum_key(
+            candidate_at_current_threshold=self.candidate_at_current_threshold,
+            score_bin=self.score_bin,
+            candidate_rule_category=self.candidate_rule_category,
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -691,6 +747,8 @@ class PairFrameRow:
             "domain_pair": self.domain_pair,
             "score_bin": self.score_bin,
             "candidate_at_current_threshold": self.candidate_at_current_threshold,
+            "candidate_rule_category": self.candidate_rule_category,
+            "pair_review_stratum": self.stratum_key(),
         }
 
 
@@ -745,11 +803,12 @@ def build_pair_comparison_universe(
                 )
             scores = [s for s in (t_sim, b_sim) if s is not None]
             max_sim = max(scores) if scores else None
-            candidate = False
-            if t_sim is not None and t_sim >= current_title_threshold:
-                candidate = True
-            if b_sim is not None and b_sim >= current_body_threshold:
-                candidate = True
+            candidate, rule = classify_pair_candidate_status(
+                title_similarity=t_sim,
+                body_similarity=b_sim,
+                title_threshold=current_title_threshold,
+                body_threshold=current_body_threshold,
+            )
             aid_a, aid_b = sorted((id_a, id_b))
             ca, cb = by_id[aid_a], by_id[aid_b]
             rows.append(
@@ -767,6 +826,7 @@ def build_pair_comparison_universe(
                     domain_pair=f"{ca.domain}|{cb.domain}",
                     score_bin=pair_score_bin(max_sim),
                     candidate_at_current_threshold=candidate,
+                    candidate_rule_category=rule,
                 )
             )
     rows.sort(key=lambda r: r.pair_id)
@@ -791,6 +851,54 @@ def build_pair_comparison_universe(
     return rows, blocking
 
 
+def pair_dependence_diagnostics(selected: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Report article-sharing dependence among reviewed pairs.
+
+    Pair-level intervals that assume independence are exploratory when articles
+    are shared; connected-component bootstrap is not implemented here.
+    """
+    articles: set[str] = set()
+    degree: Counter[str] = Counter()
+    adjacency: dict[str, set[str]] = defaultdict(set)
+    for row in selected:
+        a = str(row["article_id_a"])
+        b = str(row["article_id_b"])
+        articles.add(a)
+        articles.add(b)
+        degree[a] += 1
+        degree[b] += 1
+        adjacency[a].add(b)
+        adjacency[b].add(a)
+    # Connected components over the undirected article graph.
+    seen: set[str] = set()
+    components = 0
+    for node in sorted(articles):
+        if node in seen:
+            continue
+        components += 1
+        stack = [node]
+        while stack:
+            cur = stack.pop()
+            if cur in seen:
+                continue
+            seen.add(cur)
+            stack.extend(sorted(adjacency[cur] - seen))
+    max_pairs_one_article = max(degree.values()) if degree else 0
+    return {
+        "reviewed_pair_count": len(selected),
+        "unique_article_count": len(articles),
+        "connected_component_count": components,
+        "maximum_pairs_sharing_one_article": max_pairs_one_article,
+        "dependence_warning": (
+            "Pairs sharing an article are dependent. Uncertainty estimates that "
+            "treat pairs as independent are exploratory. Component-level bootstrap "
+            "is not implemented; do not claim design-consistent independent-pair intervals."
+        ),
+        "component_bootstrap_implemented": False,
+        "uncertainty_status": "exploratory_due_to_pair_dependence",
+    }
+
+
 def sample_duplicate_pair_reviews(
     pair_frame: Sequence[PairFrameRow],
     *,
@@ -798,59 +906,95 @@ def sample_duplicate_pair_reviews(
     below_threshold_target: int,
     sampling_seed: str,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Stratified sample of candidate and below-threshold pairs with known π."""
-    by_bin: dict[str, list[PairFrameRow]] = defaultdict(list)
+    """Stratified SRSWOR within mutually exclusive pair-review strata.
+
+    Strata are defined before sampling as
+    ``candidate_status × score_bin × candidate_rule_category``.
+    Inclusion probability π_h = n_h / N_h and weight w_h = N_h / n_h are stored
+    from the exact stratum populations used for selection.
+    """
+    by_stratum: dict[str, list[PairFrameRow]] = defaultdict(list)
     for row in pair_frame:
-        by_bin[row.score_bin].append(row)
+        by_stratum[row.stratum_key()].append(row)
+
+    candidate_strata = sorted(k for k in by_stratum if k.startswith("candidate|"))
+    non_strata = sorted(k for k in by_stratum if k.startswith("non_candidate|"))
+
+    def _allocate(strata: Sequence[str], target: int) -> dict[str, int]:
+        n_h: dict[str, int] = {h: 0 for h in strata}
+        if target <= 0 or not strata:
+            return n_h
+        # Equal share across non-empty strata, then largest-remainder fill.
+        nonempty = [h for h in strata if by_stratum[h]]
+        if not nonempty:
+            return n_h
+        base = target // len(nonempty)
+        rem = target % len(nonempty)
+        for i, h in enumerate(nonempty):
+            desire = base + (1 if i < rem else 0)
+            n_h[h] = min(desire, len(by_stratum[h]))
+        # Fill shortfall from remaining capacity (stable by stratum key).
+        selected_n = sum(n_h.values())
+        if selected_n < target:
+            for h in nonempty:
+                if selected_n >= target:
+                    break
+                capacity = len(by_stratum[h]) - n_h[h]
+                if capacity <= 0:
+                    continue
+                take = min(capacity, target - selected_n)
+                n_h[h] += take
+                selected_n += take
+        return n_h
+
+    n_h = {}
+    n_h.update(_allocate(candidate_strata, candidate_target))
+    n_h.update(_allocate(non_strata, below_threshold_target))
 
     selected: list[dict[str, Any]] = []
-
-    def take_from(
-        pool: Sequence[PairFrameRow], n: int, *, label: str
-    ) -> list[tuple[PairFrameRow, float, float]]:
-        if n <= 0 or not pool:
-            return []
+    stratum_meta: dict[str, dict[str, Any]] = {}
+    for h in sorted(by_stratum):
+        pool = by_stratum[h]
+        N_h = len(pool)
+        take = min(n_h.get(h, 0), N_h)
         ordered = sorted(
             pool,
-            key=lambda r: (_stable_rank_key(f"{label}|{r.pair_id}", sampling_seed), r.pair_id),
+            key=lambda r: (
+                _stable_rank_key(f"pairstratum|{h}|{r.pair_id}", sampling_seed),
+                r.pair_id,
+            ),
         )
-        take = min(n, len(ordered))
-        pi = take / len(pool)
-        w = len(pool) / take
-        return [(ordered[i], pi, w) for i in range(take)]
-
-    candidates = [r for r in pair_frame if r.candidate_at_current_threshold]
-    non_candidates = [r for r in pair_frame if not r.candidate_at_current_threshold]
-
-    # Spread candidate sample across high bins; below-threshold across low bins.
-    cand_bins = sorted({r.score_bin for r in candidates})
-    non_bins = sorted({r.score_bin for r in non_candidates})
-    per_cand = max(1, candidate_target // max(1, len(cand_bins))) if cand_bins else 0
-    per_non = max(1, below_threshold_target // max(1, len(non_bins))) if non_bins else 0
-
-    seen: set[str] = set()
-    for b in cand_bins:
-        for row, pi, w in take_from(by_bin[b], per_cand, label="cand"):
-            if row.pair_id in seen or not row.candidate_at_current_threshold:
-                continue
-            if sum(1 for s in selected if s["candidate_at_current_threshold"]) >= candidate_target:
-                break
-            seen.add(row.pair_id)
-            selected.append({**row.to_dict(), "sampling_probability": pi, "sampling_weight": w})
-    for b in non_bins:
-        for row, pi, w in take_from(by_bin[b], per_non, label="non"):
-            if row.pair_id in seen or row.candidate_at_current_threshold:
-                continue
-            if (
-                sum(1 for s in selected if not s["candidate_at_current_threshold"])
-                >= below_threshold_target
-            ):
-                break
-            seen.add(row.pair_id)
-            selected.append({**row.to_dict(), "sampling_probability": pi, "sampling_weight": w})
+        pi = (take / N_h) if take and N_h else 0.0
+        weight = (N_h / take) if take else None
+        stratum_meta[h] = {
+            "stratum_key": h,
+            "N_h": N_h,
+            "n_h": take,
+            "inclusion_probability": pi,
+            "sampling_weight": weight,
+            "candidate_at_current_threshold": h.startswith("candidate|"),
+            "score_bin": h.split("|")[1] if "|" in h else h,
+            "candidate_rule_category": h.split("|")[2] if h.count("|") >= 2 else None,
+        }
+        for row in ordered[:take]:
+            payload = row.to_dict()
+            payload.update(
+                {
+                    "pair_review_stratum": h,
+                    "stratum_population_size": N_h,
+                    "stratum_sample_size": take,
+                    "sampling_probability": pi,
+                    "sampling_weight": weight,
+                    "sampling_version": PAIR_REVIEW_SAMPLING_VERSION,
+                    "sampling_seed": sampling_seed,
+                }
+            )
+            selected.append(payload)
 
     selected.sort(key=lambda r: r["pair_id"])
+    dependence = pair_dependence_diagnostics(selected)
     manifest = {
+        "sampling_version": PAIR_REVIEW_SAMPLING_VERSION,
         "candidate_target": candidate_target,
         "below_threshold_target": below_threshold_target,
         "candidate_selected": sum(1 for s in selected if s["candidate_at_current_threshold"]),
@@ -859,9 +1003,22 @@ def sample_duplicate_pair_reviews(
         ),
         "total_selected": len(selected),
         "sampling_seed": sampling_seed,
+        "stratum_population_sizes": {h: m["N_h"] for h, m in sorted(stratum_meta.items())},
+        "stratum_sample_sizes": {h: m["n_h"] for h, m in sorted(stratum_meta.items())},
+        "inclusion_probability_by_stratum": {
+            h: m["inclusion_probability"] for h, m in sorted(stratum_meta.items())
+        },
+        "sampling_weight_by_stratum": {
+            h: m["sampling_weight"] for h, m in sorted(stratum_meta.items())
+        },
+        "strata": [stratum_meta[h] for h in sorted(stratum_meta)],
+        "dependence": dependence,
         "notes": [
-            "Pair inclusion probabilities recorded per bin draw.",
-            "Pairs sharing an article are dependent; uncertainty should resample components.",
+            "Strata are mutually exclusive: candidate_status × score_bin × candidate_rule.",
+            "π_hi = n_h / N_h under SRSWOR within stratum; w_hi = N_h / n_h.",
+            "Candidate status is computed before grouping via classify_pair_candidate_status.",
+            "Alternative-threshold analyses reuse this fixed stratified review design.",
+            dependence["dependence_warning"],
         ],
     }
     return selected, manifest
