@@ -12,6 +12,7 @@ if str(APP_DIR) not in sys.path:
     sys.path.insert(0, str(APP_DIR))
 
 from app_config import load_ui_config
+from pilot_context import PILOT_CONTEXT_KEY, PilotRunContext, clear_unsaved_form_state
 from pilot_service import PilotService
 
 st.set_page_config(page_title="Audit and Export", layout="wide")
@@ -26,21 +27,53 @@ if "service" not in st.session_state:
     st.session_state.service = PilotService(config)
 service: PilotService = st.session_state.service
 
-snap = service.audit_snapshot()
-st.subheader("Completion")
+ctx_raw = st.session_state.get(PILOT_CONTEXT_KEY)
+if ctx_raw:
+    context = PilotRunContext.from_dict(ctx_raw)
+    st.info(
+        f"Selected run `{context.source_run_id}` · batch `{context.selected_batch_id}` · "
+        f"guideline `{context.guideline_version}` · "
+        f"corpus `{context.source_corpus_sha256[:12]}…`"
+    )
+    snap = service.audit_snapshot(source_run_id=context.source_run_id)
+else:
+    context = None
+    st.warning("No pilot run selected — showing whole-database counts only.")
+    snap = service.audit_snapshot()
+
+st.subheader("Completion and readiness")
 st.json(snap)
 
-dest = st.text_input(
-    "Export destination",
-    value=str(config.local_export_root / "raw_annotations.jsonl"),
-)
-guideline = st.text_input("Guideline version for export", value="pilot-guidelines-v1-calibration")
+if st.button("Clear selected pilot context"):
+    clear_unsaved_form_state(st.session_state)
+    st.session_state.pop(PILOT_CONTEXT_KEY, None)
+    st.rerun()
 
-if st.button("Export raw annotations JSONL", type="primary"):
+if context is None:
+    st.stop()
+
+export_root = config.local_export_root
+dest_raw = st.text_input(
+    "Raw annotation export destination",
+    value=str(export_root / f"{context.source_run_id}_raw_annotations.jsonl"),
+)
+dest_dup = st.text_input(
+    "Duplicate-review export destination",
+    value=str(export_root / f"{context.source_run_id}_duplicate_reviews.jsonl"),
+)
+dest_adj = st.text_input(
+    "Adjudication export destination",
+    value=str(export_root / f"{context.source_run_id}_adjudications.jsonl"),
+)
+
+c1, c2, c3 = st.columns(3)
+if c1.button("Export raw annotations", type="primary"):
     try:
         result = service.export_raw_annotations_jsonl(
-            destination=Path(dest),
-            guideline_version=guideline,
+            destination=Path(dest_raw),
+            source_run_id=context.source_run_id,
+            batch_id=str(context.selected_batch_id),
+            guideline_version=context.guideline_version,
         )
         st.success(
             f"Exported {result['record_count']} records → {result['destination']} "
@@ -49,3 +82,32 @@ if st.button("Export raw annotations JSONL", type="primary"):
         st.json(result)
     except Exception as exc:  # noqa: BLE001
         st.error(f"Export failed: {type(exc).__name__}: {exc}")
+
+if c2.button("Export duplicate reviews"):
+    try:
+        result = service.export_duplicate_reviews_jsonl(
+            destination=Path(dest_dup),
+            source_run_id=context.source_run_id,
+            batch_id=str(context.selected_batch_id),
+        )
+        st.success(f"Exported {result['record_count']} records → {result['destination']}")
+        st.json(result)
+    except Exception as exc:  # noqa: BLE001
+        st.error(f"Export failed: {type(exc).__name__}: {exc}")
+
+if c3.button("Export adjudications"):
+    try:
+        result = service.export_adjudications_jsonl(
+            destination=Path(dest_adj),
+            source_run_id=context.source_run_id,
+            batch_id=str(context.selected_batch_id),
+        )
+        st.success(f"Exported {result['record_count']} records → {result['destination']}")
+        st.json(result)
+    except Exception as exc:  # noqa: BLE001
+        st.error(f"Export failed: {type(exc).__name__}: {exc}")
+
+st.caption(
+    "Guideline version and sample roles are taken from stored assignments, "
+    "not from free-text overwrite fields."
+)

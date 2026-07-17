@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import sys
-import uuid
 from pathlib import Path
 
 import streamlit as st
@@ -13,7 +12,16 @@ if str(APP_DIR) not in sys.path:
     sys.path.insert(0, str(APP_DIR))
 
 from app_config import load_ui_config
-from pilot_service import PilotService, entity_display_names
+from pilot_context import (
+    PILOT_CONTEXT_KEY,
+    PilotRunContext,
+    SourceArtifactMismatch,
+    form_fingerprint,
+    get_or_create_submission_token,
+    rotate_submission_token,
+)
+from pilot_service import PilotService
+from view_models import article_content_hash, generate_evidence_candidates
 
 st.set_page_config(page_title="Article Annotation", layout="wide")
 st.title("Article Annotation")
@@ -24,18 +32,25 @@ if "service" not in st.session_state:
     st.session_state.service = PilotService(config)
 service: PilotService = st.session_state.service
 
-annotator_id = st.session_state.get("annotator_id", "annotator_01")
-batch_id = st.text_input("Batch ID filter (optional)", value="")
-articles_path = st.text_input(
-    "Articles JSONL for display",
-    value="tests/fixtures/research/relevance_pilot/articles.jsonl",
+ctx_raw = st.session_state.get(PILOT_CONTEXT_KEY)
+if not ctx_raw:
+    st.error("No pilot run selected. Load a bound context on Preflight / Audit first.")
+    st.stop()
+context = PilotRunContext.from_dict(ctx_raw)
+
+st.info(
+    f"Run `{context.source_run_id}` · batch `{context.selected_batch_id}` · "
+    f"guideline `{context.guideline_version}` · corpus `{context.source_corpus_sha256[:12]}…`"
 )
 
+annotator_id = st.session_state.get("annotator_id", "annotator_01")
 assignments = service.store.list_annotation_assignments(
-    annotator_id=annotator_id, batch_id=(batch_id or None)
+    annotator_id=annotator_id,
+    batch_id=context.selected_batch_id,
+    source_run_id=context.source_run_id,
 )
 if not assignments:
-    st.warning("No assignments for this annotator/batch. Import from Preflight first.")
+    st.warning("No bound assignments for this annotator/batch/run.")
     st.stop()
 
 if "ann_index" not in st.session_state:
@@ -43,10 +58,10 @@ if "ann_index" not in st.session_state:
 idx = max(0, min(st.session_state.ann_index, len(assignments) - 1))
 assignment = assignments[idx]
 
-articles = service.load_articles_index(Path(articles_path))
-article = articles.get(assignment["article_id"])
-if article is None:
-    st.error("Article missing from corpus index.")
+try:
+    article = service.load_bound_article(assignment=assignment, context=context)
+except SourceArtifactMismatch as exc:
+    st.error(str(exc))
     st.stop()
 
 view = service.build_blind_article_view(
@@ -54,7 +69,7 @@ view = service.build_blind_article_view(
     article=article,
     queue_index=idx + 1,
     queue_total=len(assignments),
-    entity_names=entity_display_names(),
+    entity_options=service.entity_options(),
 )
 
 st.subheader(
@@ -79,7 +94,8 @@ if view.body_truncated:
     st.warning("Displayed body is truncated or redacted by configuration.")
 st.text(view.body)
 st.markdown("**Entity references (protocol)**")
-st.write(", ".join(view.entity_reference_names))
+option_labels = {o.label(): o.entity_id for o in view.entity_options}
+st.write(", ".join(option_labels.keys()))
 
 st.divider()
 label_choice = st.radio(
@@ -105,15 +121,47 @@ cannot_reason = st.selectbox(
         "OTHER",
     ],
 )
-central = st.multiselect("Central companies", options=list(view.entity_reference_names))
-secondary = st.multiselect("Secondary companies", options=list(view.entity_reference_names))
+central_labels = st.multiselect("Central companies", options=list(option_labels.keys()))
+secondary_labels = st.multiselect("Secondary companies", options=list(option_labels.keys()))
 content_ok = st.checkbox("Content sufficient", value=True)
 uncertain = st.checkbox("Uncertain")
 uncertainty_reason = st.text_input("Uncertainty reason")
 decision_code = st.text_input("Decision reason code", value="MANUAL")
 evidence = st.text_area("Evidence excerpt (exact paste)", height=80)
+no_span_reason = st.selectbox(
+    "No-exact-span reason (only if excerpt is not an exact substring)",
+    options=["", "PARAPHRASED_EVIDENCE", "NO_SINGLE_EXACT_SPAN", "METADATA_ONLY", "OTHER"],
+)
 notes = st.text_area("Notes", height=60)
-occurrence = st.text_input("Evidence occurrence selector (field@offset) if needed")
+
+article_hash = article_content_hash(
+    title=article.title,
+    description=article.description or "",
+    body=article.body or "",
+    title_sha256=article.title_sha256,
+    body_sha256=article.body_sha256,
+)
+candidates = []
+chosen_candidate = None
+if evidence and evidence.strip():
+    candidates = generate_evidence_candidates(
+        excerpt=evidence,
+        title=article.title,
+        description=article.description or "",
+        body=article.body or "",
+        article_hash=article_hash,
+    )
+    if len(candidates) > 1:
+        cand_options = {
+            f"{c.candidate_id} · {c.field}@{c.start}": c.candidate_id for c in candidates
+        }
+        chosen_label = st.selectbox(
+            "Evidence occurrence (generated candidates)", options=list(cand_options)
+        )
+        chosen_candidate = cand_options[chosen_label]
+    elif len(candidates) == 1:
+        chosen_candidate = candidates[0].candidate_id
+        st.caption(f"Unique evidence match: `{chosen_candidate}`")
 
 nav1, nav2, nav3, nav4 = st.columns(4)
 save = nav1.button("Save")
@@ -124,7 +172,31 @@ nxt = nav4.button("Next incomplete")
 
 def _submit() -> None:
     label = None if cannot else int(label_choice[0])
-    client_id = str(uuid.uuid4())
+    fp = form_fingerprint(
+        [
+            view.assignment_id,
+            annotator_id,
+            label,
+            cannot,
+            cannot_reason,
+            tuple(central_labels),
+            tuple(secondary_labels),
+            evidence,
+            chosen_candidate,
+            no_span_reason,
+            content_ok,
+            uncertain,
+            uncertainty_reason,
+            decision_code,
+            notes,
+            view.saved_revision,
+        ]
+    )
+    client_id = get_or_create_submission_token(
+        st.session_state,
+        scope=f"annotation|{view.assignment_id}|{annotator_id}",
+        form_fingerprint=fp,
+    )
     service.validate_and_save_annotation(
         assignment_id=view.assignment_id,
         article=article,
@@ -133,15 +205,21 @@ def _submit() -> None:
         relevance_label=label,
         cannot_determine=cannot,
         cannot_determine_reason=(cannot_reason or None),
-        central_entity_ids=central,
-        secondary_entity_ids=secondary,
+        central_entity_ids=[option_labels[x] for x in central_labels],
+        secondary_entity_ids=[option_labels[x] for x in secondary_labels],
         evidence_excerpt=(evidence or None),
         content_sufficient=content_ok,
         uncertain=uncertain,
         uncertainty_reason=(uncertainty_reason or None),
         decision_reason_code=decision_code,
         notes=(notes or None),
-        chosen_evidence_occurrence=(occurrence or None),
+        chosen_evidence_candidate_id=chosen_candidate,
+        no_exact_span_reason=(no_span_reason or None),
+        allow_no_exact_span=bool(no_span_reason),
+    )
+    rotate_submission_token(
+        st.session_state,
+        scope=f"annotation|{view.assignment_id}|{annotator_id}",
     )
 
 
