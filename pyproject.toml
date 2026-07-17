@@ -21,6 +21,12 @@ dev = [
   "mypy>=1.8",
   "types-requests>=2.33.0.20260712",
 ]
+ui = [
+  # Local annotation workstation only. Install with:
+  #   pip install -e "./apps/relevance_annotation_ui" -e ".[ui]"
+  # or simply: pip install -e ./apps/relevance_annotation_ui
+  "streamlit>=1.32",
+]
 
 [tool.setuptools]
 packages = []
@@ -34,6 +40,10 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"apps/relevance_annotation_ui/app.py" = ["E402"]
+"apps/relevance_annotation_ui/pages/*.py" = ["E402"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

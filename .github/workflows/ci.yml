@@ -30,6 +30,7 @@ jobs:
             -e ./packages/research_data \
             -e ./packages/strategy_sdk \
             -e ./apps/trading_platform \
+            -e ./apps/relevance_annotation_ui \
             -e ".[dev]"
 
       # Black is the project formatter. Full-tree black is not yet clean; check the
@@ -76,13 +77,18 @@ jobs:
             tests/test_pilot_rights_eligibility_sampling.py \
             tests/test_pilot_agreement_duplicates.py \
             tests/test_pilot_integration.py \
-            packages/research_data/src/research_data/real_corpus_pilot_task.py
+            packages/research_data/src/research_data/real_corpus_pilot_task.py \
+            apps/relevance_annotation_ui \
+            tests/test_relevance_annotation_ui_store.py \
+            tests/test_relevance_annotation_ui_service.py \
+            tests/test_relevance_annotation_ui_integration.py \
+            tests/test_relevance_annotation_ui_apptest.py
 
       - name: Lint
         run: ruff check .
 
       - name: Type check
-        run: mypy packages/common/src packages/market_data/src packages/pipeline_core/src packages/research_data/src packages/news_data/src/news_data/article packages/news_data/src/news_data/entity packages/news_data/src/news_data/dedupe
+        run: mypy packages/common/src packages/market_data/src packages/pipeline_core/src packages/research_data/src packages/news_data/src/news_data/article packages/news_data/src/news_data/entity packages/news_data/src/news_data/dedupe apps/relevance_annotation_ui/app_config.py apps/relevance_annotation_ui/annotation_store.py apps/relevance_annotation_ui/view_models.py apps/relevance_annotation_ui/pilot_service.py
 
       - name: Build wheels and isolated import smoke
         run: |

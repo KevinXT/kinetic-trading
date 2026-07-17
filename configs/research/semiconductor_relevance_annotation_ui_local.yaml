@@ -1,0 +1,24 @@
+name: semiconductor_relevance_annotation_ui_local
+
+ui:
+  database_path: data/local_only/relevance_annotation_ui.sqlite3
+  default_mode: preflight
+  bind_address: 127.0.0.1
+  show_full_body: true
+  maximum_body_display_characters: null
+  maximum_evidence_characters: 500
+  allow_external_links: false
+  allow_remote_images: false
+
+pilot:
+  config_path: configs/research/semiconductor_relevance_real_corpus_pilot_local.yaml
+  artifact_root: experiments
+  local_corpus_root: data/real_corpus
+  local_export_root: data/local_only/relevance_exports
+
+content_controls:
+  require_rights_eligible: true
+  allow_full_body_in_local_ui: true
+  allow_full_body_in_logs: false
+  allow_full_body_in_exports: false
+  allow_real_content_in_git_tracked_paths: false
