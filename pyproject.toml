@@ -50,7 +50,9 @@ testpaths = ["tests"]
 pythonpath = ["."]
 
 [tool.mypy]
-python_version = "3.11"
+# Analyze as 3.12 so current third-party stubs (e.g. NumPy) that use PEP 695
+# `type` statements parse cleanly. Runtime CI still covers 3.11 and 3.12.
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true

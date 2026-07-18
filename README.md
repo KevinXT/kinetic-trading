@@ -170,12 +170,21 @@ App notes: [`apps/relevance_annotation_ui/README.md`](apps/relevance_annotation_
 
 ## Validation
 
-GitHub Actions runs on Python 3.11 and 3.12: offline `pytest`, Ruff, Black on the market-data/research scopes, mypy on `common` / `market_data` / `pipeline_core` / `research_data`, plus wheel builds and an isolated import smoke test.
+GitHub Actions runs on Python 3.11 and 3.12 via `make validate`: offline `pytest`, Ruff, scoped Black/mypy, wheel builds with an isolated import smoke test, and a stale `build/` pollution check.
 
 ```bash
-pytest -q
-ruff check .
+make validate
 ```
+
+Release-oriented source archive (tracked files only, plus SHA-256 under `dist/`):
+
+```bash
+make source-archive
+```
+
+`make source-archive` and `make release-check` require a clean git work tree unless `ALLOW_DIRTY_TREE=1` is set. Ordinary development targets such as `make test` allow dirty trees.
+
+Dependency lockfiles (`uv.lock` / equivalent) are not used yet; install with editable `pip install -e` as above. See [`docs/development/production-hardening.md`](docs/development/production-hardening.md).
 
 ## Current limitations
 

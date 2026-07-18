@@ -58,6 +58,21 @@ This checklist tracks project milestones: what's shipped and what's next.
 
 ---
 
+## Milestone: Production hardening — in progress
+
+See [`production-hardening.md`](production-hardening.md).
+
+- [x] PR 1: repository/release hygiene (`make validate`, dirty-tree release gate, `make source-archive`, build-pollution checks)
+- [ ] PR 2: source and environment manifests on runs
+- [ ] PR 3: canonical artifact store
+- [ ] PR 4: typed task contracts
+- [ ] PR 5: refactor one vertical workflow
+- [ ] PR 6: transactional cost ledger
+- [ ] PR 7: application service and view models
+- [ ] Dependency lockfile (deferred until an authoritative install workflow is chosen)
+
+---
+
 ## Next up
 
 - [ ] Flesh out `packages/strategy_sdk` (signals, risk, portfolio logic)
