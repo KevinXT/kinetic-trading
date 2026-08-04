@@ -1,15 +1,19 @@
 # Phase 0 baseline freeze
 
+Historical record of the freeze used to cut the hardening branch. The foundation
+later merged to `main` via GitHub PR #4 (2026-08-04).
+
 | Field | Value |
 | --- | --- |
-| Branch | `production-hardening` |
+| Branch (at freeze) | `production-hardening` |
 | Accepted commit | `7a5ba4f035017f0332ccba6d0a80693462b84206` |
 | Commit subject | `fix(ui): harden annotation workflow integrity` |
 | Isolation | Separate git worktree; semiconductor WIP left untouched |
 
 ## Representative workflow configs
 
-Recorded for later compatibility suites (not executed as live runs in PR 1):
+Recorded for later compatibility suites (not executed as live runs in the
+foundation PR):
 
 | Kind | Config |
 | --- | --- |
@@ -19,7 +23,7 @@ Recorded for later compatibility suites (not executed as live runs in PR 1):
 
 ## Validation commands at freeze
 
-Canonical commands after PR 1 land:
+Canonical commands after the hygiene foundation landed:
 
 ```bash
 make validate
@@ -30,7 +34,7 @@ These wrap the same checks previously inlined in `.github/workflows/ci.yml`
 (ruff, scoped black, scoped mypy, pytest, wheel builds, isolated import smoke)
 plus build-pollution detection.
 
-### Recorded results (worktree after PR 1 implementation)
+### Recorded results (worktree after hygiene foundation implementation)
 
 | Check | Result |
 | --- | --- |
@@ -46,7 +50,7 @@ plus build-pollution detection.
 ## Notes
 
 - Dependency lockfiles are deferred; baseline uses editable installs.
-- Run metadata / dirty-tree recording inside pipeline runs is deferred to PR 2.
-- Artifact atomicity and manifests are deferred to PR 3.
+- Run metadata inside pipeline runs and a canonical artifact store remain deferred
+  follow-ons (see [`production-hardening.md`](../production-hardening.md)).
 - Local Phase 0 host used Python 3.14 for the worktree venv; CI remains 3.11/3.12.
-  PR 1 sets mypy `python_version` to 3.12 so current NumPy stubs parse under that host.
+  The foundation set mypy `python_version` to 3.12 so current NumPy stubs parse under that host.

@@ -6,7 +6,7 @@ Product notes, development checklists, and technical guides for kinetic-trading.
 |-----|---------|--------|
 | [Product vision](product/strategy-copilot-vision.md) | Strategy Copilot — principles, roadmap, architecture intent | aspirational |
 | [Development TODO](development/TODO.md) | Implementation checklist (engine, tasks, configs) | active |
-| [Production hardening](development/production-hardening.md) | Multi-PR production-hardening roadmap and hygiene commands | active |
+| [Production hardening](development/production-hardening.md) | Merged hygiene foundation (PR #4) and deferred follow-ons | current |
 | [Config builder](guides/config-builder.md) | YAML `include:` / merge behavior (`common.config_builder`) | current |
 | [Looker Studio setup](looker_studio_dashboard.md) | BI reporting views + how to connect them to Looker Studio | current |
 | [Run context](pipeline/run-context.md) | `RunContext`, state contract, and artifact layout | current |
