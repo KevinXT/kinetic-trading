@@ -58,18 +58,15 @@ This checklist tracks project milestones: what's shipped and what's next.
 
 ---
 
-## Milestone: Production hardening — in progress
+## Milestone: Production hardening foundation — complete
 
-See [`production-hardening.md`](production-hardening.md).
+Merged to `main` via GitHub [PR #4](https://github.com/KevinXT/kinetic-trading/pull/4)
+(2026-08-04). See [`production-hardening.md`](production-hardening.md).
 
-- [x] PR 1: repository/release hygiene (`make validate`, dirty-tree release gate, `make source-archive`, build-pollution checks)
-- [ ] PR 2: source and environment manifests on runs
-- [ ] PR 3: canonical artifact store
-- [ ] PR 4: typed task contracts
-- [ ] PR 5: refactor one vertical workflow
-- [ ] PR 6: transactional cost ledger
-- [ ] PR 7: application service and view models
+- [x] Repository/release hygiene (`make validate`, dirty-tree release gate, `make source-archive`, build-pollution checks)
+- [x] Price-only provider surface; deferred empty `strategy_sdk`; seeded theme scoring module split
 - [ ] Dependency lockfile (deferred until an authoritative install workflow is chosen)
+- [ ] Optional follow-ons (run manifests, artifact store, typed task contracts, etc.) — only when a real pilot/ops need requires them
 
 ---
 
@@ -77,7 +74,7 @@ See [`production-hardening.md`](production-hardening.md).
 
 - [ ] Flesh out `packages/strategy_sdk` only when real strategy-domain code exists (package is deferred / not installed)
 - [ ] SEC EDGAR and FRED adapters on existing contracts
-- [ ] Time-aligned joins between news features and market bars
+- [x] Time-aligned joins between news features and market bars (`research_data` / `build_news_market_dataset`)
 - [ ] Research-grade backtesting prototype
 - [ ] End-to-end test with mocked HTTP for the demo pipeline
 - [ ] Refresh technical guides under `docs/` as APIs evolve

@@ -1,7 +1,8 @@
 # Production hardening
 
-This document tracks the production-hardening effort: make the existing Kinetic
-Trading architecture safer to operate without replacing it.
+Make the existing Kinetic Trading architecture safer to operate without
+replacing it. The foundation for that work is **merged to `main`** via GitHub
+[PR #4](https://github.com/KevinXT/kinetic-trading/pull/4) (2026-08-04).
 
 ## Principles
 
@@ -10,37 +11,20 @@ Trading architecture safer to operate without replacing it.
 - Prefer boring engineering: one validation path, one archive path, explicit
   gates at system boundaries.
 - One source of truth internally; redundant verification at boundaries.
-- Do not merge the effort as a single rewrite PR.
+- Do not merge large rewrite PRs; prefer small, reviewable steps driven by
+  real pilot needs.
 
-## PR sequence
+## Delivered foundation (merged)
 
-| PR | Focus | Status |
-| --- | --- | --- |
-| 1 | Repository / release hygiene | In progress (this branch) |
-| 2 | Source and environment manifests on runs | Planned |
-| 3 | Canonical artifact store (atomic write, hash, manifest) | Planned |
-| 4 | Typed task request/result contracts + legacy adapters | Planned |
-| 5 | Decompose one vertical workflow behind stable behavior | Planned |
-| 6 | Transactional cost ledger reservations | Planned |
-| 7 | Application service + view models for run presentation | Planned |
+GitHub PR #4 landed repository/release hygiene plus YAGNI simplifications that
+were already true of the tree:
 
-Dependency locking (`uv.lock` or equivalent) is **deferred**. Introduce a
-lockfile only in a dedicated PR that also adopts an authoritative install
-workflow. Until then, use editable `pip install -e` as documented in the
-README and CI.
-
-## PR 1 — Repository and release hygiene
-
-PR 1 does **not** change task contracts, artifact writers, run metadata, error
-taxonomy, research methodology, or dependency management.
-
-It adds:
-
-- Canonical `make` targets mirroring CI (`make validate`)
-- Dirty-tree rejection for release-oriented targets (`make source-archive`,
-  `make release-check`), overridable with `ALLOW_DIRTY_TREE=1`
-- Source-only archives via `git archive` plus SHA-256 checksums under `dist/`
-- Detection and cleanup of stale `packages/*/build` and `apps/*/build` trees
+| Deliverable | Notes |
+| --- | --- |
+| Canonical `make validate` / release hygiene | Dirty-tree gate, source archives, build-pollution checks |
+| Price-only market-data providers | Company/macro *provider* protocols deferred; domain models retained |
+| Deferred `strategy_sdk` | Empty package boundary on disk; not installed by CI, wheels-smoke, or default install |
+| Seeded theme scoring module split | Package under `news_data.task.bigquery_gdelt_seeded_theme_scoring/`; public task name unchanged |
 
 ### Commands
 
@@ -54,25 +38,33 @@ make release-check         # dirty-tree gate + validate + source-archive
 Ordinary development (`make test`, `make lint`) allows a dirty work tree.
 Release archives do not, unless explicitly overridden.
 
-## Compatibility workflows (later PRs)
+Dependency locking (`uv.lock` or equivalent) remains **deferred**. Use editable
+`pip install -e` as documented in the README and CI until an authoritative
+install workflow is chosen in a dedicated change.
 
-These configs are the representative verticals for golden/compatibility checks
-starting with workflow migrations (PR 5+). PR 1 only records their paths:
+## Compatibility workflow configs
+
+Representative verticals for later golden/compatibility checks (paths only):
 
 1. Offline deterministic: `configs/research/news_market_dataset_demo.yaml`
 2. BigQuery dry-run: `configs/research/semiconductors_seeded_theme_scoring_30d_dryrun.yaml`
 3. BigQuery execute: `configs/research/semiconductors_seeded_theme_scoring_30d_execute.yaml`
 
-## Simplify-without-rewrite notes
+## Deferred follow-ons
 
-- `strategy_sdk` remains on disk as a deferred empty boundary; it is not installed
-  by CI, wheels-smoke, or the default developer install.
-- Market-data provider protocols are price-only until a second provider exists.
-- Seeded theme scoring was split vertically under
-  `news_data.task.bigquery_gdelt_seeded_theme_scoring/` (task / score / artifacts /
-  report) without adding a new orchestration framework.
+These remain **optional** and should be opened only when a concrete pilot or
+ops need requires them. They are not in progress:
+
+- Source and environment manifests recorded on runs
+- Canonical artifact store (atomic write, hash, manifest)
+- Typed task request/result contracts
+- Decompose one vertical workflow behind stable behavior
+- Transactional cost ledger reservations
+- Application service + view models for run presentation
+
+Do not treat this list as an active multi-PR schedule.
 
 ## Baseline freeze
 
 See [`production-hardening/baseline/`](production-hardening/baseline/) for the
-Phase 0 freeze notes on the accepted commit used to cut this branch.
+Phase 0 freeze notes recorded when the hardening branch was cut.
