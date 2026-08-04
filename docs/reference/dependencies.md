@@ -8,8 +8,9 @@ Runtime dependencies are declared **per package** under `packages/*/pyproject.to
 | `kinetic-pipeline-core` | `kinetic-common` | implemented |
 | `kinetic-news-data` | `kinetic-common`, `requests`, `google-cloud-bigquery` | implemented |
 | `kinetic-market-data` | `kinetic-common`, `requests` | contracts, Alpaca bars, registry, local JSONL store |
-| `kinetic-strategy-sdk` | (none) | placeholder boundary |
-| `kinetic-trading-platform` | `kinetic-pipeline-core`, `kinetic-news-data`, `kinetic-market-data` | CLI composition root |
+| `kinetic-research-data` | `kinetic-common`, `kinetic-news-data`, `kinetic-market-data`, `tzdata` | implemented |
+| `kinetic-strategy-sdk` | (none) | deferred empty boundary — not installed by default |
+| `kinetic-trading-platform` | `kinetic-pipeline-core`, `kinetic-news-data`, `kinetic-market-data`, `kinetic-research-data` | CLI composition root |
 
 **Development:** root `[project.optional-dependencies] dev` — pytest, black, ruff,
 mypy, and `types-requests` for HTTP client type checking.
@@ -21,7 +22,7 @@ pip install -e ./packages/common \
   -e ./packages/pipeline_core \
   -e ./packages/news_data \
   -e ./packages/market_data \
-  -e ./packages/strategy_sdk \
+  -e ./packages/research_data \
   -e ./apps/trading_platform \
   -e ".[dev]"
 ```

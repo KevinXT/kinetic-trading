@@ -301,7 +301,7 @@ def _patch_client(monkeypatch, tmp_path):
     _FakeClient.response = None
     _FakeClient.raises = None
     _params.ledger_path = tmp_path / "cost_ledger.jsonl"
-    monkeypatch.setattr(task_mod, "SafeBigQueryClient", _FakeClient)
+    monkeypatch.setattr(task_mod.task, "SafeBigQueryClient", _FakeClient)
     yield
 
 

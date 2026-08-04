@@ -1,9 +1,0 @@
-[
-  {
-    "check_date": "2026-07-06",
-    "total_rows": 95238,
-    "missing_required_field_count": 312,
-    "duplicate_count": 1204,
-    "latest_record_timestamp": "2026-07-06T21:00:00Z"
-  }
-]

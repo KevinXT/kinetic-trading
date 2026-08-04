@@ -28,70 +28,14 @@ jobs:
             -e ./packages/news_data \
             -e ./packages/market_data \
             -e ./packages/research_data \
-            -e ./packages/strategy_sdk \
             -e ./apps/trading_platform \
+            -e ./apps/relevance_annotation_ui \
             -e ".[dev]"
 
-      # Black is the project formatter. Full-tree black is not yet clean; check the
-      # packages and tests touched by market-data, cache, and research-layer work.
-      # Ruff format is not
-      # used because it conflicts with Black on assert wrapping.
-      - name: Format check
-        run: |
-          black --check \
-            packages/market_data \
-            packages/research_data \
-            packages/common/src/common/cache.py \
-            tests/test_alpaca_cache.py \
-            tests/test_alpaca_client.py \
-            tests/test_alpaca_config.py \
-            tests/test_alpaca_normalize.py \
-            tests/test_alpaca_registration.py \
-            tests/test_alpaca_task.py \
-            tests/test_financial_jsonl_store.py \
-            tests/test_market_data_models.py \
-            tests/test_imports.py \
-            tests/test_research_stats.py \
-            tests/test_research_calendar.py \
-            tests/test_research_alignment.py \
-            tests/test_research_models.py \
-            tests/test_research_catalog.py \
-            tests/test_research_mappings.py \
-            tests/test_research_news_features.py \
-            tests/test_research_market_features.py \
-            tests/test_research_join_leakage.py \
-            tests/test_research_event_study.py \
-            tests/test_research_manifest.py \
-            tests/test_research_task_integration.py
+      # Canonical targets live in the Makefile / scripts/dev so local and CI
+      # cannot drift. Dirty-tree checks are release-only and skipped here.
+      - name: Validate (lint, format, types, tests, wheels, build pollution)
+        run: make validate
 
-      - name: Lint
-        run: ruff check .
-
-      - name: Type check
-        run: mypy packages/common/src packages/market_data/src packages/pipeline_core/src packages/research_data/src
-
-      - name: Build wheels and isolated import smoke
-        run: |
-          python -m pip install build
-          WHEELHOUSE="${RUNNER_TEMP}/kinetic-wheels"
-          SMOKE_VENV="${RUNNER_TEMP}/kinetic-smoke"
-          mkdir -p "${WHEELHOUSE}"
-          python -m build --wheel --outdir "${WHEELHOUSE}" ./packages/common
-          python -m build --wheel --outdir "${WHEELHOUSE}" ./packages/pipeline_core
-          python -m build --wheel --outdir "${WHEELHOUSE}" ./packages/news_data
-          python -m build --wheel --outdir "${WHEELHOUSE}" ./packages/market_data
-          python -m build --wheel --outdir "${WHEELHOUSE}" ./packages/research_data
-          python -m build --wheel --outdir "${WHEELHOUSE}" ./packages/strategy_sdk
-          python -m build --wheel --outdir "${WHEELHOUSE}" ./apps/trading_platform
-          python -m venv "${SMOKE_VENV}"
-          "${SMOKE_VENV}/bin/python" -m pip install --upgrade pip
-          "${SMOKE_VENV}/bin/python" -m pip install "${WHEELHOUSE}"/*.whl
-          # Import from an empty directory so the repo checkout is not on sys.path.
-          cd "${RUNNER_TEMP}"
-          "${SMOKE_VENV}/bin/python" -c "import common, pipeline_core, news_data, market_data, research_data, strategy_sdk, trading_platform"
-          "${SMOKE_VENV}/bin/python" -c "from market_data.domain import PriceBar; from market_data.providers.alpaca import AlpacaPriceProvider"
-
-      - name: Run offline tests
-        run: pytest -q
-        # Live Alpaca test is gated on RUN_PROVIDER_INTEGRATION_TESTS=1 and is
-        # skipped unless that variable is explicitly set.
+      # Live Alpaca test is gated on RUN_PROVIDER_INTEGRATION_TESTS=1 and is
+      # skipped unless that variable is explicitly set.

@@ -73,6 +73,18 @@ data/cache/
 
 # Large generated datasets
 *.jsonl
+# Committed offline fixtures for the semiconductor relevance benchmark.
+!tests/fixtures/research/relevance_benchmark/*.jsonl
+# Committed synthetic fixtures for the real-corpus relevance pilot (software tests).
+!tests/fixtures/research/relevance_pilot/*.jsonl
+
+# Rights-cleared real article corpora and local-only annotation outputs.
+# Never commit private article bodies.
+data/real_corpus/
+data/local_only/
+**/calibration_annotation_batch.csv
+**/formal_annotation_batch.csv
+!tests/fixtures/research/relevance_pilot/*.csv
 
 # =========================================================
 # Logs

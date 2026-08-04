@@ -54,14 +54,14 @@ the latest value or constructing an as-of view belongs in a query or feature lay
 
 ## Provider interfaces and registry
 
-The focused protocols are `PriceDataProvider`, `CompanyDataProvider`, and
-`MacroDataProvider`. They accept provider-independent request dataclasses and return
-normalized records. They intentionally do not form one large provider interface.
+The implemented protocol today is `PriceDataProvider`. It accepts provider-independent
+request dataclasses and returns normalized `PriceBar` records. Company/macro provider
+protocols are deferred until SEC EDGAR / FRED integrations exist.
 
-`ProviderRegistry` holds separate factories for each category. Registry instances
-are explicit and do not share global mutable state. Alpaca is registered as the
-`alpaca` price provider; SEC EDGAR, FRED, and future mock/provider factories remain
-separate implementation phases.
+`ProviderRegistry` holds price-provider factories only. Registry instances are
+explicit and do not share global mutable state. Alpaca is registered as the
+`alpaca` price provider.
+
 Downstream modules should import domain records or protocols, never concrete clients.
 
 ## Alpaca historical stock bars

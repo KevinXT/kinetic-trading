@@ -30,6 +30,12 @@ def _register_tasks() -> None:
         tag_articles_task,
     )
     from pipeline_core.tasks.registry import TASK_REGISTRY
+    from research_data.real_corpus_pilot_task import (
+        run_semiconductor_relevance_real_corpus_pilot_task,
+    )
+    from research_data.relevance_benchmark_task import (
+        build_semiconductor_relevance_benchmark_task,
+    )
     from research_data.task import build_news_market_dataset_task
 
     def registered_alpaca_historical_bars_task(ctx, params):
@@ -58,6 +64,14 @@ def _register_tasks() -> None:
     TASK_REGISTRY.setdefault("store_features", store_features_task)
     TASK_REGISTRY.setdefault("store_articles", store_articles_task)
     TASK_REGISTRY.setdefault("build_news_market_dataset", build_news_market_dataset_task)
+    TASK_REGISTRY.setdefault(
+        "build_semiconductor_relevance_benchmark",
+        build_semiconductor_relevance_benchmark_task,
+    )
+    TASK_REGISTRY.setdefault(
+        "run_semiconductor_relevance_real_corpus_pilot",
+        run_semiconductor_relevance_real_corpus_pilot_task,
+    )
 
 
 _register_tasks()

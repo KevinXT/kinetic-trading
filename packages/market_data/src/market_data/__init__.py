@@ -17,12 +17,7 @@ from market_data.instruments import (
     InMemoryInstrumentResolver,
     InstrumentResolver,
 )
-from market_data.providers import (
-    CompanyDataProvider,
-    MacroDataProvider,
-    PriceDataProvider,
-    ProviderRegistry,
-)
+from market_data.providers import PriceDataProvider, ProviderRegistry
 from market_data.storage import (
     FINANCIAL_DATA_SCHEMA_VERSION,
     ConcurrentDatasetWriteError,
@@ -36,7 +31,6 @@ from market_data.storage import (
 __all__ = [
     "BarsRequest",
     "AmbiguousInstrumentError",
-    "CompanyDataProvider",
     "CompanyFactsRequest",
     "ConcurrentDatasetWriteError",
     "ConflictingBatchRecordsError",
@@ -50,7 +44,6 @@ __all__ = [
     "Instrument",
     "InstrumentResolver",
     "JsonlFinancialDataStore",
-    "MacroDataProvider",
     "MacroObservation",
     "MacroSeriesRequest",
     "MarketEvent",

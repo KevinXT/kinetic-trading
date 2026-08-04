@@ -6,7 +6,7 @@ hooks, run context / artifact management, and the task registry. This is the
 most substantial implemented package in the monorepo.
 
 Depends on ``common`` for config loading and error types. Does not contain
-trading-domain logic — that belongs in ``strategy_sdk`` or app-level code.
+trading-domain logic — that belongs in app-level or future domain packages.
 Tasks are registered by consumer code and looked up by name at runtime.
 """
 

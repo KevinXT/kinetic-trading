@@ -1,6 +1,6 @@
 # Kinetic Trading
 
-Market and news data pipelines for reproducible event research.
+Kinetic Trading is a reproducible market-and-news research system. Its current local application is a human annotation and audit workstation for the semiconductor relevance benchmark. It is not a public trading dashboard or live market terminal.
 
 The system pulls Alpaca historical bars and GDELT news through the DOC API and BigQuery GKG, then builds aligned news × market datasets and event-study summaries.
 
@@ -20,6 +20,7 @@ Each run stores its resolved configuration, metadata, outputs, and—when BigQue
 | Storage | Idempotent JSONL writes for market and news records |
 | Cloud controls | BigQuery dry-run first, byte caps, spend policy + ledger (`configs/cost_policy.yaml`) |
 | Research outputs | Leakage-aware alignment, event studies, run artifacts under `experiments/` |
+| Relevance benchmark | Versioned article-text records, exact/near dedupe, human annotation workflow, chronological splits, deterministic entity-rule baselines, offline metrics |
 | Validation | Offline pytest, Ruff, scoped Black/mypy, wheel import smoke on Python 3.11/3.12 |
 
 ## Run the offline demo
@@ -40,7 +41,6 @@ python3 -m pip install -e ./packages/common \
   -e ./packages/news_data \
   -e ./packages/market_data \
   -e ./packages/research_data \
-  -e ./packages/strategy_sdk \
   -e ./apps/trading_platform \
   -e ".[dev]"
 ```
@@ -104,25 +104,86 @@ Scoring tasks write review artifacts only. They do not edit production theme bun
 
 Full write-up: [semiconductor theme scoring](docs/research/semiconductor-theme-scoring/).
 
-## Reporting preview
+## Next foundation: semiconductor relevance benchmark
 
-![Local reporting dashboard](docs/images/reporting_dashboard_preview.png)
+Because themes failed as an identity layer, the repository now includes an **offline, human-label-ready article relevance benchmark**:
 
-*Local dashboard using committed sample data; no live market or trading feed.*
+- Versioned `ArticleTextRecordV1` research records and a local JSONL corpus provider
+- Conservative exact duplicate clustering plus near-duplicate **review candidates**
+- Blind annotation workflow with raw labels preserved and separate adjudication
+- Duplicate-cluster-aware chronological development / validation / holdout splits
+- Transparent deterministic entity-rule baselines (no ML, embeddings, or GPU)
+- Offline metrics with Wilson intervals and explicit undefined-metric nulls
 
 ```bash
-cd apps/reporting_dashboard
-python3 -m http.server 8000
+python3 -m trading_platform \
+  configs/research/semiconductor_relevance_benchmark_offline.yaml \
+  --run-id semiconductor_relevance_benchmark_offline
 ```
+
+No `.env`, credentials, BigQuery, Alpaca, network, or GPU are required for that command.
+
+Design: [semiconductor relevance benchmark](docs/research/semiconductor_relevance_benchmark_design.md).  
+Annotation guidelines: [relevance annotation guidelines](docs/research/semiconductor_relevance_annotation_guidelines.md).
+
+This phase does **not** implement a text classifier, sentiment model, or trading signal. Fixture metrics are synthetic test ground truth, not real-world model performance. Human labels and coverage remain limited. No trading system consumes these outputs. No predictive return has been demonstrated.
+
+
+## Real-corpus relevance annotation pilot
+
+A second offline task prepares rights-aware sampling, calibration, duplicate-pair review, and readiness gates for a local rights-cleared corpus:
+
+```bash
+python3 -m trading_platform \
+  configs/research/semiconductor_relevance_real_corpus_pilot_local.yaml \
+  --run-id semiconductor_relevance_real_corpus_pilot_local
+```
+
+Protocol: [real-corpus pilot protocol](docs/research/semiconductor_relevance_real_corpus_pilot_protocol.md).
+
+Synthetic fixtures validate the machinery only. Without a rights-cleared local corpus under ignored `data/real_corpus/`, real-pilot execution remains blocked. This does not implement models, sentiment, return prediction, or trading.
+
+> Do not ingest real article bodies until the content-safety regression tests pass and the remediation commit is checked out. Rejected import rows serialize safe summaries only (no full bodies). Finite-population correction applies only to prevalence-precision planning; class-denominator requirements that exceed \(N\) remain visibly underpowered.
+
+## Local Relevance Annotation Workstation
+
+The current local application is a **trusted Streamlit workstation** for corpus preflight, blind article relevance annotation, duplicate review, adjudication, and deterministic export. It is a thin human-review layer over the existing `news_data` / `research_data` CLI engine — not a public trading dashboard or live market terminal.
+
+- Local-only bind (`127.0.0.1`); usage stats disabled
+- Single selected pilot-run context; assignments bound to run/corpus/article hashes
+- Durable annotation events in ignored SQLite (`data/local_only/relevance_annotation_ui.sqlite3`)
+- Stable UI submission tokens (double-click / rerun idempotent); append-only history
+- Batch-scoped exports preserve stored guideline versions and sample roles
+- Real article bodies stay in ignored local storage; exports omit bodies by default
+- Does **not** run models, calculate sentiment, predict returns, or place trades
+- Mode selection (`preflight` / `annotator` / `duplicate_reviewer` / `adjudicator` / `audit`) is workflow separation, not multi-tenant security
+- Suitable for a five-article rights-cleared smoke test after remediation validation; no real pilot has been completed
+
+```bash
+python3 -m pip install -e ./apps/relevance_annotation_ui
+python3 -m streamlit run apps/relevance_annotation_ui/app.py
+```
+
+Config: [`configs/research/semiconductor_relevance_annotation_ui_local.yaml`](configs/research/semiconductor_relevance_annotation_ui_local.yaml).  
+App notes: [`apps/relevance_annotation_ui/README.md`](apps/relevance_annotation_ui/README.md).
 
 ## Validation
 
-GitHub Actions runs on Python 3.11 and 3.12: offline `pytest`, Ruff, Black on the market-data/research scopes, mypy on `common` / `market_data` / `pipeline_core` / `research_data`, plus wheel builds and an isolated import smoke test.
+GitHub Actions runs on Python 3.11 and 3.12 via `make validate`: offline `pytest`, Ruff, scoped Black/mypy, wheel builds with an isolated import smoke test, and a stale `build/` pollution check.
 
 ```bash
-pytest -q
-ruff check .
+make validate
 ```
+
+Release-oriented source archive (tracked files only, plus SHA-256 under `dist/`):
+
+```bash
+make source-archive
+```
+
+`make source-archive` and `make release-check` require a clean git work tree unless `ALLOW_DIRTY_TREE=1` is set. Ordinary development targets such as `make test` allow dirty trees.
+
+Dependency lockfiles (`uv.lock` / equivalent) are not used yet; install with editable `pip install -e` as above. See [`docs/development/production-hardening.md`](docs/development/production-hardening.md).
 
 ## Current limitations
 
