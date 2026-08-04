@@ -75,7 +75,7 @@ See [`production-hardening.md`](production-hardening.md).
 
 ## Next up
 
-- [ ] Flesh out `packages/strategy_sdk` (signals, risk, portfolio logic)
+- [ ] Flesh out `packages/strategy_sdk` only when real strategy-domain code exists (package is deferred / not installed)
 - [ ] SEC EDGAR and FRED adapters on existing contracts
 - [ ] Time-aligned joins between news features and market bars
 - [ ] Research-grade backtesting prototype

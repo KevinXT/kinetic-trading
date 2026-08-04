@@ -1,4 +1,4 @@
-"""Tests for category-specific provider construction."""
+"""Tests for price provider construction."""
 
 from typing import Any, Mapping
 
@@ -21,14 +21,6 @@ def test_registry_constructs_configured_provider_case_insensitively() -> None:
     provider = registry.create_price_provider("alpaca", {"feed": "iex"})
     assert isinstance(provider, _PriceProvider)
     assert provider.config == {"feed": "iex"}
-
-
-def test_provider_categories_are_independent() -> None:
-    registry = ProviderRegistry()
-    registry.register_price_provider("shared-name", _PriceProvider)
-    registry.register_macro_provider("shared-name", lambda config: object())  # type: ignore[arg-type]
-    assert isinstance(registry.create_price_provider("shared-name", {}), _PriceProvider)
-    assert registry.create_macro_provider("shared-name", {}) is not None
 
 
 def test_duplicate_registration_is_rejected() -> None:

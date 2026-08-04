@@ -63,6 +63,15 @@ starting with workflow migrations (PR 5+). PR 1 only records their paths:
 2. BigQuery dry-run: `configs/research/semiconductors_seeded_theme_scoring_30d_dryrun.yaml`
 3. BigQuery execute: `configs/research/semiconductors_seeded_theme_scoring_30d_execute.yaml`
 
+## Simplify-without-rewrite notes
+
+- `strategy_sdk` remains on disk as a deferred empty boundary; it is not installed
+  by CI, wheels-smoke, or the default developer install.
+- Market-data provider protocols are price-only until a second provider exists.
+- Seeded theme scoring was split vertically under
+  `news_data.task.bigquery_gdelt_seeded_theme_scoring/` (task / score / artifacts /
+  report) without adding a new orchestration framework.
+
 ## Baseline freeze
 
 See [`production-hardening/baseline/`](production-hardening/baseline/) for the

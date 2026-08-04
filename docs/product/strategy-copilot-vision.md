@@ -159,7 +159,8 @@ Historical notes referred to `core/pipeline_engine/`. The **current** layout is 
 
 - `packages/pipeline_core` — runner, parser, `RunContext`, task registry
 - `packages/common` — YAML config loading, shared errors
-- `packages/news_data`, `packages/market_data`, `packages/strategy_sdk` — integrations & domain
+- `packages/news_data`, `packages/market_data` — integrations & domain
+  (`packages/strategy_sdk` is deferred / empty and not part of the default install)
 - `apps/trading_platform` — application entrypoints and product glue
 - `configs/` — YAML plans and presets
 

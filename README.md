@@ -41,7 +41,6 @@ python3 -m pip install -e ./packages/common \
   -e ./packages/news_data \
   -e ./packages/market_data \
   -e ./packages/research_data \
-  -e ./packages/strategy_sdk \
   -e ./apps/trading_platform \
   -e ".[dev]"
 ```

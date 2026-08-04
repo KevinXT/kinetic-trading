@@ -1,8 +1,7 @@
 """
-Import smoke tests: verify all installable packages import cleanly.
+Import smoke tests: verify installable packages import cleanly.
 
-Implemented packages assert key public symbols exist. The strategy_sdk
-boundary only verifies that it imports and has a module docstring.
+Implemented packages assert key public symbols exist.
 """
 
 
@@ -28,20 +27,27 @@ def test_import_news_data():
 
 
 def test_import_market_data():
+    import market_data.providers as providers
     from market_data.domain import PriceBar
+    from market_data.providers import PriceDataProvider, ProviderRegistry
     from market_data.providers.alpaca import AlpacaPriceProvider
     from market_data.storage import JsonlFinancialDataStore
 
     assert PriceBar is not None
     assert AlpacaPriceProvider is not None
     assert JsonlFinancialDataStore is not None
+    assert PriceDataProvider is not None
+    assert ProviderRegistry is not None
+    assert providers.__all__ == ["PriceDataProvider", "ProviderRegistry"]
+    assert not hasattr(providers, "CompanyDataProvider")
+    assert not hasattr(providers, "MacroDataProvider")
 
 
-def test_import_strategy_sdk():
-    """Reserved package boundary — verify it imports and has a docstring."""
-    import strategy_sdk
+def test_import_research_data():
+    from research_data import build_dataset, run_event_study
 
-    assert strategy_sdk.__doc__
+    assert callable(build_dataset)
+    assert callable(run_event_study)
 
 
 def test_import_trading_platform():
@@ -50,3 +56,4 @@ def test_import_trading_platform():
 
     assert trading_platform.__version__
     assert "alpaca_historical_bars" in TASK_REGISTRY
+    assert "bigquery_gdelt_seeded_theme_scoring" in TASK_REGISTRY
