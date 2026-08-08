@@ -6,6 +6,7 @@ These run the real Typer app in-process. They deliberately do not run a pipeline
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,12 @@ from kinetic.interface.cli.app import app
 runner = CliRunner()
 
 DEMO_CONFIG = "configs/research/news_market_dataset_demo.yaml"
+_ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain(text: str) -> str:
+    """Strip ANSI color codes so help assertions survive rich/Typer styling."""
+    return _ANSI_ESCAPE.sub("", text)
 
 
 def test_help_lists_the_top_level_commands() -> None:
@@ -36,7 +43,7 @@ def test_version() -> None:
 
 def test_bare_invocation_shows_help_rather_than_erroring() -> None:
     result = runner.invoke(app, [])
-    assert "Usage: kinetic" in result.output
+    assert "Usage: kinetic" in _plain(result.output)
 
 
 def test_task_list_shows_namespaced_ids_and_hides_aliases() -> None:
