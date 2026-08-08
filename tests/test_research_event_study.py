@@ -129,11 +129,11 @@ def test_small_sample_triggers_warning() -> None:
     # The synthetic spike yields a small event count below the minimum of 20.
     assert all_group["event_count"] < 20
     metric = all_group["metrics"]["target_session_absolute_return"]
-    assert metric["inferential_status"] == "insufficient_sample"
+    assert metric["inferential_status"] == "descriptive_small_sample"
     assert metric["p_value_uncorrected"] is None
     assert metric["adjusted_p_value"] is None
     assert metric["ci_low"] is None and metric["ci_high"] is None
-    assert any("formal inference omitted" in w for w in all_group["warnings"])
+    assert any("descriptive event-only summary" in w for w in all_group["warnings"])
 
 
 def test_event_study_avoids_causal_claims() -> None:
@@ -202,7 +202,7 @@ def _event_observation(session: date, suffix: str, absolute_return: float) -> Ne
     )
 
 
-def test_threshold_sized_session_sample_enters_only_h1_fdr_family() -> None:
+def test_event_only_group_is_descriptive_not_tested_against_zero() -> None:
     sessions = CAL.sessions_between(date(2026, 6, 1), date(2026, 6, 3))
     observations = [
         _event_observation(sessions[0], "NVDA", 0.01),
@@ -216,13 +216,18 @@ def test_threshold_sized_session_sample_enters_only_h1_fdr_family() -> None:
     )
     h1 = next(family for family in summary["fdr_families"] if family["hypothesis_id"] == "H1")
     h2 = next(family for family in summary["fdr_families"] if family["hypothesis_id"] == "H2")
-    assert h1["eligible_tests"] == 2
+    # The H1 family is now an event-vs-control contrast, not a one-sample vs-zero test.
+    assert h1["contrast_kind"] == "event_vs_control_difference"
+    # With no control (ordinary) sessions in this fixture, no contrast is eligible.
+    assert h1["eligible_tests"] == 0
     assert h2["eligible_tests"] == 0
     all_group = next(group for group in summary["groups"] if group["group_kind"] == "all")
     metric = all_group["metrics"]["target_session_absolute_return"]
     assert metric["inference_n_sessions"] == 2  # four rows, two clustered dates
-    assert metric["inferential_status"] == "eligible"
-    assert metric["adjusted_p_value"] is not None
+    # Event-only summaries never carry a p-value against zero.
+    assert metric["p_value_uncorrected"] is None
+    assert metric["adjusted_p_value"] is None
+    assert metric["inferential_status"] in {"descriptive", "descriptive_small_sample"}
 
 
 def test_missing_targets_do_not_inflate_inference_sample() -> None:
@@ -246,4 +251,4 @@ def test_missing_targets_do_not_inflate_inference_sample() -> None:
     metric = summary["groups"][0]["metrics"]["target_session_absolute_return"]
     assert metric["n"] == 1
     assert metric["inference_n_sessions"] == 1
-    assert metric["inferential_status"] == "insufficient_sample"
+    assert metric["inferential_status"] == "descriptive_small_sample"

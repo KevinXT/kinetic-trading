@@ -1,0 +1,53 @@
+name: semiconductors_bigquery_1y_partition_execute
+
+# 1-year semiconductor BigQuery historical GDELT daily counts — real execution.
+#
+# Run ONLY after the dry-run (semiconductors_bigquery_1y_partition_dryrun) estimate
+# looks safe. Even with execute_query: "ENABLE", the SafeBigQueryClient ALWAYS
+# dry-runs first and enforces maximum_bytes_billed + the cost policy before any
+# billable query. Writes bigquery_daily_counts.jsonl / .csv artifacts and
+# preserves the exact theme-bundle / query lineage in bigquery_sql.sql and
+# bigquery_summary.json.
+#
+# Measures the declared study window 2025-07-01 .. 2026-06-30 at a daily bucket
+# with _PARTITIONTIME partition pruning.
+#
+# NOTE: this references the `semiconductors` theme bundle, which is a PLACEHOLDER
+# until a human reviews theme discovery and fills in the validated codes. Until
+# then this config fails clearly at query build (by design) rather than silently
+# using guessed themes.
+
+providers:
+  bigquery:
+    project_id: "YOUR_PROJECT_ID"
+    table: "gdelt-bq.gdeltv2.gkg_partitioned"
+
+pipeline:
+  ingest:
+    source: bigquery_gdelt_counts
+    query_name: semiconductors_bigquery_1y_partition
+    topic: semiconductors
+    theme_bundle: semiconductors
+
+    search_columns:
+      - V2Themes
+
+    partition_filter:
+      enabled: true
+      column: "_PARTITIONTIME"
+      type: "timestamp"
+
+    window:
+      start: "2025-07-01"
+      end: "2026-06-30"
+      bucket: 1d
+
+    cost_controls:
+      dry_run: false
+      # Typed execution gate: a billable query runs only when execute_query is the
+      # literal "ENABLE" AND the internal dry-run estimate is within budget.
+      execute_query: "ENABLE"
+      maximum_bytes_billed: 60000000000
+      cost_policy_path: "configs/cost_policy.yaml"
+      ledger_path: "data/cost/cost_ledger.jsonl"
+      use_cache: true

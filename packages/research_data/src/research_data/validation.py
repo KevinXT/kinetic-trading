@@ -131,6 +131,23 @@ def audit_dataset(observations: list[NewsMarketObservation]) -> list[AuditIssue]
     return issues
 
 
+def assert_required_bar_symbols(available_symbols: set[str], required_symbols: list[str]) -> None:
+    """Fail the build early if any required instrument/benchmark bar is absent.
+
+    ``required_symbols`` typically lists the study instruments plus the benchmark.
+    A missing benchmark or instrument would silently drop targets downstream, so
+    this pre-build check turns that into a loud, actionable error.
+    """
+    available = {str(sym).strip().upper() for sym in available_symbols}
+    required = [str(sym).strip().upper() for sym in required_symbols if str(sym).strip()]
+    missing = sorted({sym for sym in required if sym not in available})
+    if missing:
+        raise ValueError(
+            "required market bars are missing for symbol(s): "
+            f"{missing}; available symbols: {sorted(available)}"
+        )
+
+
 def assert_no_leakage(observations: list[NewsMarketObservation]) -> None:
     """Raise if any observation fails the leakage audit."""
     issues = audit_dataset(observations)

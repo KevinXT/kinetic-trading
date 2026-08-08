@@ -1,0 +1,69 @@
+# Offline, deterministic semiconductor attention study.
+#
+# Requires NO Alpaca, BigQuery, GDELT, or internet access. It reads committed
+# year-long fixtures (BigQuery-style daily counts + Alpaca-style bars) and writes
+# the full research artifact set, including the event-vs-control contrasts and the
+# generated semiconductor_attention_study.md report. Use a fixed --run-id for
+# byte-stable reruns.
+#
+#   python3 -m trading_platform \
+#     configs/research/semiconductors_news_market_study_offline.yaml \
+#     --run-id semiconductors_study_offline
+#
+# This mirrors configs/research/semiconductors_news_market_study_v1.yaml but sources
+# committed fixtures instead of executed BigQuery/Alpaca artifacts, so the study
+# report can be produced and reviewed with zero credentials or spend.
+
+name: semiconductors_news_market_study_offline
+
+pipeline:
+  strategy:
+    type: build_news_market_dataset
+
+    # Offline inputs (committed fixtures; BigQuery daily-count news method).
+    counts_path: "tests/fixtures/research/semiconductor_study_bigquery_counts.json"
+    bars_path: "tests/fixtures/research/semiconductor_study_market_bars.json"
+    mappings_path: "configs/research/topic_instrument_mappings.yaml"
+    feature_catalog_path: "configs/research/news_market_feature_catalog.yaml"
+
+    # BigQuery daily counts must use the conservative calendar-day alignment, not
+    # exact article-timestamp alignment. The builder enforces this.
+    alignment_policy: "conservative_calendar_day_v2"
+    cutoff_buffer_seconds: 300
+
+    dataset_version: "semiconductors-news-market-study-v1"
+    feature_version: "news-market-features-v2"
+    topic_taxonomy_version: "kinetic-topics-v1"
+    forward_horizon: 5
+
+    # Predeclared event definition and inference plan (fixed before outcomes).
+    event_threshold: 1.5
+    event_minimum_sample: 15
+    bootstrap_seed: 12345
+    bootstrap_block_length: 5
+    bootstrap_iterations: 2000
+
+    # Pre-build validation: fail if any instrument or benchmark bar is absent.
+    require_symbols:
+      - AMD
+      - NVDA
+      - SMH
+      - QQQ
+
+    # The declared study sample (news measurement window). Extra market-history and
+    # target-completion bars fall outside this window and are excluded from the
+    # event/control contrast.
+    study_window:
+      start: "2025-07-01"
+      end: "2026-06-30"
+    # Recorded separately for the report's data-coverage section.
+    news_window:
+      start: "2025-07-01"
+      end: "2026-06-30"
+    market_window:
+      start: "2025-05-15"
+      end: "2026-07-10"
+
+    study_report_name: "semiconductor_attention_study.md"
+    study_report_title: "Semiconductor news-attention market study (v1)"
+    study_topic: "semiconductors"
