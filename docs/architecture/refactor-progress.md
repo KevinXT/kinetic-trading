@@ -102,12 +102,12 @@ for unavailable commands to be distinguished from failures)
 | Phase | Status |
 | --- | --- |
 | 0 — Audit, baseline, architecture documents | complete — `dfa919f` |
-| 1 — Consolidate packaging and namespace | complete |
-| 2 — Migrate the pipeline core | complete |
-| 3 — Migrate data and ingestion | complete |
-| 4 — Separate processing, ML, research, projects, tools | complete |
-| 5 — Migrate configs, CLI and tests | complete |
-| 6 — Cleanup and production validation | in progress (this checkpoint) |
+| 1 — Consolidate packaging and namespace | complete — `fa68247` |
+| 2 — Migrate the pipeline core | complete — `fa68247` |
+| 3 — Migrate data and ingestion | complete — `fa68247` |
+| 4 — Separate processing, ML, research, projects, tools | complete — `fa68247` |
+| 5 — Migrate configs, CLI and tests | complete — `fa68247` |
+| 6 — Cleanup and production validation | complete (this checkpoint) |
 
 Phases 1 through 5 landed as one commit rather than five. Splitting them after
 the fact would have meant reverting substantial completed, cross-validated work
@@ -120,6 +120,19 @@ skipped, wheel smoke) before it exists, and it is pushed immediately, which is
 what the persistence rule is actually protecting against.
 
 Each phase's commit is pushed to `origin/refactor/kinetic-platform-architecture`
-immediately after it is validated, before the next phase begins. This document
-is updated at the end of
-each phase with the checkpoint commit hash and validation results.
+immediately after it is validated, before the next phase begins.
+
+## Final state
+
+| Check | Result |
+| --- | --- |
+| `ruff check .` | pass |
+| `lint-imports` | 6 contracts kept, 0 broken |
+| `black --check` | pass, whole tree |
+| `mypy src` | pass, 156 files |
+| `deptry .` | no issues |
+| `pytest -q` | 2254 passed, 4 skipped |
+| `make wheel-smoke` | pass |
+
+The refactor is finished. Full results, what changed, and the open items are in
+[`refactor-report.md`](refactor-report.md).

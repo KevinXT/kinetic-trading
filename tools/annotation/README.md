@@ -20,25 +20,25 @@ SQLite stores durable append-only events. The research CLI remains the reproduci
 
 ## Setup
 
-From the repository root, with the existing editable package installs:
+From the repository root, with `kinetic` installed:
 
 ```bash
-python3 -m pip install -e ./apps/relevance_annotation_ui
+uv pip install -e ".[annotation]"
 ```
 
-Streamlit is scoped to this app, not core research packages.
+Streamlit is scoped to this extra, not a core platform dependency.
 
 ## Launch
 
 ```bash
-python3 -m streamlit run apps/relevance_annotation_ui/app.py
+streamlit run tools/annotation/app.py
 ```
 
 Defaults to `127.0.0.1` with usage stats disabled (see `.streamlit/config.toml`).
 
 ## Configuration
 
-`configs/research/semiconductor_relevance_annotation_ui_local.yaml`
+`projects/semiconductor_case_study/configs/semiconductor_relevance_annotation_ui_local.yaml`
 
 - Database: `data/local_only/relevance_annotation_ui.sqlite3` (gitignored)
 - Exports: `data/local_only/relevance_exports/` (gitignored)
