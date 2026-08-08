@@ -1,0 +1,45 @@
+name: semiconductors_seeded_theme_discovery_30d_dryrun
+providers:
+  bigquery:
+    project_id: YOUR_PROJECT_ID
+    table: gdelt-bq.gdeltv2.gkg_partitioned
+pipeline:
+  steps:
+  - task: news.gdelt.bigquery.discover_seeded_themes
+    params:
+      query_name: semiconductors_seeded_theme_discovery_30d_partition
+      topic: semiconductors
+      seed_terms:
+      - semiconductor
+      - semiconductors
+      - microprocessor
+      - chipmaker
+      - wafer fabrication
+      - TSMC
+      - NVIDIA
+      - AMD
+      - Intel
+      - ASML
+      - Broadcom
+      - Micron
+      - Qualcomm
+      - Samsung Electronics
+      seed_search_columns:
+      - V2Organizations
+      sample_source_column: SourceCommonName
+      partition_filter:
+        enabled: true
+        column: _PARTITIONTIME
+        type: timestamp
+      window:
+        preset: last_30_days
+        bucket: 1d
+      limit: 200
+      sample_size: 3
+      cost_controls:
+        dry_run: true
+        maximum_bytes_billed: 30000000000
+        execute_query: ''
+        cost_policy_path: configs/cost_policy.yaml
+        ledger_path: warehouse/cost/cost_ledger.jsonl
+        use_cache: false

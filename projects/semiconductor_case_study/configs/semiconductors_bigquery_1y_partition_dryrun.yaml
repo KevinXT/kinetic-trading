@@ -1,0 +1,29 @@
+name: semiconductors_bigquery_1y_partition_dryrun
+providers:
+  bigquery:
+    project_id: YOUR_PROJECT_ID
+    table: gdelt-bq.gdeltv2.gkg_partitioned
+pipeline:
+  steps:
+  - task: news.gdelt.bigquery.fetch_daily_counts
+    params:
+      query_name: semiconductors_bigquery_1y_partition
+      topic: semiconductors
+      theme_bundle: semiconductors
+      search_columns:
+      - V2Themes
+      partition_filter:
+        enabled: true
+        column: _PARTITIONTIME
+        type: timestamp
+      window:
+        start: '2025-07-01'
+        end: '2026-06-30'
+        bucket: 1d
+      cost_controls:
+        dry_run: true
+        maximum_bytes_billed: 60000000000
+        execute_query: ''
+        cost_policy_path: configs/cost_policy.yaml
+        ledger_path: warehouse/cost/cost_ledger.jsonl
+        use_cache: true

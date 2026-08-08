@@ -26,7 +26,7 @@ reporting:
 
   cost_controls:
     cost_policy_path: "configs/cost_policy.yaml"
-    ledger_path: "data/cost/cost_ledger.jsonl"
+    ledger_path: "warehouse/cost/cost_ledger.jsonl"
     # Per-query cap enforced on every dry-run/create (bytes).
     maximum_bytes_billed: 12000000000
     # Typed confirmation required to actually create views with --create.

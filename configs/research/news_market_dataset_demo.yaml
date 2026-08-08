@@ -4,26 +4,26 @@
 # fixtures and reference configs and writes the full set of research artifacts to
 # the run directory. Use a fixed --run-id for byte-stable reruns.
 #
-#   python3 -m trading_platform configs/research/news_market_dataset_demo.yaml
+#   kinetic run configs/research/news_market_dataset_demo.yaml
 
 name: news_market_dataset_demo
-
 pipeline:
-  strategy:
-    type: build_news_market_dataset
-    articles_path: "tests/fixtures/research/semiconductors_articles.json"
-    bars_path: "tests/fixtures/research/market_bars.json"
-    mappings_path: "configs/research/topic_instrument_mappings.yaml"
-    feature_catalog_path: "configs/research/news_market_feature_catalog.yaml"
-    alignment_policy: "session_information_window_v2"
-    cutoff_buffer_seconds: 300
-    dataset_version: "news-market-v2"
-    feature_version: "news-market-features-v2"
-    topic_taxonomy_version: "kinetic-topics-v1"
-    forward_horizon: 5
-    event_threshold: 2.0
-    event_minimum_sample: 5
-    bootstrap_seed: 12345
-    bootstrap_block_length: 5
-    bootstrap_iterations: 2000
-    max_records: 250
+  steps:
+  - task: research.build_news_market_dataset
+    params:
+      articles_path: tests/fixtures/research/semiconductors_articles.json
+      bars_path: tests/fixtures/research/market_bars.json
+      mappings_path: configs/research/topic_instrument_mappings.yaml
+      feature_catalog_path: configs/research/news_market_feature_catalog.yaml
+      alignment_policy: session_information_window_v2
+      cutoff_buffer_seconds: 300
+      dataset_version: news-market-v2
+      feature_version: news-market-features-v2
+      topic_taxonomy_version: kinetic-topics-v1
+      forward_horizon: 5
+      event_threshold: 2.0
+      event_minimum_sample: 5
+      bootstrap_seed: 12345
+      bootstrap_block_length: 5
+      bootstrap_iterations: 2000
+      max_records: 250

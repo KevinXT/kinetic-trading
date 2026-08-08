@@ -73,7 +73,7 @@ Everything in the product serves this loop.
 
 **Exit criteria**
 
-- You can run a plan (e.g. `python -m trading_platform` or a thin CLI) against `configs/plans/…`
+- You can run a plan (e.g. `kinetic run`) against `configs/plans/…`
 - It creates a run folder with reproducible artifacts
 
 ---
@@ -157,11 +157,11 @@ Everything in the product serves this loop.
 
 Historical notes referred to `core/pipeline_engine/`. The **current** layout is a monorepo:
 
-- `packages/pipeline_core` — runner, parser, `RunContext`, task registry
-- `packages/common` — YAML config loading, shared errors
-- `packages/news_data`, `packages/market_data` — integrations & domain
-  (`packages/strategy_sdk` is deferred / empty and not part of the default install)
-- `apps/trading_platform` — application entrypoints and product glue
+- `kinetic.core` — runner, parser, `RunContext`, task registry
+- `kinetic.core` — YAML config loading, shared errors
+- `kinetic.ingestion.news`, `kinetic.ingestion.market` — integrations & domain
+  (`kinetic.trading` (not yet created) is deferred / empty and not part of the default install)
+- `kinetic.interface.cli` — application entrypoints and product glue
 - `configs/` — YAML plans and presets
 
 Conceptual modules (may span packages):

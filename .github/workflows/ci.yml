@@ -22,23 +22,22 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # One distribution, one install. Before 0.2 this step installed seven
+      # editable internal packages; see docs/architecture/migration-map.md.
+      - name: Install
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install \
-            -e ./packages/common \
-            -e ./packages/pipeline_core \
-            -e ./packages/news_data \
-            -e ./packages/market_data \
-            -e ./packages/research_data \
-            -e ./apps/trading_platform \
-            -e ./apps/relevance_annotation_ui \
-            -e ".[dev]"
+          uv sync --frozen --all-extras
+          uv pip install -e .
 
       # Canonical targets live in the Makefile / scripts/dev so local and CI
       # cannot drift. Dirty-tree checks are release-only and skipped here.
-      - name: Validate (lint, format, types, tests, wheels, build pollution)
-        run: make validate
+      - name: Validate (lint, imports, format, types, tests, wheel, build pollution)
+        run: uv run make validate
 
       # Live Alpaca test is gated on RUN_PROVIDER_INTEGRATION_TESTS=1 and is
       # skipped unless that variable is explicitly set.

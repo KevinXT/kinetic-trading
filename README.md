@@ -1,194 +1,189 @@
 # Kinetic Trading
 
-Kinetic Trading is a reproducible market-and-news research system. Its current local application is a human annotation and audit workstation for the semiconductor relevance benchmark. It is not a public trading dashboard or live market terminal.
+## What this is
 
-The system pulls Alpaca historical bars and GDELT news through the DOC API and BigQuery GKG, then builds aligned news × market datasets and event-study summaries.
+Kinetic Trading is a **point-in-time market-intelligence and algorithmic-trading
+research platform**. It ingests news, macroeconomic and market data, preserves the
+raw provider payloads, normalizes them into canonical records, enriches them
+deterministically, and evaluates ideas with reproducible, leakage-aware research
+methods.
 
-Each run stores its resolved configuration, metadata, outputs, and—when BigQuery is used—the generated SQL and cost estimate. Runs are preserved under `experiments/` so results can be inspected and reproduced later.
+It is one installable Python distribution (`kinetic`), one import namespace
+(`kinetic`), one CLI (`kinetic`). Everything runs locally; nothing here places a
+trade.
 
-> Kinetic Trading is a research system. It does not place trades or claim predictive returns.
+## What currently works
 
-[![CI](https://github.com/KevinXT/kinetic-trading/actions/workflows/ci.yml/badge.svg)](https://github.com/KevinXT/kinetic-trading/actions/workflows/ci.yml)
-![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+Each of these is implemented, exercised by the test suite, and runnable today.
 
-## What is implemented
-
-| Area | Capability |
+| Capability | Where it lives |
 | --- | --- |
-| Inputs | Alpaca bars; GDELT DOC articles; BigQuery GKG counts and theme research |
-| Pipeline execution | YAML plans via `pipeline_core`, tasks registered in `trading_platform` |
-| Storage | Idempotent JSONL writes for market and news records |
-| Cloud controls | BigQuery dry-run first, byte caps, spend policy + ledger (`configs/cost_policy.yaml`) |
-| Research outputs | Leakage-aware alignment, event studies, run artifacts under `experiments/` |
-| Relevance benchmark | Versioned article-text records, exact/near dedupe, human annotation workflow, chronological splits, deterministic entity-rule baselines, offline metrics |
-| Validation | Offline pytest, Ruff, scoped Black/mypy, wheel import smoke on Python 3.11/3.12 |
+| YAML-driven pipeline execution with run artifacts, timings and git provenance | `kinetic.core.pipeline` |
+| GDELT DOC API article ingestion | `kinetic.ingestion.news.gdelt` |
+| GDELT-over-BigQuery historical counts, theme discovery, seeded-vs-background theme scoring — every query dry-run and cost-capped before it can spend | `kinetic.ingestion.news.gdelt.bigquery`, `kinetic.ingestion.warehouse.bigquery` |
+| Alpaca historical bars: paginated fetch, retries, response caching, normalization, JSONL storage | `kinetic.ingestion.market.alpaca` |
+| Deterministic news processing: normalization, exact and near-duplicate clustering, rule-based entity linking, daily feature aggregation | `kinetic.processing.news` |
+| Leakage-aware news × market research datasets: session calendar, explicit alignment policies, feature catalog, dataset manifest and reproducibility fingerprint | `kinetic.processing.cross_asset`, `kinetic.data.catalog` |
+| Offline, deterministic event study with block-bootstrap inference, including an event-versus-control contrast and a deterministic study-report generator | `kinetic.research.event_studies`, `kinetic.research.reports` |
+| Semiconductor relevance benchmark and real-corpus annotation pilot: sampling design, sample-size planning, annotator calibration, adjudication, agreement statistics, evaluation metrics | `kinetic.ml.relevance` |
+| Local-only Streamlit annotation workstation | `tools/annotation` |
+| BigQuery reporting views for a Looker Studio dashboard | `kinetic.ingestion.warehouse.bigquery.reporting` |
+
+## What is experimental
+
+**Seeded GDELT theme discovery and scoring.** The idea was to find GDELT theme
+codes that genuinely characterize a topic by comparing their prevalence in a
+seeded subcorpus against a matched background corpus. The machinery works and the
+cost controls work. The research conclusion did not come out positive — see
+[the case study](projects/semiconductor_case_study/README.md) for what was
+actually learned, including what failed and why. That write-up has not been
+edited to look better than the result was.
+
+**The semiconductor news-attention event-vs-control study.** A real historical
+research pipeline over AMD, NVDA, SMH and QQQ — not a fixture-only demo. It is
+deliberately scoped as "research-data engineering" and its report vocabulary is
+fixed to never claim causation, profitability, or trading value.
+
+## What has not been built
+
+- **Any trading capability.** No signals, no portfolio construction, no risk
+  limits, no paper execution, no broker execution. There is no `kinetic.trading`
+  package; the boundary it must respect when it is written is specified in
+  [dependency-rules.md](docs/architecture/dependency-rules.md).
+- **FRED**, or any macro provider. `MacroObservation` exists as a canonical
+  schema; nothing populates it. [adding-a-provider.md](docs/getting-started/adding-a-provider.md)
+  names the exact files a FRED integration would add.
+- **Futures, options, forex and crypto instrument identity.** The extension point
+  and the required fields are documented in
+  [data-lifecycle.md](docs/architecture/data-lifecycle.md); none of it is
+  implemented, because nothing in the codebase needs it yet.
+- **Trained models.** `kinetic.ml` holds the benchmark, annotation and evaluation
+  infrastructure a relevance model would be measured against, plus deterministic
+  reference baselines. There is no trained relevance, sentiment or ranking model.
+- **The interactive terminal.** Deliberately deferred until the non-interactive
+  CLI and the application boundaries are stable.
+
+## How data flows
+
+```
+raw provider response      warehouse/raw/          preserved, never overwritten
+  → normalized record      warehouse/normalized/   canonical, provider-independent
+    → curated dataset      warehouse/curated/      cleaned, deduped, session-aligned
+      → feature dataset    warehouse/features/     described by the feature catalog
+        → prediction       warehouse/predictions/  (nothing writes here yet)
+          → research result / trading input
+```
+
+Every pipeline run writes to `warehouse/runs/<name>/<run_id>/` with the resolved
+config, run metadata, git revision and per-step artifacts. The full rules —
+including which point-in-time timestamps are preserved and why a missing
+measurement is `None` rather than `0` — are in
+[data-lifecycle.md](docs/architecture/data-lifecycle.md).
+
+## Install
+
+Requires Python 3.11 or 3.12.
+
+```bash
+# with uv (recommended)
+uv sync --all-extras --dev
+uv pip install -e .
+
+# or with pip
+python -m pip install -e ".[dev]"
+```
+
+Optional extras: `bigquery` (the cost-aware BigQuery path), `annotation` (the
+Streamlit workstation), `dev` (test and lint tooling).
 
 ## Run the offline demo
 
-No API keys or BigQuery credentials are required.
-
-<details>
-<summary>Development installation</summary>
+This needs no credentials, no network and no cloud account. It reads committed
+fixtures and writes a complete set of research artifacts:
 
 ```bash
-git clone https://github.com/KevinXT/kinetic-trading.git
-cd kinetic-trading
-python3 -m venv .venv
-source .venv/bin/activate
-
-python3 -m pip install -e ./packages/common \
-  -e ./packages/pipeline_core \
-  -e ./packages/news_data \
-  -e ./packages/market_data \
-  -e ./packages/research_data \
-  -e ./apps/trading_platform \
-  -e ".[dev]"
+kinetic run configs/research/news_market_dataset_demo.yaml --run-id demo
+# or: make demo
 ```
 
-</details>
+Then look at `warehouse/runs/news_market_dataset_demo/demo/`. The same
+`--run-id` produces byte-identical output on a rerun.
+
+Other useful commands:
 
 ```bash
-python3 -m trading_platform configs/research/news_market_dataset_demo.yaml --run-id readme_offline_demo
+kinetic --help
+kinetic task list                    # every task the platform provides
+kinetic config validate <config>     # check a config before spending anything
+kinetic cost report                  # estimated cloud spend to date
 ```
 
-```text
-completed run: news_market_dataset_demo
-run_id: readme_offline_demo
-outputs: experiments/news_market_dataset_demo/readme_offline_demo
-```
-
-Useful files in that run: `artifacts/dataset_manifest.json`, `news_market_observations.csv`, and `event_study_summary.json`.
-
-For BigQuery, set a real project ID in the ignored `configs/local.yaml`; checked-in configs use `YOUR_PROJECT_ID`.
-
-```bash
-python3 -m trading_platform configs/research/semiconductors_seeded_theme_scoring_30d_dryrun.yaml
-```
-
-Live execution uses a matching `*_execute.yaml`, requires an explicit `execute_query: "ENABLE"` gate, and can incur cost. More research configs are under [`configs/research/`](configs/research/); theme codes for topics are listed in [`configs/gdelt_theme_bundles.yaml`](configs/gdelt_theme_bundles.yaml).
-
-## Data flow
-
-```mermaid
-flowchart LR
-  alpaca[Alpaca bars] --> norm[Normalized records]
-  doc[GDELT DOC] --> norm
-  bq[GDELT BigQuery GKG] --> gate[Dry-run + cost caps]
-  gate --> norm
-  norm --> align[News/market alignment]
-  align --> study[Event study]
-  gate --> arts[Config + SQL + cost + metadata]
-  align --> arts
-  study --> arts
-```
-
-YAML configs drive `pipeline_core`; `news_data` and `market_data` own the provider adapters; `research_data` builds the join and event study. Pipeline BigQuery tasks estimate bytes before execution and reject queries that exceed the configured caps. That matters because a GKG scan bills on bytes read, not on how selective the `WHERE` clause looks.
-
-Scoring tasks write review artifacts only. They do not edit production theme bundles. Credentials stay in `.env` / `configs/local.yaml`, both gitignored.
-
-## Case study: testing GDELT themes for semiconductor news
-
-**Hypothesis.** GDELT theme codes might already give us a semiconductor taxonomy.
-
-**Method.** Compare GKG records that mention semiconductor companies with a disjoint background over the same 30-day window, correct for testing more than 1,300 themes, and check whether hits were dominated by one source, date, or seed company.
-
-| Metric | Result |
-| --- | ---: |
-| Window | 30 days |
-| Seeded records | 40,334 |
-| Theme hypotheses tested | 1,359 |
-| Reliable semiconductor identity themes | 0 |
-| Scan / estimate | 10.624 GiB / ≈ $0.0648 |
-
-**Result.** Contextual themes appeared around manufacturing, servers, storage, and macroeconomic news, but none worked as a reliable semiconductor identity label. No themes were promoted into the production bundle. The next approach is entity resolution plus text classification rather than another theme-code search.
-
-Full write-up: [semiconductor theme scoring](docs/research/semiconductor-theme-scoring/).
-
-## Next foundation: semiconductor relevance benchmark
-
-Because themes failed as an identity layer, the repository now includes an **offline, human-label-ready article relevance benchmark**:
-
-- Versioned `ArticleTextRecordV1` research records and a local JSONL corpus provider
-- Conservative exact duplicate clustering plus near-duplicate **review candidates**
-- Blind annotation workflow with raw labels preserved and separate adjudication
-- Duplicate-cluster-aware chronological development / validation / holdout splits
-- Transparent deterministic entity-rule baselines (no ML, embeddings, or GPU)
-- Offline metrics with Wilson intervals and explicit undefined-metric nulls
-
-```bash
-python3 -m trading_platform \
-  configs/research/semiconductor_relevance_benchmark_offline.yaml \
-  --run-id semiconductor_relevance_benchmark_offline
-```
-
-No `.env`, credentials, BigQuery, Alpaca, network, or GPU are required for that command.
-
-Design: [semiconductor relevance benchmark](docs/research/semiconductor_relevance_benchmark_design.md).  
-Annotation guidelines: [relevance annotation guidelines](docs/research/semiconductor_relevance_annotation_guidelines.md).
-
-This phase does **not** implement a text classifier, sentiment model, or trading signal. Fixture metrics are synthetic test ground truth, not real-world model performance. Human labels and coverage remain limited. No trading system consumes these outputs. No predictive return has been demonstrated.
-
-
-## Real-corpus relevance annotation pilot
-
-A second offline task prepares rights-aware sampling, calibration, duplicate-pair review, and readiness gates for a local rights-cleared corpus:
-
-```bash
-python3 -m trading_platform \
-  configs/research/semiconductor_relevance_real_corpus_pilot_local.yaml \
-  --run-id semiconductor_relevance_real_corpus_pilot_local
-```
-
-Protocol: [real-corpus pilot protocol](docs/research/semiconductor_relevance_real_corpus_pilot_protocol.md).
-
-Synthetic fixtures validate the machinery only. Without a rights-cleared local corpus under ignored `data/real_corpus/`, real-pilot execution remains blocked. This does not implement models, sentiment, return prediction, or trading.
-
-> Do not ingest real article bodies until the content-safety regression tests pass and the remediation commit is checked out. Rejected import rows serialize safe summaries only (no full bodies). Finite-population correction applies only to prevalence-precision planning; class-denominator requirements that exceed \(N\) remain visibly underpowered.
-
-## Local Relevance Annotation Workstation
-
-The current local application is a **trusted Streamlit workstation** for corpus preflight, blind article relevance annotation, duplicate review, adjudication, and deterministic export. It is a thin human-review layer over the existing `news_data` / `research_data` CLI engine — not a public trading dashboard or live market terminal.
-
-- Local-only bind (`127.0.0.1`); usage stats disabled
-- Single selected pilot-run context; assignments bound to run/corpus/article hashes
-- Durable annotation events in ignored SQLite (`data/local_only/relevance_annotation_ui.sqlite3`)
-- Stable UI submission tokens (double-click / rerun idempotent); append-only history
-- Batch-scoped exports preserve stored guideline versions and sample roles
-- Real article bodies stay in ignored local storage; exports omit bodies by default
-- Does **not** run models, calculate sentiment, predict returns, or place trades
-- Mode selection (`preflight` / `annotator` / `duplicate_reviewer` / `adjudicator` / `audit`) is workflow separation, not multi-tenant security
-- Suitable for a five-article rights-cleared smoke test after remediation validation; no real pilot has been completed
-
-```bash
-python3 -m pip install -e ./apps/relevance_annotation_ui
-python3 -m streamlit run apps/relevance_annotation_ui/app.py
-```
-
-Config: [`configs/research/semiconductor_relevance_annotation_ui_local.yaml`](configs/research/semiconductor_relevance_annotation_ui_local.yaml).  
-App notes: [`apps/relevance_annotation_ui/README.md`](apps/relevance_annotation_ui/README.md).
-
-## Validation
-
-GitHub Actions runs on Python 3.11 and 3.12 via `make validate`: offline `pytest`, Ruff, scoped Black/mypy, wheel builds with an isolated import smoke test, and a stale `build/` pollution check.
+## Run validation
 
 ```bash
 make validate
 ```
 
-Release-oriented source archive (tracked files only, plus SHA-256 under `dist/`):
+That runs, in order: stale-build check, ruff, import-boundary contracts, black,
+mypy, dependency analysis, pytest, and a wheel build plus an isolated import/CLI
+smoke test from outside the source tree. `make help` lists the individual
+targets.
 
-```bash
-make source-archive
+## Where each type of code belongs
+
+| Question | Package |
+| --- | --- |
+| What runs the pipeline? | `kinetic.core` |
+| What is canonical data? | `kinetic.data` |
+| What talks to an external provider? | `kinetic.ingestion` |
+| What is deterministic transformation? | `kinetic.processing` |
+| What is model-driven? | `kinetic.ml` |
+| What evaluates an idea? | `kinetic.research` |
+| What does a human touch? | `kinetic.interface` |
+| How is the application assembled? | `kinetic.bootstrap` |
+| Is this one specific study? | `projects/` |
+| Is this a supporting app, not part of pipeline execution? | `tools/` |
+
+The rules are not advisory: they are enforced by import-linter contracts in
+`pyproject.toml` and checked by `make lint-imports`.
+
+## Configuration
+
+Pipeline configs live in `configs/`:
+
+- `configs/pipelines/` — the GDELT demo and the Alpaca bars example
+- `configs/collections/` — GDELT topic collections (macro, markets, risk, sectors)
+- `configs/research/` — research pipelines and reference data (topic→instrument
+  mappings, the feature catalog, inflation BigQuery configs)
+- `configs/gdelt_theme_bundles.yaml` — the curated GDELT theme bundle vocabulary
+- `configs/cost_policy.yaml` — cloud spend caps
+- `projects/semiconductor_case_study/configs/` — the case study's own configs,
+  including `semiconductors_seeded_theme_scoring_30d_dryrun.yaml`
+
+Every config uses one shape:
+
+```yaml
+name: news_market_dataset_demo
+
+pipeline:
+  steps:
+    - task: research.build_news_market_dataset
+      params:
+        articles_path: tests/fixtures/research/semiconductors_articles.json
+        forward_horizon: 5
 ```
 
-`make source-archive` and `make release-check` require a clean git work tree unless `ALLOW_DIRTY_TREE=1` is set. Ordinary development targets such as `make test` allow dirty trees.
-
-Dependency lockfiles (`uv.lock` / equivalent) are not used yet; install with editable `pip install -e` as above. See [`docs/development/production-hardening.md`](docs/development/production-hardening.md).
-
-## Current limitations
-
-GDELT records are noisy media annotations rather than unique articles. Organization matching can include irrelevant mentions, and the repository does not yet include a text relevance classifier for semiconductor news.
+Put private values (a real BigQuery project id) in `configs/local.yaml`, which is
+git-ignored and deep-merged over whichever config you run. Start from
+`configs/local.example.yaml`.
 
 ## Documentation
 
-Deeper documentation: [semiconductor theme scoring](docs/research/semiconductor-theme-scoring/), [news × market dataset design](docs/research/news_market_dataset_design.md), [financial-data architecture](docs/architecture/financial-data.md), and the [documentation index](docs/README.md).
+Start with [platform-overview.md](docs/architecture/platform-overview.md), then
+[execution-flow.md](docs/architecture/execution-flow.md) for a real run traced end
+to end. See also
+[dependency-rules.md](docs/architecture/dependency-rules.md),
+[data-lifecycle.md](docs/architecture/data-lifecycle.md),
+[development.md](docs/getting-started/development.md),
+[adding-a-provider.md](docs/getting-started/adding-a-provider.md), and the
+[documentation index](docs/README.md).

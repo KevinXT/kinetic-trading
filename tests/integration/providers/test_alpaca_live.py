@@ -4,10 +4,11 @@ import os
 from datetime import datetime, timezone
 
 import pytest
-from market_data.domain.requests import BarsRequest
-from market_data.providers.alpaca.client import AlpacaBarsClient
-from market_data.providers.alpaca.config import AlpacaProviderConfig, resolve_credentials
-from market_data.providers.alpaca.normalize import normalize_alpaca_bars
+
+from kinetic.ingestion.market.alpaca.client import AlpacaBarsClient
+from kinetic.ingestion.market.alpaca.config import AlpacaProviderConfig, resolve_credentials
+from kinetic.ingestion.market.alpaca.normalize import normalize_alpaca_bars
+from kinetic.ingestion.requests import BarsRequest
 
 pytestmark = pytest.mark.skipif(
     os.getenv("RUN_PROVIDER_INTEGRATION_TESTS") != "1",

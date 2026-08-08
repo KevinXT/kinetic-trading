@@ -3,45 +3,27 @@
 # Prefer the *_partition_* configs for BigQuery GDELT historical counts.
 
 name: inflation_rates_bigquery_7d_dryrun
-
-# Low-cost BigQuery historical GDELT counts — DRY-RUN (default, safe).
-#
-# This config is tuned to minimize bytes scanned: it searches only the compact
-# V2Themes column and matches on a GDELT theme code (ECON_INFLATION) rather than
-# free-text phrases across multiple large columns. Scanning broad text columns
-# such as AllNames can dramatically increase bytes scanned/cost, so start with
-# V2Themes/theme codes first and only widen if the dry-run estimate allows it.
-#
-# It estimates scanned bytes/cost and logs a ledger decision; it does NOT run a
-# billable query and fetches no data. Set project_id to your real GCP project.
-
 providers:
   bigquery:
-    project_id: "YOUR_PROJECT_ID"
-    table: "gdelt-bq.gdeltv2.gkg_partitioned"
-
+    project_id: YOUR_PROJECT_ID
+    table: gdelt-bq.gdeltv2.gkg_partitioned
 pipeline:
-  ingest:
-    source: bigquery_gdelt_counts
-    query_name: inflation_rates_bigquery_7d
-    topic: inflation_rates
-
-    # Only scan the compact theme column to keep bytes scanned low.
-    search_columns:
+  steps:
+  - task: news.gdelt.bigquery.fetch_daily_counts
+    params:
+      query_name: inflation_rates_bigquery_7d
+      topic: inflation_rates
+      search_columns:
       - V2Themes
-
-    # Match a GDELT theme code rather than broad free-text phrases.
-    query_terms:
+      query_terms:
       - ECON_INFLATION
-
-    window:
-      preset: last_7_days
-      bucket: 1d
-
-    cost_controls:
-      dry_run: true
-      maximum_bytes_billed: 5000000000
-      execute_query: ""
-      cost_policy_path: "configs/cost_policy.yaml"
-      ledger_path: "data/cost/cost_ledger.jsonl"
-      use_cache: true
+      window:
+        preset: last_7_days
+        bucket: 1d
+      cost_controls:
+        dry_run: true
+        maximum_bytes_billed: 5000000000
+        execute_query: ''
+        cost_policy_path: configs/cost_policy.yaml
+        ledger_path: warehouse/cost/cost_ledger.jsonl
+        use_cache: true

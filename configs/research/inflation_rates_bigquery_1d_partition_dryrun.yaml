@@ -1,43 +1,29 @@
 name: inflation_rates_bigquery_1d_partition_dryrun
-
-# Tiny 1-day debug config for BigQuery GDELT counts — DRY-RUN (default, safe).
-#
-# Smallest practical scan: a single day, V2Themes only, theme-code matching.
-# Useful for quickly validating that V2Themes theme matching returns rows before
-# running wider windows. Uses _PARTITIONTIME partition pruning so only one day is
-# scanned. It estimates scanned bytes/cost and logs a ledger decision; it does
-# NOT run a billable query and fetches no data.
-
 providers:
   bigquery:
-    project_id: "YOUR_PROJECT_ID"
-    table: "gdelt-bq.gdeltv2.gkg_partitioned"
-
+    project_id: YOUR_PROJECT_ID
+    table: gdelt-bq.gdeltv2.gkg_partitioned
 pipeline:
-  ingest:
-    source: bigquery_gdelt_counts
-    query_name: inflation_rates_bigquery_1d_partition
-    topic: inflation_rates
-
-    search_columns:
+  steps:
+  - task: news.gdelt.bigquery.fetch_daily_counts
+    params:
+      query_name: inflation_rates_bigquery_1d_partition
+      topic: inflation_rates
+      search_columns:
       - V2Themes
-
-    query_terms:
+      query_terms:
       - ECON_INFLATION
-
-    partition_filter:
-      enabled: true
-      column: "_PARTITIONTIME"
-      type: "timestamp"
-
-    window:
-      preset: last_1_day
-      bucket: 1d
-
-    cost_controls:
-      dry_run: true
-      maximum_bytes_billed: 2000000000
-      execute_query: ""
-      cost_policy_path: "configs/cost_policy.yaml"
-      ledger_path: "data/cost/cost_ledger.jsonl"
-      use_cache: true
+      partition_filter:
+        enabled: true
+        column: _PARTITIONTIME
+        type: timestamp
+      window:
+        preset: last_1_day
+        bucket: 1d
+      cost_controls:
+        dry_run: true
+        maximum_bytes_billed: 2000000000
+        execute_query: ''
+        cost_policy_path: configs/cost_policy.yaml
+        ledger_path: warehouse/cost/cost_ledger.jsonl
+        use_cache: true

@@ -194,10 +194,10 @@ the move. See `projects/semiconductor_case_study/README.md`.
 
 | Before | After |
 | --- | --- |
-| `experiments/` (git-ignored run outputs) | `warehouse/runs/` (git-ignored) |
-| `data/processed/articles/`, `data/processed/market/` | `warehouse/normalized/news/`, `warehouse/normalized/market/` |
+| `warehouse/runs/` (git-ignored run outputs) | `warehouse/runs/` (git-ignored) |
+| `warehouse/normalized/articles/`, `warehouse/normalized/market/` | `warehouse/normalized/news/`, `warehouse/normalized/market/` |
 | `data/raw/` | `warehouse/raw/` |
-| `data/cost/cost_ledger.jsonl` | `warehouse/cost/cost_ledger.jsonl` |
+| `warehouse/cost/cost_ledger.jsonl` | `warehouse/cost/cost_ledger.jsonl` |
 | `data/real_corpus/`, `data/local_only/` | unchanged — these are private *inputs*, not generated output, and moving them would break existing local corpora |
 | `docs/research/semiconductor-theme-scoring/*` (tracked, real study results) | `projects/semiconductor_case_study/results/` — **tracked**, not treated as disposable |
 

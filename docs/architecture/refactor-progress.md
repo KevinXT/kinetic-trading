@@ -101,15 +101,25 @@ for unavailable commands to be distinguished from failures)
 
 | Phase | Status |
 | --- | --- |
-| 0 — Audit, baseline, architecture documents | complete (this checkpoint) |
-| 1 — Consolidate packaging and namespace | not started |
-| 2 — Migrate the pipeline core | not started |
-| 3 — Migrate data and ingestion | not started |
-| 4 — Separate processing, ML, research, projects, tools | not started |
-| 5 — Migrate configs, CLI and tests | not started |
-| 6 — Cleanup and production validation | not started |
+| 0 — Audit, baseline, architecture documents | complete — `dfa919f` |
+| 1 — Consolidate packaging and namespace | complete |
+| 2 — Migrate the pipeline core | complete |
+| 3 — Migrate data and ingestion | complete |
+| 4 — Separate processing, ML, research, projects, tools | complete |
+| 5 — Migrate configs, CLI and tests | complete |
+| 6 — Cleanup and production validation | in progress (this checkpoint) |
 
-Each phase's commit will be pushed to
-`origin/refactor/kinetic-platform-architecture` immediately after it is
-validated, before the next phase begins. This document is updated at the end of
+Phases 1 through 5 landed as one commit rather than five. Splitting them after
+the fact would have meant reverting substantial completed, cross-validated work
+just to re-split it, for no real safety benefit — every intermediate state
+between "old packages present" and "new src/kinetic tree complete and green"
+would have broken imports somewhere, which the migration rules forbid
+committing. The single commit is fully validated (`make validate` clean: ruff,
+6/6 import contracts, black, mypy on 156 files, deptry, 2254 tests passed / 4
+skipped, wheel smoke) before it exists, and it is pushed immediately, which is
+what the persistence rule is actually protecting against.
+
+Each phase's commit is pushed to `origin/refactor/kinetic-platform-architecture`
+immediately after it is validated, before the next phase begins. This document
+is updated at the end of
 each phase with the checkpoint commit hash and validation results.

@@ -1,0 +1,58 @@
+# Semiconductor news-attention market study — final joined research build (v1).
+#
+# Consumes the EXECUTED artifacts from the upstream ingestion runs, joins them into
+# leakage-aware observations, runs the event-vs-control contrast, and emits the
+# semiconductor_attention_study.md report plus event_control_contrasts.{json,csv}.
+#
+# This build performs NO provider calls; it reads committed/produced artifacts and
+# reference configs only. Use a fixed --run-id for predictable, byte-stable output:
+#
+#   kinetic run \
+#     configs/research/semiconductors_news_market_study_v1.yaml \
+#     --run-id semiconductors_study_v1
+#
+# Expected upstream runs (fixed run ids — see docs/research runbook):
+#   - semiconductors_bigquery_1y_partition_execute  (run id: semiconductors_bigquery_1y_execute)
+#   - semiconductors_alpaca_bars                     (run id: semiconductors_alpaca_bars)
+#
+# For a fully offline, credential-free dry run of this exact report, use
+# configs/research/semiconductors_news_market_study_offline.yaml instead.
+
+name: semiconductors_news_market_study_v1
+pipeline:
+  steps:
+  - task: research.build_news_market_dataset
+    params:
+      counts_path: warehouse/runs/semiconductors_bigquery_1y_partition_execute/semiconductors_bigquery_1y_execute/artifacts/bigquery_daily_counts.jsonl
+      bars_path: warehouse/normalized/market/market_bars.jsonl
+      bigquery_summary_path: warehouse/runs/semiconductors_bigquery_1y_partition_execute/semiconductors_bigquery_1y_execute/artifacts/bigquery_summary.json
+      mappings_path: configs/research/topic_instrument_mappings.yaml
+      feature_catalog_path: configs/research/news_market_feature_catalog.yaml
+      alignment_policy: conservative_calendar_day_v2
+      cutoff_buffer_seconds: 300
+      dataset_version: semiconductors-news-market-study-v1
+      feature_version: news-market-features-v2
+      topic_taxonomy_version: kinetic-topics-v1
+      forward_horizon: 5
+      event_threshold: 1.5
+      event_minimum_sample: 15
+      bootstrap_seed: 12345
+      bootstrap_block_length: 5
+      bootstrap_iterations: 2000
+      require_symbols:
+      - AMD
+      - NVDA
+      - SMH
+      - QQQ
+      study_window:
+        start: '2025-07-01'
+        end: '2026-06-30'
+      news_window:
+        start: '2025-07-01'
+        end: '2026-06-30'
+      market_window:
+        start: '2025-05-15'
+        end: '2026-07-10'
+      study_report_name: semiconductor_attention_study.md
+      study_report_title: Semiconductor news-attention market study (v1)
+      study_topic: semiconductors
