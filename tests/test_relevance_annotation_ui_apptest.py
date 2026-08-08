@@ -13,12 +13,15 @@ except Exception:  # pragma: no cover
     pytest.skip("Streamlit AppTest unavailable", allow_module_level=True)
 
 
-APP = Path("apps/relevance_annotation_ui/app.py")
-PREFLIGHT = Path("apps/relevance_annotation_ui/pages/1_Corpus_Preflight.py")
-ANNOTATION = Path("apps/relevance_annotation_ui/pages/2_Article_Annotation.py")
-DUPLICATE = Path("apps/relevance_annotation_ui/pages/3_Duplicate_Review.py")
-ADJUDICATION = Path("apps/relevance_annotation_ui/pages/4_Adjudication.py")
-AUDIT = Path("apps/relevance_annotation_ui/pages/5_Audit_and_Export.py")
+# AppTest.from_file resolves relative paths against this test file, not cwd.
+ROOT = Path(__file__).resolve().parents[1]
+UI_ROOT = ROOT / "apps" / "relevance_annotation_ui"
+APP = UI_ROOT / "app.py"
+PREFLIGHT = UI_ROOT / "pages" / "1_Corpus_Preflight.py"
+ANNOTATION = UI_ROOT / "pages" / "2_Article_Annotation.py"
+DUPLICATE = UI_ROOT / "pages" / "3_Duplicate_Review.py"
+ADJUDICATION = UI_ROOT / "pages" / "4_Adjudication.py"
+AUDIT = UI_ROOT / "pages" / "5_Audit_and_Export.py"
 
 
 def test_app_starts_and_shows_local_banner() -> None:
@@ -95,7 +98,7 @@ def test_preflight_missing_corpus_typed_state(
     import sys
     from datetime import datetime, timezone
 
-    sys.path.insert(0, str(Path("apps/relevance_annotation_ui").resolve()))
+    sys.path.insert(0, str(UI_ROOT))
     from app_config import UIConfig
     from pilot_service import PilotService
 
