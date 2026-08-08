@@ -20,6 +20,13 @@ from research_data.catalog import DEFAULT_CATALOG_PATH, FeatureCatalog, load_fea
 from research_data.event_study import EventStudyConfig
 from research_data.mappings import DEFAULT_MAPPINGS_PATH, load_topic_instrument_mappings
 from research_data.models import NewsMarketObservation
+from research_data.report import (
+    CONTRAST_CSV_FIELDS,
+    contrast_rows,
+    render_study_report,
+    study_coverage,
+)
+from research_data.validation import assert_required_bar_symbols
 
 LIMITATIONS = """# Research dataset limitations
 
@@ -247,6 +254,22 @@ def build_news_market_dataset_task(
             "ctx.state['tagged_articles'|'normalized_articles'|'topic_daily_features']"
         )
 
+    # Pre-build validation: fail loudly if required instrument/benchmark bars are
+    # absent, rather than silently dropping targets later.
+    require_symbols = params.get("require_symbols")
+    if require_symbols:
+        bar_symbols = {
+            str(getattr(b, "symbol", None) or (b.get("symbol") if isinstance(b, dict) else ""))
+            .strip()
+            .upper()
+            for b in bars
+        }
+        assert_required_bar_symbols(bar_symbols, list(require_symbols))
+
+    study_window = params.get("study_window") or {}
+    study_window_start = study_window.get("start") if isinstance(study_window, dict) else None
+    study_window_end = study_window.get("end") if isinstance(study_window, dict) else None
+
     event_config = EventStudyConfig(
         threshold=float(params.get("event_threshold", 2.0)),
         minimum_sample=int(params.get("event_minimum_sample", 20)),
@@ -254,6 +277,8 @@ def build_news_market_dataset_task(
         seed=int(params.get("bootstrap_seed", 12345)),
         bootstrap_block_length=int(params.get("bootstrap_block_length", 5)),
         bootstrap_iterations=int(params.get("bootstrap_iterations", 2000)),
+        study_window_start=str(study_window_start) if study_window_start else None,
+        study_window_end=str(study_window_end) if study_window_end else None,
     )
 
     result = build_dataset(
@@ -311,3 +336,66 @@ def build_news_market_dataset_task(
     ctx.write_json("event_study_summary.json", result.event_study_summary)
     _event_summary_csv(ctx, "event_study_summary.csv", result.event_study_summary)
     (ctx.artifacts_dir / "research_limitations.md").write_text(LIMITATIONS, encoding="utf-8")
+
+    # Event-vs-control contrast artifacts (the confirmatory H1 test).
+    contrasts = result.event_study_summary.get("event_control_contrasts", [])
+    rows = contrast_rows(contrasts)
+    ctx.write_json(
+        "event_control_contrasts.json",
+        {
+            "primary_h1_endpoint_family": result.event_study_summary.get(
+                "primary_h1_endpoint_family"
+            ),
+            "fdr_families": result.event_study_summary.get("fdr_families"),
+            "contrasts": contrasts,
+        },
+    )
+    _contrasts_csv(ctx, "event_control_contrasts.csv", rows)
+
+    # Optional human-readable study report.
+    study_report_name = params.get("study_report_name")
+    if study_report_name:
+        bigquery_cost = None
+        cost_summary_path = params.get("bigquery_summary_path")
+        if cost_summary_path and Path(str(cost_summary_path)).is_file():
+            bigquery_cost = json.loads(Path(str(cost_summary_path)).read_text(encoding="utf-8"))
+        observed_benchmarks = sorted(
+            {
+                str(o.lineage.get("benchmark_symbol"))
+                for o in result.observations
+                if o.lineage.get("benchmark_symbol")
+            }
+        )
+        coverage = study_coverage(
+            result,
+            requested_news_window=_window_tuple(params.get("news_window")),
+            requested_market_window=_window_tuple(params.get("market_window")),
+            study_window=_window_tuple(study_window),
+            benchmark_symbols=observed_benchmarks or list(result.manifest.benchmark_symbols),
+            bigquery_cost=bigquery_cost,
+        )
+        report_text = render_study_report(
+            title=str(params.get("study_report_title", "News-attention market study")),
+            topic=str(params.get("study_topic", "")) or ",".join(result.manifest.included_topics),
+            coverage=coverage,
+            summary=result.event_study_summary,
+            config_params={"dataset_version": result.manifest.dataset_version},
+            generated_at=result.manifest.to_dict()["generated_at"],
+        )
+        (ctx.artifacts_dir / str(study_report_name)).write_text(report_text, encoding="utf-8")
+        ctx.write_json("study_coverage.json", coverage)
+
+
+def _window_tuple(window: Any) -> tuple[str, str] | None:
+    if isinstance(window, dict) and window.get("start") and window.get("end"):
+        return (str(window["start"]), str(window["end"]))
+    return None
+
+
+def _contrasts_csv(ctx, name: str, rows: list[dict[str, Any]]) -> None:
+    path = ctx.artifacts_dir / name
+    with path.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=CONTRAST_CSV_FIELDS, extrasaction="ignore")
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)

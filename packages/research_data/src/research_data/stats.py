@@ -269,6 +269,85 @@ def session_date_block_bootstrap_ci(
     return (percentile(means, tail), percentile(means, 1.0 - tail))
 
 
+def welch_two_sample_p(
+    mean_a: float | None,
+    std_a: float | None,
+    n_a: int,
+    mean_b: float | None,
+    std_b: float | None,
+    n_b: int,
+) -> float | None:
+    """Two-sided p-value for H0: ``mean_a == mean_b`` via Welch's t (normal approx).
+
+    Operates on two independent samples (here: session-date cluster means for the
+    event and control groups). Uses the unequal-variance Welch statistic and a
+    normal approximation for the tail, matching the coarse-screen style used
+    elsewhere in this module. Returns None when either dispersion is undefined or
+    the pooled standard error is zero. This is a screening statistic; it does not
+    model serial dependence from overlapping horizons (see limitations).
+    """
+    if mean_a is None or mean_b is None or std_a is None or std_b is None:
+        return None
+    if n_a < 2 or n_b < 2:
+        return None
+    se_squared = (std_a**2) / n_a + (std_b**2) / n_b
+    if se_squared <= 0.0:
+        return None
+    t = (mean_a - mean_b) / math.sqrt(se_squared)
+    return 2.0 * (1.0 - 0.5 * (1.0 + math.erf(abs(t) / math.sqrt(2.0))))
+
+
+def two_sample_session_block_bootstrap_difference_ci(
+    event_by_session_date: Mapping[str, Sequence[float]],
+    control_by_session_date: Mapping[str, Sequence[float]],
+    *,
+    confidence: float = 0.95,
+    iterations: int = 2000,
+    seed: int = 12345,
+    block_length: int = 5,
+) -> tuple[float | None, float | None]:
+    """Moving-block bootstrap CI for ``event_mean - control_mean``.
+
+    Both groups are first aggregated to one value per session date so that a
+    single session carrying several instruments is not treated as several
+    independent observations. Event and control session dates are then resampled
+    *independently* with circular moving blocks (the two groups do not share the
+    same calendar rows). The difference of the two resampled cluster-mean averages
+    is recorded each iteration. Returns ``(None, None)`` when either group has
+    fewer than two session-date clusters, where a difference CI is not meaningful.
+    """
+    event_means: dict[str, float] = {}
+    for key, values in event_by_session_date.items():
+        cluster_mean = mean(values)
+        if cluster_mean is not None:
+            event_means[str(key)] = cluster_mean
+    control_means: dict[str, float] = {}
+    for key, values in control_by_session_date.items():
+        cluster_mean = mean(values)
+        if cluster_mean is not None:
+            control_means[str(key)] = cluster_mean
+    event_keys = sorted(event_means)
+    control_keys = sorted(control_means)
+    if len(event_keys) < 2 or len(control_keys) < 2:
+        return (None, None)
+    differences: list[float] = []
+    for iteration in range(iterations):
+        event_sample_keys = sample_moving_block_keys(
+            event_keys, block_length=block_length, seed=seed + iteration
+        )
+        control_sample_keys = sample_moving_block_keys(
+            control_keys, block_length=block_length, seed=seed + iteration + 10_000_019
+        )
+        event_sample = mean([event_means[key] for key in event_sample_keys])
+        control_sample = mean([control_means[key] for key in control_sample_keys])
+        if event_sample is not None and control_sample is not None:
+            differences.append(event_sample - control_sample)
+    if not differences:
+        return (None, None)
+    tail = (1.0 - confidence) / 2.0
+    return (percentile(differences, tail), percentile(differences, 1.0 - tail))
+
+
 def benjamini_hochberg(p_values: Sequence[float], *, alpha: float = 0.05) -> list[bool]:
     """Benjamini–Hochberg FDR control.
 
