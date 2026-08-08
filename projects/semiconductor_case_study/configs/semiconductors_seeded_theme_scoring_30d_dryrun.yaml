@@ -1,0 +1,93 @@
+name: semiconductors_seeded_theme_scoring_30d_dryrun
+providers:
+  bigquery:
+    project_id: YOUR_PROJECT_ID
+    table: gdelt-bq.gdeltv2.gkg_partitioned
+pipeline:
+  steps:
+  - task: news.gdelt.bigquery.score_seeded_themes
+    params:
+      query_name: semiconductors_seeded_theme_scoring_30d_partition
+      topic: semiconductors
+      seed_specs:
+      - canonical: semiconductor
+        kind: industry_phrase
+        aliases:
+        - semiconductor
+      - canonical: semiconductors
+        kind: industry_phrase
+        aliases:
+        - semiconductors
+      - canonical: microprocessor
+        kind: industry_phrase
+        aliases:
+        - microprocessor
+      - canonical: chipmaker
+        kind: industry_phrase
+        aliases:
+        - chipmaker
+      - canonical: wafer fabrication
+        kind: industry_phrase
+        aliases:
+        - wafer fabrication
+      - canonical: tsmc
+        kind: company_alias
+        aliases:
+        - tsmc
+        - taiwan semiconductor
+      - canonical: nvidia
+        kind: company_alias
+        aliases:
+        - nvidia
+      - canonical: amd
+        kind: company_alias
+        aliases:
+        - amd
+        - advanced micro devices
+      - canonical: intel
+        kind: company_alias
+        aliases:
+        - intel corp
+        - intel corporation
+        - intel
+      - canonical: asml
+        kind: company_alias
+        aliases:
+        - asml
+      - canonical: broadcom
+        kind: company_alias
+        aliases:
+        - broadcom
+      - canonical: micron
+        kind: company_alias
+        aliases:
+        - micron technology
+        - micron
+      - canonical: qualcomm
+        kind: company_alias
+        aliases:
+        - qualcomm
+      - canonical: samsung electronics
+        kind: company_alias
+        aliases:
+        - samsung electronics
+      seed_search_columns:
+      - V2Organizations
+      sample_source_column: SourceCommonName
+      partition_filter:
+        enabled: true
+        column: _PARTITIONTIME
+        type: timestamp
+      window:
+        preset: last_30_days
+        bucket: 1d
+      limit: 500
+      sample_size: 5
+      min_support: 25
+      cost_controls:
+        dry_run: true
+        execute_query: ''
+        maximum_bytes_billed: 30000000000
+        cost_policy_path: configs/cost_policy.yaml
+        ledger_path: warehouse/cost/cost_ledger.jsonl
+        use_cache: false

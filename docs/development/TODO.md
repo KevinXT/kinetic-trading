@@ -6,7 +6,7 @@ This checklist tracks project milestones: what's shipped and what's next.
 
 ## Milestone: Pipeline Engine v1 (Linear Runner) — complete
 
-### `packages/pipeline_core` — engine
+### `kinetic.core` — engine
 
 - [x] `RunContext`: cfg, run_name, run_id, run_dir, artifacts_dir, state, JSON/JSONL writers
 - [x] `parse_plan` → ordered `Step` list (ingest → transform(s) → strategy)
@@ -14,13 +14,13 @@ This checklist tracks project milestones: what's shipped and what's next.
 - [x] `TaskFn` contract and `TASK_REGISTRY` with `@register` decorator
 - [x] Lifecycle hooks: `TimingHook`, `ErrorHook`, `MetadataHook`, `LoggingHook`
 
-### `packages/common` — shared config + errors
+### `kinetic.core` — shared config + errors
 
 - [x] YAML loader with `include:` / deep merge (`config_builder.py`)
 - [x] Shared exception hierarchy (`errors.py`)
 - [x] JSON cache-aside layer (`cache.py`)
 
-### `packages/news_data` — GDELT integration
+### `kinetic.ingestion.news` — GDELT integration
 
 - [x] GDELT DOC API client with config-driven requests and response parsing
 - [x] Article normalization (stable internal field names)
@@ -28,9 +28,9 @@ This checklist tracks project milestones: what's shipped and what's next.
 - [x] `filter_articles` pipeline task (language, source_country, domain)
 - [x] Retry with backoff for 429s and timeouts
 
-### `apps/trading_platform` — CLI + task registration
+### `kinetic.interface.cli` — CLI + task registration
 
-- [x] CLI entrypoint (`trading-platform` / `python -m trading_platform`)
+- [x] CLI entrypoint (`kinetic`)
 - [x] Task registration (populates `TASK_REGISTRY` at import time)
 
 ### Working demo plan
@@ -64,7 +64,7 @@ Merged to `main` via GitHub [PR #4](https://github.com/KevinXT/kinetic-trading/p
 (2026-08-04). See [`production-hardening.md`](production-hardening.md).
 
 - [x] Repository/release hygiene (`make validate`, dirty-tree release gate, `make source-archive`, build-pollution checks)
-- [x] Price-only provider surface; deferred empty `strategy_sdk`; seeded theme scoring module split
+- [x] Price-only provider surface; deleted empty `strategy_sdk` in 0.2; seeded theme scoring module split
 - [ ] Dependency lockfile (deferred until an authoritative install workflow is chosen)
 - [ ] Optional follow-ons (run manifests, artifact store, typed task contracts, etc.) — only when a real pilot/ops need requires them
 
@@ -72,9 +72,9 @@ Merged to `main` via GitHub [PR #4](https://github.com/KevinXT/kinetic-trading/p
 
 ## Next up
 
-- [ ] Flesh out `packages/strategy_sdk` only when real strategy-domain code exists (package is deferred / not installed)
+- [ ] Flesh out `kinetic.trading` (not yet created) only when real strategy-domain code exists (package is deferred / not installed)
 - [ ] SEC EDGAR and FRED adapters on existing contracts
-- [x] Time-aligned joins between news features and market bars (`research_data` / `build_news_market_dataset`)
+- [x] Time-aligned joins between news features and market bars (`kinetic.research` / `build_news_market_dataset`)
 - [ ] Research-grade backtesting prototype
 - [ ] End-to-end test with mocked HTTP for the demo pipeline
 - [ ] Refresh technical guides under `docs/` as APIs evolve

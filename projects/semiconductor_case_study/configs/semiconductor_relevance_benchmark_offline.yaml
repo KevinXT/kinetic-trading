@@ -1,0 +1,36 @@
+# Offline semiconductor relevance benchmark foundation.
+#
+# Requires NO credentials, network, BigQuery, Alpaca, GPU, or models.
+# Reads committed synthetic fixtures and writes deterministic research artifacts.
+#
+#   kinetic run \
+#     configs/research/semiconductor_relevance_benchmark_offline.yaml \
+#     --run-id semiconductor_relevance_benchmark_offline
+#
+# This phase constructs benchmark infrastructure. It does not implement or
+# validate a language model, sentiment model, trading signal, or market edge.
+
+name: semiconductor_relevance_benchmark_offline
+pipeline:
+  steps:
+  - task: ml.relevance.build_benchmark
+    params:
+      articles_path: tests/fixtures/research/relevance_benchmark/articles.jsonl
+      default_content_source: synthetic_fixture
+      sample_size: 40
+      sampling_seed: semiconductor-relevance-benchmark-v1
+      max_per_entity: 6
+      double_annotation_fraction: 0.25
+      near_title_threshold: 0.8
+      near_body_threshold: 0.7
+      near_max_publication_distance_hours: 168
+      near_shingle_size: 3
+      splits:
+        development_end: '2025-09-30'
+        validation_end: '2025-12-31'
+        holdout_end: '2026-04-30'
+        embargo_days: 0
+        evaluate_holdout: ENABLE
+      raw_annotations_path: tests/fixtures/research/relevance_benchmark/raw_annotations.jsonl
+      adjudicated_annotations_path: tests/fixtures/research/relevance_benchmark/adjudicated_annotations.jsonl
+      report_title: Semiconductor relevance benchmark (offline fixture)

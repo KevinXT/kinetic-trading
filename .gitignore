@@ -36,6 +36,7 @@ env/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.import_linter_cache/
 .coverage
 htmlcov/
 
@@ -62,12 +63,19 @@ __MACOSX/
 # =========================================================
 # Runtime outputs / generated artifacts
 # =========================================================
+# All generated data lives under the repo-root warehouse/ directory — raw
+# provider payloads, normalized canonical records, curated and feature
+# datasets, predictions, models, run outputs, and the cloud-spend ledger.
+# Anchor with / so src/kinetic/ingestion/warehouse/ (source) is not ignored.
+# See docs/architecture/data-lifecycle.md.
+/warehouse/
+
+# Pre-0.2 output locations. Still ignored so an existing checkout does not start
+# proposing generated files for commit after the upgrade.
 artifacts/
 experiments/
 data/raw/
 data/processed/
-
-# Cost-aware BigQuery path: cost ledger + local query result cache
 data/cost/
 data/cache/
 

@@ -2,34 +2,61 @@
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
-# Workspace-level dev tooling only. Library/app code lives under packages/* and apps/*.
-# This is NOT a distributable package — it provides shared dev tools (pytest, linters)
-# for the monorepo. Install individual packages from packages/ and apps/ separately.
+# One distribution, one import namespace, one console script.
+#
+# Before 0.2 this repository shipped seven internal editable distributions
+# (kinetic-common, kinetic-pipeline-core, kinetic-news-data, kinetic-market-data,
+# kinetic-research-data, kinetic-trading-platform, kinetic-relevance-annotation-ui)
+# and a root project that packaged nothing. See docs/architecture/migration-map.md.
+
 [project]
-name = "kinetic-trading-workspace"
-version = "0.1.0"
-description = "Dev workspace for kinetic-trading monorepo (not a distributable package)"
+name = "kinetic"
+version = "0.2.0"
+description = "Point-in-time market-intelligence and algorithmic-trading research platform"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+  "pyyaml>=6.0",
+  "requests>=2.31",
+  "typer>=0.12",
+  # zoneinfo needs an IANA database. macOS/Linux usually ship one, but pinning the
+  # pure-python fallback keeps America/New_York session math reproducible in
+  # isolated wheel installs and CI runners without system tzdata.
+  "tzdata>=2024.1",
+]
 
 [project.optional-dependencies]
+# Cost-aware BigQuery measurement path. Imported lazily, so the rest of the
+# platform works without it.
+bigquery = [
+  "google-cloud-bigquery>=3.0",
+]
+# Local-only annotation workstation under tools/annotation.
+annotation = [
+  "streamlit>=1.32",
+]
 dev = [
   "pytest>=8.0",
   "black>=24.0",
   "ruff>=0.4",
   "mypy>=1.8",
+  "build>=1.2",
+  "deptry>=0.16",
+  "import-linter>=2.0",
   "types-requests>=2.33.0.20260712",
-]
-ui = [
-  # Local annotation workstation only. Install with:
-  #   pip install -e "./apps/relevance_annotation_ui" -e ".[ui]"
-  # or simply: pip install -e ./apps/relevance_annotation_ui
-  "streamlit>=1.32",
+  "types-PyYAML>=6.0",
 ]
 
-[tool.setuptools]
-packages = []
+[project.scripts]
+kinetic = "kinetic.interface.cli.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["kinetic*"]
+
+[tool.setuptools.package-data]
+kinetic = ["py.typed"]
+"kinetic.ingestion.warehouse.bigquery.reporting" = ["sql/*.sql"]
 
 [tool.black]
 line-length = 100
@@ -37,17 +64,27 @@ target-version = ["py311"]
 
 [tool.ruff]
 line-length = 100
+extend-exclude = ["warehouse"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 
 [tool.ruff.lint.per-file-ignores]
-"apps/relevance_annotation_ui/app.py" = ["E402"]
-"apps/relevance_annotation_ui/pages/*.py" = ["E402"]
+# Streamlit pages must call st.set_page_config() and extend sys.path before any
+# other import, so module-level imports legitimately follow executable code.
+"tools/annotation/app.py" = ["E402"]
+"tools/annotation/pages/*.py" = ["E402"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+# "." makes tools.* importable in tests; "tools/annotation" matches the sys.path
+# the Streamlit runtime gives the annotation app, so its bare intra-app imports
+# resolve the same way under pytest as they do under `streamlit run`.
+pythonpath = [".", "tools/annotation"]
+filterwarnings = [
+  "error::DeprecationWarning:kinetic.*",
+  "default",
+]
 
 [tool.mypy]
 # Analyze as 3.12 so current third-party stubs (e.g. NumPy) that use PEP 695
@@ -57,8 +94,122 @@ warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
 check_untyped_defs = true
-packages = [
-  "common",
-  "market_data",
-  "pipeline_core",
+mypy_path = "src"
+packages = ["kinetic"]
+
+[tool.deptry]
+extend_exclude = ["warehouse"]
+# `kinetic` is this project. The bare module names are the annotation
+# workstation's intra-app imports: Streamlit puts the app directory on sys.path,
+# so those resolve at runtime without being packages or dependencies.
+known_first_party = [
+  "kinetic",
+  "annotation_store",
+  "app_config",
+  "pilot_context",
+  "pilot_service",
+  "view_models",
 ]
+# The `dev` extra is tooling, not runtime dependency surface.
+optional_dependencies_dev_groups = ["dev"]
+
+[tool.deptry.per_rule_ignores]
+# Declared but never imported at module scope, by design:
+#   google-cloud-bigquery  imported lazily inside the SafeBigQueryClient so that
+#                          importing kinetic never requires it or credentials
+#   streamlit              used only by tools/annotation, which is repo-only and
+#                          runs under `streamlit run`
+#   tzdata                 a data package with no importable API; zoneinfo reads it
+DEP002 = ["google-cloud-bigquery", "streamlit", "tzdata"]
+
+# ---------------------------------------------------------------------------
+# Import boundaries. See docs/architecture/dependency-rules.md for the reasoning
+# behind each contract, and for the boundaries that cannot be expressed here.
+# ---------------------------------------------------------------------------
+[tool.importlinter]
+root_package = "kinetic"
+include_external_packages = false
+
+[[tool.importlinter.contracts]]
+name = "Subsystems are layered"
+type = "layers"
+layers = [
+  "kinetic.interface",
+  "kinetic.research",
+  "kinetic.ml",
+  "kinetic.ingestion",
+  "kinetic.processing",
+  "kinetic.data",
+  "kinetic.core",
+]
+# `processing` sits BELOW `ingestion`, which is not the reading order of the
+# subsystem list in the docs. It is the true direction in the code: a provider
+# adapter reuses deterministic normalization when mapping a payload into a
+# canonical record (stable article ids, URL normalization, seed matching of a
+# query result), while no processing module imports a provider. The contract
+# still forbids the dangerous direction, processing -> ingestion.
+#
+# bootstrap is the composition root and is exempt by construction: it is not a
+# layer, so it may import every layer below interface.
+exhaustive = false
+
+[[tool.importlinter.contracts]]
+name = "core is independent of every other subsystem"
+type = "forbidden"
+source_modules = ["kinetic.core"]
+forbidden_modules = [
+  "kinetic.data",
+  "kinetic.ingestion",
+  "kinetic.processing",
+  "kinetic.ml",
+  "kinetic.research",
+  "kinetic.interface",
+  "kinetic.bootstrap",
+]
+
+[[tool.importlinter.contracts]]
+name = "canonical data does not depend on providers or downstream layers"
+type = "forbidden"
+source_modules = ["kinetic.data"]
+forbidden_modules = [
+  "kinetic.ingestion",
+  "kinetic.processing",
+  "kinetic.ml",
+  "kinetic.research",
+  "kinetic.interface",
+  "kinetic.bootstrap",
+]
+
+[[tool.importlinter.contracts]]
+name = "provider adapters stay independent of each other"
+type = "independence"
+modules = [
+  "kinetic.ingestion.news.gdelt",
+  "kinetic.ingestion.market.alpaca",
+]
+
+[[tool.importlinter.contracts]]
+name = "research cannot reach execution"
+type = "forbidden"
+source_modules = ["kinetic.research", "kinetic.ml"]
+# kinetic.trading does not exist yet. This contract passes vacuously today and
+# starts enforcing the safety boundary the moment the package appears.
+forbidden_modules = ["kinetic.trading"]
+ignore_imports = []
+
+[[tool.importlinter.contracts]]
+name = "the CLI owns no domain logic"
+type = "forbidden"
+source_modules = ["kinetic.interface"]
+forbidden_modules = [
+  "kinetic.ingestion.news.gdelt",
+  "kinetic.ingestion.market.alpaca",
+  "kinetic.ingestion.warehouse.bigquery.client",
+  "kinetic.processing",
+  "kinetic.ml",
+  "kinetic.research",
+]
+# Direct imports only. A CLI command reaching kinetic.bootstrap, which then
+# imports every provider, is the composition root doing its job; a command
+# importing the GDELT client itself is the failure this contract exists to catch.
+allow_indirect_imports = true

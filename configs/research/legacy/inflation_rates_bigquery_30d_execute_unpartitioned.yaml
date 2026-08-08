@@ -3,36 +3,27 @@
 # Prefer the *_partition_* configs for BigQuery GDELT historical counts.
 
 name: inflation_rates_bigquery_30d_execute
-
-# Real BigQuery execution requires execute_query: "ENABLE".
-# Keep maximum_bytes_billed low while testing.
-#
-# Even with confirmation, the SafeBigQueryClient ALWAYS dry-runs first and
-# enforces maximum_bytes_billed + the cost policy before any billable query.
-
 providers:
   bigquery:
-    project_id: "YOUR_PROJECT_ID"
-    table: "gdelt-bq.gdeltv2.gkg_partitioned"
-
+    project_id: YOUR_PROJECT_ID
+    table: gdelt-bq.gdeltv2.gkg_partitioned
 pipeline:
-  ingest:
-    source: bigquery_gdelt_counts
-    query_name: inflation_rates_bigquery_30d
-    topic: inflation_rates
-    query_terms:
-      - "Federal Reserve"
-      - "inflation"
-      - "interest rates"
-
-    window:
-      preset: last_30_days
-      bucket: 1d
-
-    cost_controls:
-      dry_run: false
-      maximum_bytes_billed: 1000000000
-      execute_query: "ENABLE"
-      cost_policy_path: "configs/cost_policy.yaml"
-      ledger_path: "data/cost/cost_ledger.jsonl"
-      use_cache: true
+  steps:
+  - task: news.gdelt.bigquery.fetch_daily_counts
+    params:
+      query_name: inflation_rates_bigquery_30d
+      topic: inflation_rates
+      query_terms:
+      - Federal Reserve
+      - inflation
+      - interest rates
+      window:
+        preset: last_30_days
+        bucket: 1d
+      cost_controls:
+        dry_run: false
+        maximum_bytes_billed: 1000000000
+        execute_query: ENABLE
+        cost_policy_path: configs/cost_policy.yaml
+        ledger_path: warehouse/cost/cost_ledger.jsonl
+        use_cache: true

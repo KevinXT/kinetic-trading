@@ -6,8 +6,8 @@ replacing it. The foundation for that work is **merged to `main`** via GitHub
 
 ## Principles
 
-- Preserve `pipeline_core`, `common`, provider packages, `research_data`, and
-  `trading_platform` ownership boundaries.
+- Preserve `kinetic.core`, `kinetic.core`, provider packages, `kinetic.research`, and
+  `kinetic.bootstrap` ownership boundaries.
 - Prefer boring engineering: one validation path, one archive path, explicit
   gates at system boundaries.
 - One source of truth internally; redundant verification at boundaries.
@@ -23,8 +23,8 @@ were already true of the tree:
 | --- | --- |
 | Canonical `make validate` / release hygiene | Dirty-tree gate, source archives, build-pollution checks |
 | Price-only market-data providers | Company/macro *provider* protocols deferred; domain models retained |
-| Deferred `strategy_sdk` | Empty package boundary on disk; not installed by CI, wheels-smoke, or default install |
-| Seeded theme scoring module split | Package under `news_data.task.bigquery_gdelt_seeded_theme_scoring/`; public task name unchanged |
+| Deleted `strategy_sdk` | Was an empty package boundary on disk; removed in 0.2 (see docs/architecture/migration-map.md) |
+| Seeded theme scoring module split | Package under `kinetic.ingestion.news.gdelt.bigquery.tasks.seeded_theme_scoring/`; task renamed to `news.gdelt.bigquery.score_seeded_themes` in 0.2, old name aliased |
 
 ### Commands
 

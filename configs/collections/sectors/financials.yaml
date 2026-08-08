@@ -1,35 +1,31 @@
 name: financials
-
 providers:
   news:
     gdelt:
       timeout_s: 30
       doc:
-        base_url: "https://api.gdeltproject.org/api/v2/doc/doc"
-        mode: "artlist"
-        format: "json"
-        timespan: "48h"
+        base_url: https://api.gdeltproject.org/api/v2/doc/doc
+        mode: artlist
+        format: json
+        timespan: 48h
         maxrecords: 50
-        sort: "datedesc"
-
+        sort: datedesc
 pipeline:
-  ingest:
-    source: gdelt_docs
-    query: "(\"banking sector\" OR banks OR \"credit losses\" OR \"loan defaults\" OR \"net interest income\" OR \"commercial real estate exposure\")"
-    max_records: 50
-
-  transform:
-    - type: filter_articles
-      language: "English"
-
-    - type: dedupe_articles
-      dedupe_strategy: "title"
-
-    - type: tag_articles
-
-    - type: aggregate_article_features
-
-    - type: store_features
-
-    - type: store_articles
-      output_path: "data/processed/articles/articles.jsonl"
+  steps:
+  - task: news.gdelt.fetch_articles
+    params:
+      query: ("banking sector" OR banks OR "credit losses" OR "loan defaults" OR "net interest income"
+        OR "commercial real estate exposure")
+      max_records: 50
+  - task: news.filter_articles
+    params:
+      language: English
+  - task: news.dedupe_articles
+    params:
+      dedupe_strategy: title
+  - task: news.tag_articles
+  - task: news.aggregate_features
+  - task: news.store_features
+  - task: news.store_articles
+    params:
+      output_path: warehouse/normalized/news/articles.jsonl
